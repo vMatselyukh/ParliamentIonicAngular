@@ -1,14 +1,56 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button></ion-back-button>
+        </ion-buttons>
+        <ion-title class="center">Home</ion-title>
+        <ion-button slot="end" (click)="goToMenu()" ion-button icon-only small color="medium">
+            <ion-icon name="settings"></ion-icon>
+        </ion-button>
+    </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <div class="ion-padding">
-    The world is your oyster.
-    <p>If you get lost, the <a target="_blank" rel="noopener" href="https://ionicframework.com/docs/">docs</a> will be your guide.</p>
-  </div>
+<ion-content id="HomePageContent" scroll-y="false">
+    <img id="MainImage" />
+
+    <!-- <div id="ThreeButtonsDiv">
+        <ion-segment color="primary">
+            <ion-segment-button value="main" #MainListSegmentButton>
+                Main
+                <ion-icon name="md-list-box"></ion-icon>
+            </ion-segment-button>
+            <ion-segment-button value="recent">
+                <span>Recent</span>
+                <ion-icon name="md-eye"></ion-icon>
+            </ion-segment-button>
+            <ion-segment-button value="new" icon>
+                New
+                <ion-icon name="md-download"></ion-icon>
+            </ion-segment-button>
+        </ion-segment>
+    </div> -->
+
+    <div id="MainList">
+        <div scroll-x="true" class="scroll-area">
+            <div class="item" *ngFor="let person of config?.Persons" (tap)="itemClick(person)">
+                <img class="size-helper" src="assets/images/politicians/klichko/klichko.png" width="129" height="183" />
+
+                <div class="person-info">
+                    <span class="person-name">Vitaliy Klichko</span>
+                    <br/>
+                    <span class="person-post">Vitaliy Klichko</span>
+                    <br/>
+                    
+                    <ion-badge class="person-traks-count" color="medium">
+                        <ion-icon name="quote"></ion-icon>
+                        &nbsp;88
+                    </ion-badge>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="clear:both;"></div>
+
+
 </ion-content>
