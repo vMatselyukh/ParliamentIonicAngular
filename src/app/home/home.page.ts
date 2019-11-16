@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
-import { DbContext, ParliamentApi, ConfigManager, WebServerLinkProvider } from '../../providers/providers';
+import { DbContext, ParliamentApi, ConfigManager } from '../../providers/providers';
 import { Config, Person } from '../../models/models';
+import { Router } from '@angular/router';
+import { DataService } from '../services/data.service';
+import { MenuController } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -14,7 +17,10 @@ export class HomePage {
 
     constructor(private dbContext: DbContext,
         private parliamentApi: ParliamentApi,
-        private configManager: ConfigManager) {
+        private configManager: ConfigManager,
+        private router: Router,
+        private dataService: DataService,
+        private menu: MenuController) {
     }
 
     ionViewDidEnter()
@@ -46,10 +52,8 @@ export class HomePage {
 
     itemClick(person: Person)
     {
+        console.log('click');
+        this.dataService.setData(person.Id, person);
+        this.router.navigateByUrl(`/details/${person.Id}`);
     }
-
-    goToMenu()
-    {
-    }
-
 }
