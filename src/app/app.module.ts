@@ -12,10 +12,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { DbContext, ParliamentApi, ConfigManager, FileManager, WebServerLinkProvider } from '../providers/providers';
 import { HttpClientModule } from '@angular/common/http';
 
+import { ReactiveFormsModule } from '@angular/forms';
+
+import { ProposeQuotePageModule } from './propose-quote/propose-quote.module';
+import { ProposeQuotePage } from './propose-quote/propose-quote.page';
+
 @NgModule({
   declarations: [AppComponent],
-  entryComponents: [],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule],
+  entryComponents: [ProposeQuotePage],
+  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
+    ReactiveFormsModule, ProposeQuotePageModule],
   providers: [
     StatusBar,
     SplashScreen,

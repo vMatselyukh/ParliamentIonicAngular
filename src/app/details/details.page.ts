@@ -24,7 +24,9 @@ export class DetailsPage implements OnInit {
   }
 
   ionViewDidLeave(){
-    this.player.stop();
+    if(this.player){
+      this.player.stop();
+    }
   }
 
   getTrackIcon(track: Track) {
@@ -50,10 +52,12 @@ export class DetailsPage implements OnInit {
     else {
       this.activeTrackId = track.Id;
 
+      let self = this;
+
       this.player = new Howl({
         src: "/assets/tracks/klichko/zavtrashniyDen.ogg",
         onend: function() {
-          this.activeTrackId = 0;
+          self.activeTrackId = 0;
         }
       });
 

@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>proposeQuote</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form class="form-group" [formGroup]="postQuotesForm" (ngSubmit)="onSubmit(postQuotesForm.value)">
+
+    <ion-list>
+      <ion-item>
+        <ion-label color="medium" position="floating">Name</ion-label>
+        <ion-input id="name" formControlName="name"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label color="medium" position="floating">Quote</ion-label>
+        <ion-textarea id="quote" formControlName="quote" type="text"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label color="medium" position="floating">Url</ion-label>
+        <ion-input id="url" formControlName="name" type="text"></ion-input>
+      </ion-item>
+
+      <ion-button class="submit" padding-end="16" type="submit">Send</ion-button>
+    </ion-list>
+  </form>
+</ion-content>

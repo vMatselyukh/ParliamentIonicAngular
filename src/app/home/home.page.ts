@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { MenuController } from '@ionic/angular';
 
+
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',

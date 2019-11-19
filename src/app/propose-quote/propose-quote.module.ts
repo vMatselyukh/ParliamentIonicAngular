@@ -6,12 +6,12 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { PropeseQuotePage } from './propese-quote.page';
+import { ProposeQuotePage } from './propose-quote.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: PropeseQuotePage
+    component: ProposeQuotePage
   }
 ];
 
@@ -23,6 +23,6 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     ReactiveFormsModule
   ],
-  declarations: [PropeseQuotePage]
+  declarations: [ProposeQuotePage]
 })
-export class PropeseQuotePageModule {}
+export class ProposeQuotePageModule {}
