@@ -38,4 +38,17 @@ export class ParliamentApi {
                 });
         });
     }
+
+    postProposedQuote(qoute): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this.http.post(this.baseUrl + "postProposedQuotes", qoute).subscribe(
+                (data) => {
+                    console.log(data);
+                    resolve();
+                },
+                (error) => {
+                    reject(error);
+                });
+        });
+    }
 }

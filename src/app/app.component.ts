@@ -34,4 +34,10 @@ export class AppComponent {
     });
     return await modal.present();
   }
+
+  dismiss() {
+    this.modalController.dismiss({
+      'dismissed': true
+    });
+  }
 }
