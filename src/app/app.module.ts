@@ -16,10 +16,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { ProposeQuotePageModule } from './propose-quote/propose-quote.module';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
+import { SocialPopoverComponent } from './social-popover/social-popover.component';
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [ProposeQuotePage],
+  declarations: [AppComponent, SocialPopoverComponent],
+  entryComponents: [ProposeQuotePage, SocialPopoverComponent],
   imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
     ReactiveFormsModule, ProposeQuotePageModule],
   providers: [
