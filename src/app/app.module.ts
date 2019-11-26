@@ -18,20 +18,23 @@ import { ProposeQuotePageModule } from './propose-quote/propose-quote.module';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { SocialPopoverComponent } from './social-popover/social-popover.component';
 
+import { SocialSharing } from '@ionic-native/social-sharing/ngx';
+
 @NgModule({
-  declarations: [AppComponent, SocialPopoverComponent],
-  entryComponents: [ProposeQuotePage, SocialPopoverComponent],
-  imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
-    ReactiveFormsModule, ProposeQuotePageModule],
-  providers: [
-    StatusBar,
-    SplashScreen,
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    DbContext,
-    ParliamentApi,
-    ConfigManager,
-    WebServerLinkProvider
-  ],
-  bootstrap: [AppComponent]
+    declarations: [AppComponent, SocialPopoverComponent],
+    entryComponents: [ProposeQuotePage, SocialPopoverComponent],
+    imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
+        ReactiveFormsModule, ProposeQuotePageModule],
+    providers: [
+        StatusBar,
+        SplashScreen,
+        { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+        DbContext,
+        ParliamentApi,
+        ConfigManager,
+        WebServerLinkProvider,
+        SocialSharing
+    ],
+    bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }

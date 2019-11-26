@@ -1,0 +1,12 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\details",
+    "\\src\\app\\home",
+    "\\src\\app\\social-popover"
+  ],
+  "SelectedNode": "\\src\\app\\social-popover\\social-popover.component.html",
+  "PreviewInSolutionExplorer": false
+}
