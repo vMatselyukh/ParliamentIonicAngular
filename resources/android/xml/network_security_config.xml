@@ -2,5 +2,8 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">localhost</domain>
+		<domain includeSubdomains="true">45.58.142.28</domain>
+		<domain includeSubdomains="true">matseliukh.com</domain>
+		<domain includeSubdomains="true">parliament.matseliukh.com</domain>
     </domain-config>
 </network-security-config>

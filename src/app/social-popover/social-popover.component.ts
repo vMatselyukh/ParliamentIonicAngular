@@ -12,7 +12,7 @@ export class SocialPopoverComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.loadFbSdk();
+        //this.loadFbSdk();
     }
 
     ionViewDidLeave() {
@@ -21,7 +21,7 @@ export class SocialPopoverComponent implements OnInit {
     }
 
     async shareInFbClick() {
-        //await this.socialSharing.shareViaFacebook("Some message here", null, "https://matseliukh.com");
+        await this.socialSharing.shareViaFacebook("Some message here", null, "https://matseliukh.com");
     }
 
     loadFbSdk() {

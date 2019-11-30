@@ -5,8 +5,12 @@
     "\\src\\app",
     "\\src\\app\\details",
     "\\src\\app\\home",
-    "\\src\\app\\social-popover"
+    "\\src\\app\\propose-quote",
+    "\\src\\app\\resolver",
+    "\\src\\app\\services",
+    "\\src\\app\\social-popover",
+    "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\app\\social-popover\\social-popover.component.html",
+  "SelectedNode": "\\src\\providers\\web-server-link-provider.ts",
   "PreviewInSolutionExplorer": false
 }

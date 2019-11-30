@@ -33,7 +33,7 @@ export class HomePage {
                         this.config = config;
                         //this.dbContext.saveConfig(config);
                     })
-                    .catch(e => console.log("getConfigError:" + e));
+                    .catch(e => console.log("getConfigError:" + JSON.stringify(e)));
         //     }
         //     else {
         //         console.log("db config isn't null.");
