@@ -5,20 +5,24 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
-import { SocialPopoverComponent } from './social-popover/social-popover.component';
+import { SocialSharing } from '@ionic-native/social-sharing/ngx';
+import { ShareService } from '@ngx-share/core';
 
 @Component({
     selector: 'app-root',
     templateUrl: 'app.component.html',
     styleUrls: ['app.component.scss']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
+    canShareUsingModileApp: boolean;
+
     constructor(
+        public share: ShareService,
         private platform: Platform,
         private splashScreen: SplashScreen,
         private statusBar: StatusBar,
         private modalController: ModalController,
-        private popoverController: PopoverController
+        private socialSharing: SocialSharing
     ) {
         this.initializeApp();
     }
@@ -27,11 +31,16 @@ export class AppComponent implements OnInit {
         this.platform.ready().then(() => {
             this.statusBar.styleDefault();
             this.splashScreen.hide();
-        });
-    }
 
-    ngOnInit() {
-        
+            this.socialSharing.canShareVia("facebook").then(
+                async () => {
+                    this.canShareUsingModileApp = true;
+                }).catch(
+                    () => {
+                        this.canShareUsingModileApp = false;
+                    }
+                );
+        });
     }
 
     async presentModal() {
@@ -41,18 +50,18 @@ export class AppComponent implements OnInit {
         return await modal.present();
     }
 
-    async presentPopover(ev: any) {
-        const popover = await this.popoverController.create({
-            component: SocialPopoverComponent,
-            event: ev,
-            translucent: true
-        });
-        return await popover.present();
-    }
-
     dismiss() {
         this.modalController.dismiss({
             'dismissed': true
         });
+    }
+
+    async shareInFbClick() {
+        this.socialSharing.canShareVia("facebook").then(
+            async () => {
+                await this.socialSharing.shareViaFacebook("Some message here", null, "https://matseliukh.com");
+            }).catch(
+                (e) => console.log("Error social sharing " + JSON.stringify(e))
+            );
     }
 }
