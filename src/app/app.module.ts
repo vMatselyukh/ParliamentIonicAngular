@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { IonicStorageModule } from '@ionic/storage';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
@@ -12,7 +13,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { DbContext, ParliamentApi, ConfigManager, FileManager, WebServerLinkProvider } from '../providers/providers';
 import { HttpClientModule } from '@angular/common/http';
 
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 import { ProposeQuotePageModule } from './propose-quote/propose-quote.module';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
@@ -23,7 +24,7 @@ import { ShareModule } from '@ngx-share/core';
     declarations: [AppComponent],
     entryComponents: [ProposeQuotePage],
     imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
-        ReactiveFormsModule, ProposeQuotePageModule, ShareModule],
+        FormsModule, ProposeQuotePageModule, ShareModule, IonicStorageModule.forRoot()],
     providers: [
         StatusBar,
         SplashScreen,

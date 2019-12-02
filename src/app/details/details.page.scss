@@ -21,3 +21,15 @@
     width: 2.5rem;
     height: 2.5rem;
 }
+
+ion-item:not(:last-child) {
+    margin-bottom: 1%;
+}
+
+.centered-title {
+    position: absolute;
+    left: 15%;
+    width: 70%;
+    top: calc(50% - 10px);
+    text-align: center;
+}

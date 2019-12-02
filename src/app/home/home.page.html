@@ -1,12 +1,24 @@
 <ion-header>
     <ion-toolbar>
-        <ion-title class="center">Home</ion-title>
-        <ion-menu-button autoHide="false" slot="end" color="medium"></ion-menu-button>
+        <div class="centered-title">
+            <ion-title>Home</ion-title>
+        </div>
+        
+        <ion-buttons slot="start">
+            <ion-menu-button autoHide="false" color="medium"></ion-menu-button>
+        </ion-buttons>
+        
     </ion-toolbar>
 </ion-header>
 
 <ion-content id="HomePageContent" scroll-y="false">
+    
     <img id="MainImage" />
+    <div class="coins-container">
+        <div class="coins-icon"></div>
+        <span class="coins-count">{{this.coinsCount}}</span>
+    </div>
+    
 
     <div id="MainList">
         <div scroll-x="true" class="scroll-area">

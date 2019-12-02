@@ -8,9 +8,8 @@
     "\\src\\app\\propose-quote",
     "\\src\\app\\resolver",
     "\\src\\app\\services",
-    "\\src\\app\\social-popover",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\providers\\web-server-link-provider.ts",
+  "SelectedNode": "\\src\\app\\app.component.ts",
   "PreviewInSolutionExplorer": false
 }

@@ -7,14 +7,15 @@ import { MenuController } from '@ionic/angular';
 
 
 @Component({
-  selector: 'app-home',
-  templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss'],
+    selector: 'app-home',
+    templateUrl: 'home.page.html',
+    styleUrls: ['home.page.scss'],
 })
 export class HomePage {
 
     config: Config;
     configToDownload: Config;
+    coinsCount: number = 0;
 
     constructor(private dbContext: DbContext,
         private parliamentApi: ParliamentApi,
@@ -24,16 +25,17 @@ export class HomePage {
         private menu: MenuController) {
     }
 
-    ionViewDidEnter()
-    {
+    ionViewDidEnter() {
+        this.loadCoinsCount();
+
         //this.dbContext.getConfig().then(dbConfig => {
-          //  if (dbConfig == null) {
-                this.parliamentApi.getConfig()
-                    .then(config => {
-                        this.config = config;
-                        //this.dbContext.saveConfig(config);
-                    })
-                    .catch(e => console.log("getConfigError:" + JSON.stringify(e)));
+        //  if (dbConfig == null) {
+        this.parliamentApi.getConfig()
+            .then(config => {
+                this.config = config;
+                //this.dbContext.saveConfig(config);
+            })
+            .catch(e => console.log("getConfigError:" + JSON.stringify(e)));
         //     }
         //     else {
         //         console.log("db config isn't null.");
@@ -51,8 +53,24 @@ export class HomePage {
         // });
     }
 
-    itemClick(person: Person)
-    {
+    loadCoinsCount() {
+        this.dbContext.getCoinsCount().then((count?: number) => {
+            if (!count) {
+                count = 10;
+
+                this.dbContext.saveCoins(count)
+                    .then(() =>
+                        console.log('save'))
+                    .catch((error) =>
+                        console.log('app component error ' + JSON.stringify(error)));
+            }
+
+            this.coinsCount = count;
+        })
+    }
+
+
+    itemClick(person: Person) {
         console.log('click');
         this.dataService.setData(person.Id, person);
         this.router.navigateByUrl(`/details/${person.Id}`);

@@ -6,72 +6,75 @@ body{
     text-align:center;
 }
 
-#MainImage
-{
+.centered-title {
+    position: absolute;
+    left: calc(50% - 50px);
+    width: 100px;
+    top: calc(50% - 10px);
+    text-align: center;
+}
+
+#MainImage {
     display: block;
-    width:100%;
-    height:40%;
+    width: 100%;
+    height: 40%;
     background: url(/assets/images/main.jpg) no-repeat;
     background-size: cover;
 }
 
-.segment-ios .segment-button ion-icon {
-    float: right;
-    right: 5px;
+.coins-container {
     position: absolute;
-}
+    display: inline-block;
+    top: 5%;
+    right: 12%;
+    background: white;
+    padding: 5px;
+    border-radius: 5px;
+    box-shadow: 1px 1px 1px black;
 
-scroll-content{
-	background-color: rgb(41, 221, 171);
-}
+    .coins-icon {
+        width: 20px;
+        height: 20px;
+        background: url(/assets/images/icons/coin.png) no-repeat;
+        background-size: cover;
+        display: inline-block;
+    }
 
-ion-col{
-	padding: 16px;
-	border: solid 1px #DDD;
-	background-color: rgb(221, 41, 91);
-	color: #FFF;
-	border-radius: 3px;
-	margin: 5px;
-}
-
-#HomePageContent
-{
-    .scroll-content{
-        display:flex;
-        flex-direction:column;
-        overflow-y:hidden;
+    .coins-count {
+        position: relative;
+        top: -3px;
+        font-family: cursive;
+        margin-left: 2px;
+        color: black;
+        text-shadow: 1px 1px 1px grey;
     }
 }
 
-#MainList{
-
+#MainList {
     height: calc(100% - 40%);
 
-   .scroll-area
-    {
-        height:100%;
+    .scroll-area {
+        height: 100%;
         white-space: nowrap;
         overflow-x: auto;
         overflow-y: hidden;
 
-        .scroll-zoom-wrapper
-		{
-			display:flex;
-            height:100%;
-		}
+        .scroll-zoom-wrapper {
+            display: flex;
+            height: 100%;
+        }
 
-        .item{
+        .item {
             display: inline-block;
             height: calc(100% - 2px);
             box-shadow: 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
-            
-            .size-helper
-            {
-                height:70%;
-                width:auto;
+
+            .size-helper {
+                height: 70%;
+                width: auto;
             }
 
-            img{
+            img {
                 max-width: none;
             }
 
@@ -81,18 +84,18 @@ ion-col{
                 background: dark-grey;
                 text-align: center;
 
-                .person-name{
+                .person-name {
                     font-size: 0.8rem;
                     border-bottom: 2px solid black;
                     margin-bottom: 0.3rem;
                     color: black;
                 }
 
-                .person-traks-count{
+                .person-traks-count {
                     font-size: 0.8rem;
                 }
 
-                span{
+                span {
                     display: inline-block;
                     margin-bottom: 0.6rem;
                     color: darkgrey;
@@ -101,8 +104,7 @@ ion-col{
             }
         }
 
-        .item:not(:last-child)
-        {
+        .item:not(:last-child) {
             margin-right: 1%;
         }
     }

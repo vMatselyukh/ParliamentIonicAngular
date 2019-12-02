@@ -1,30 +1,31 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{this.data.Name}}</ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-buttons slot="start">
+            <ion-back-button></ion-back-button>
+        </ion-buttons>
+        <ion-title class="centered-title">{{this.data.Name}}</ion-title>
+    </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <img class="politician-main-image" src="/assets/images/politicians/klichko/klichko_main.png" />
 
-  <div class="politician-info">
-    <span class="politician-post">
-      {{this.data.Post}}
-    </span>
-  </div>
-</ion-content>
+<div>
+    <img class="politician-main-image" src="/assets/images/politicians/klichko/klichko_main.png" />
+
+    <div class="politician-info">
+        <span class="politician-post">
+            {{this.data.Post}}
+        </span>
+    </div>
+</div>
 <ion-content>
-  <ion-list>
-    <ion-item *ngFor="let track of this.data.Tracks" key="track.Id">
-      <img class="politician-small-image" slot="start" src="/assets/images/politicians/klichko/klichko_small.png" />
-      <span>{{track.Name}}</span>
-      <ion-button (tap)="playTrack(track)" (click)="playStopUnlockTrack(track)" 
-        class="track-play-button" shape="round" slot="end" color="medium">
-        <ion-icon [name]="getTrackIcon(track)" size="small"></ion-icon>
-      </ion-button>
-    </ion-item>
-  </ion-list>
+    <ion-list>
+        <ion-item *ngFor="let track of this.data.Tracks" key="track.Id">
+            <img class="politician-small-image" slot="start" src="/assets/images/politicians/klichko/klichko_small.png" />
+            <span>{{track.Name}}</span>
+            <ion-button (tap)="playTrack(track)" (click)="playStopUnlockTrack(track)"
+                        class="track-play-button" shape="round" slot="end" color="medium">
+                <ion-icon [name]="getTrackIcon(track)" size="small"></ion-icon>
+            </ion-button>
+        </ion-item>
+    </ion-list>
 </ion-content>
