@@ -4,12 +4,13 @@
     "\\src",
     "\\src\\app",
     "\\src\\app\\details",
-    "\\src\\app\\home",
     "\\src\\app\\propose-quote",
     "\\src\\app\\resolver",
     "\\src\\app\\services",
+    "\\src\\css",
+    "\\src\\models",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\app\\app.component.ts",
+  "SelectedNode": "\\src\\app\\details\\details.page.ts",
   "PreviewInSolutionExplorer": false
 }

@@ -3,3 +3,4 @@ export * from './config-manager';
 export * from './db-context';
 export * from './parliament-api';
 export * from './file-manager';
+export * from './coins-manager';

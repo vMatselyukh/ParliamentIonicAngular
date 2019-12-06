@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Person, ImageInfo, Config } from '../models/models';
 import { Storage } from '@ionic/storage';
+import * as _ from 'lodash';
 
 @Injectable()
 export class DbContext {
@@ -11,7 +12,7 @@ export class DbContext {
     }
 
     saveConfig(Config: Config): void {
-        this.storage.set("Config", Config);
+        this.storage.set(this.configKey, Config);
     }
 
     getConfig(): Promise<Config> {
@@ -31,4 +32,24 @@ export class DbContext {
     async saveCoins(count: number): Promise<any> {
         return await this.storage.set(this.coinsKey, count);
     };
+
+    async unlockTrack(personId: number, trackId: number) {
+        this.getConfig().then((config) => {
+            for (let i = 0; i < config.Persons.length; i++) {
+                if (config.Persons[i].Id != personId) {
+                    continue;
+                }
+
+                for (let j = 0; j < config.Persons[i].Tracks.length; j++) {
+                    if (config.Persons[i].Tracks[j].Id != trackId) {
+                        continue;
+                    }
+
+                    config.Persons[i].Tracks[j].IsLocked = false;
+                }
+            }
+
+            this.saveConfig(config);
+        });
+    }
 }

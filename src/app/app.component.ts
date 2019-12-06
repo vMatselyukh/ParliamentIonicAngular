@@ -41,7 +41,9 @@ export class AppComponent {
                     () => {
                         this.canShareUsingModileApp = false;
                     }
-                );
+            );
+        }).catch((error) => {
+            console.log("platform ready error " + JSON.stringify(error));
         });
     }
 

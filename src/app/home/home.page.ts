@@ -3,7 +3,7 @@ import { DbContext, ParliamentApi, ConfigManager } from '../../providers/provide
 import { Config, Person } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
-import { MenuController } from '@ionic/angular';
+import { MenuController, Platform } from '@ionic/angular';
 
 
 @Component({
@@ -22,40 +22,43 @@ export class HomePage {
         private configManager: ConfigManager,
         private router: Router,
         private dataService: DataService,
-        private menu: MenuController) {
+        private menu: MenuController,
+        private platform: Platform) {
     }
 
     ionViewDidEnter() {
-        this.loadCoinsCount();
+        this.platform.ready().then(() => {
+            this.loadCoinsCount();
 
-        //this.dbContext.getConfig().then(dbConfig => {
-        //  if (dbConfig == null) {
-        this.parliamentApi.getConfig()
-            .then(config => {
-                this.config = config;
-                //this.dbContext.saveConfig(config);
-            })
-            .catch(e => console.log("getConfigError:" + JSON.stringify(e)));
-        //     }
-        //     else {
-        //         console.log("db config isn't null.");
-        //         this.config = dbConfig;
+            this.dbContext.getConfig().then(dbConfig => {
+                if (dbConfig == null) {
+                    this.parliamentApi.getConfig()
+                        .then(config => {
+                            this.config = config;
+                            this.dbContext.saveConfig(config);
+                        })
+                        .catch(e => console.log("getConfigError:" + JSON.stringify(e)));
+                }
+                else {
+                    console.log("db config isn't null.");
+                    this.config = dbConfig;
 
-        //         this.parliamentApi.getConfig()
-        //             .then(config => {
-        //                 this.configToDownload = this.configManager.getConfigToDownload(this.config, config);
-        //                 this.fileManager.downloadFilesByConfig(this.configToDownload);
+                    //this.parliamentApi.getConfig()
+                    //    .then(config => {
+                    //        this.configToDownload = this.configManager.getConfigToDownload(this.config, config);
+                    //        this.fileManager.downloadFilesByConfig(this.configToDownload);
 
-        //                 console.log("Config to download:" + this.configToDownload);
-        //             })
-        //             .catch(e => console.log("Api get config error:" + e));
-        //     }
-        // });
+                    //        console.log("Config to download:" + this.configToDownload);
+                    //    })
+                    //    .catch(e => console.log("Api get config error:" + e));
+                }
+            }); 
+        });
     }
 
     loadCoinsCount() {
         this.dbContext.getCoinsCount().then((count?: number) => {
-            if (!count) {
+            if (count == null) {
                 count = 10;
 
                 this.dbContext.saveCoins(count)
