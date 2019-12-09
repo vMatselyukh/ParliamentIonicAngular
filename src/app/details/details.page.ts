@@ -25,20 +25,15 @@ export class DetailsPage implements OnInit {
         private dbContext: DbContext,
         private admob: AdMobFree,
         private platform: Platform) {
-    }
-
-    ngOnInit() {
-        if (this.route.snapshot.data['special']) {
-            this.person = this.route.snapshot.data['special'];
-        }
 
         this.platform.ready().then(() => {
             if (this.platform.is('cordova')) {
 
                 console.log("init add");
                 this.admob.rewardVideo.config({
-                    id: 'ca-app-pub-3291616985383560/7058759376',
-                    isTesting: false,
+                    //id: 'ca-app-pub-3291616985383560/7058759376',
+                    id: 'ca-app-pub-3940256099942544/5224354917',
+                    isTesting: true,
                     autoShow: false
                 });
 
@@ -50,12 +45,34 @@ export class DetailsPage implements OnInit {
                     console.log("add more coins here");
                 });
 
-                document.addEventListener('admob.reward_video.events.LOAD', function (data) { console.log('admob.reward_video.events.LOAD', data); });
-                document.addEventListener('admob.reward_video.events.LOAD_FAIL', function (data) { console.log('admob.reward_video.events.LOAD_FAIL', data); });
-                document.addEventListener('admob.reward_video.events.OPEN', function (data) { console.log('admob.banner.reward_video.OPEN', data); });
-                document.addEventListener('admob.reward_video.events.CLOSE', function (data) { console.log('admob.reward_video.events.CLOSE', data); });
+
+                let self = this;
+                
+                document.addEventListener('admob.rewardvideo.events.LOAD', function (data) { console.log('admob.reward_video.events.LOAD', data); });
+                document.addEventListener('admob.rewardvideo.events.LOAD_FAIL', function (data) { console.log('admob.reward_video.events.LOAD_FAIL', data); });
+                document.addEventListener('admob.rewardvideo.events.OPEN', function (data) { console.log('admob.banner.reward_video.OPEN', data); });
+                document.addEventListener('admob.rewardvideo.events.CLOSE', function (data) {
+                    self.admob.rewardVideo.prepare().then(() => {
+                        console.log("prepared");
+                    });
+                    console.log('admob.banner.reward_video.CLOSE', data);
+                });
+
+
+                document.addEventListener('admob.rewardvideo.events.EXIT_APP', function (data) { console.log('admob.reward_video.events.EXIT_APP', data); });
+                document.addEventListener('admob.rewardvideo.events.START', function (data) { console.log('admob.reward_video.events.START', data); });
+                document.addEventListener('admob.rewardvideo.events.REWARD', function (data) {
+                    console.log('admob.banner.reward_video.REWARD', data);
+                });
+
             }
         });
+    }
+
+    ngOnInit() {
+        if (this.route.snapshot.data['special']) {
+            this.person = this.route.snapshot.data['special'];
+        }
     }
 
     ionViewDidLeave() {
@@ -77,13 +94,21 @@ export class DetailsPage implements OnInit {
                 this.dbContext.getCoinsCount().then(count => {
                     if (count == 0) {
 
+                        //this.admob.rewardVideo.prepare().then(() => {
+                        //    console.log("prepared");
+                        //});
+
                         this.admob.rewardVideo.isReady().then(() => {
                             this.admob.rewardVideo.show().then(() => {
                                 console.log("add should be shown");
+
+                                
                             }).catch(error => {
+                                console.log(error);
                                 console.log("add show error happened " + JSON.stringify(error));
                             });
                         }).catch((error) => {
+                            console.log(error);
                             console.log("ready error " + JSON.stringify(error));
                         });
                     }

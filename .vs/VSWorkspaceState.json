@@ -1,15 +1,10 @@
 {
   "ExpandedNodes": [
     "",
+    "\\keys",
     "\\src",
     "\\src\\app",
-    "\\src\\app\\details",
-    "\\src\\app\\propose-quote",
-    "\\src\\app\\resolver",
-    "\\src\\app\\services",
-    "\\src\\css",
-    "\\src\\models",
-    "\\src\\providers"
+    "\\src\\app\\details"
   ],
   "SelectedNode": "\\src\\app\\details\\details.page.ts",
   "PreviewInSolutionExplorer": false

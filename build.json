@@ -1,0 +1,11 @@
+{
+  "android": {
+    "release": {
+      "keystore": "keys/parliament-key.keystore",
+      "storePassword": "vonk11",
+      "alias": "alias_name",
+      "password": "vonk11",
+      "keystoreType": "JKS"
+    }
+  }
+}
