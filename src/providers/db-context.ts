@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 export class DbContext {
     readonly configKey: string = "Config";
     readonly coinsKey: string = "Coins";
+    readonly coinsCountForWatchingAdv: number = 1;
 
     constructor(public storage: Storage) {
     }
@@ -32,6 +33,13 @@ export class DbContext {
     async saveCoins(count: number): Promise<any> {
         return await this.storage.set(this.coinsKey, count);
     };
+
+    async earnCoinsByWatchingAdv(): Promise<any> {
+        let self = this;
+        return await this.getCoinsCount().then(count => {
+            self.storage.set(self.coinsKey, count + self.coinsCountForWatchingAdv);
+        })
+    }
 
     async unlockTrack(personId: number, trackId: number) {
         this.getConfig().then((config) => {

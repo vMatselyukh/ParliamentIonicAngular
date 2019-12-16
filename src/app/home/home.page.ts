@@ -3,7 +3,7 @@ import { DbContext, ParliamentApi, ConfigManager } from '../../providers/provide
 import { Config, Person } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
-import { MenuController, Platform } from '@ionic/angular';
+import { MenuController, Platform, Events } from '@ionic/angular';
 
 
 @Component({
@@ -19,14 +19,20 @@ export class HomePage {
 
     constructor(private dbContext: DbContext,
         private parliamentApi: ParliamentApi,
-        private configManager: ConfigManager,
         private router: Router,
         private dataService: DataService,
-        private menu: MenuController,
-        private platform: Platform) {
+        private platform: Platform,
+        private events: Events) {
     }
 
     ionViewDidEnter() {
+
+        let seft = this;
+
+        this.events.subscribe("reward:received", () => {
+            seft.loadCoinsCount();
+        });
+
         this.platform.ready().then(() => {
             this.loadCoinsCount();
 
@@ -57,6 +63,8 @@ export class HomePage {
     }
 
     loadCoinsCount() {
+
+        //this.dbContext.saveCoins(0);
         this.dbContext.getCoinsCount().then((count?: number) => {
             if (count == null) {
                 count = 10;
@@ -69,7 +77,7 @@ export class HomePage {
             }
 
             this.coinsCount = count;
-        })
+        });
     }
 
 

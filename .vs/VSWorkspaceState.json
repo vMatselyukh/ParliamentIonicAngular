@@ -4,8 +4,11 @@
     "\\keys",
     "\\src",
     "\\src\\app",
-    "\\src\\app\\details"
+    "\\src\\app\\details",
+    "\\src\\app\\home",
+    "\\src\\app\\propose-quote",
+    "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\app\\details\\details.page.ts",
+  "SelectedNode": "\\src\\providers\\adv-provider.ts",
   "PreviewInSolutionExplorer": false
 }

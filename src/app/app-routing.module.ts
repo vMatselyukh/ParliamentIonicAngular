@@ -12,7 +12,8 @@ const routes: Routes = [
     },
     loadChildren: () => import('./details/details.module').then( m => m.DetailsPageModule)
   },
-  { path: 'propose-quote', loadChildren: () => import('./propose-quote/propose-quote.module').then(m => m.ProposeQuotePageModule) }
+  { path: 'propose-quote', loadChildren: () => import('./propose-quote/propose-quote.module').then(m => m.ProposeQuotePageModule) },
+  { path: 'language', loadChildren: './language/language.module#LanguagePageModule' }
 ];
 
 @NgModule({

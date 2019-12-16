@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 
-import { Platform, ModalController } from '@ionic/angular';
+import { Platform, ModalController, Events } from '@ionic/angular';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
@@ -8,6 +8,8 @@ import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ShareService } from '@ngx-share/core';
 import { ToastController } from '@ionic/angular';
+
+import { AdvProvider, AlertManager } from '../providers/providers';
 
 @Component({
     selector: 'app-root',
@@ -24,7 +26,10 @@ export class AppComponent {
         private statusBar: StatusBar,
         private modalController: ModalController,
         private socialSharing: SocialSharing,
-        private toast: ToastController
+        private toast: ToastController,
+        private advProvider: AdvProvider,
+        private alertManager: AlertManager,
+        private events: Events
     ) {
         this.initializeApp();
     }
@@ -34,11 +39,13 @@ export class AppComponent {
             this.statusBar.styleDefault();
             this.splashScreen.hide();
 
-            this.socialSharing.canShareVia("facebook").then(
+            this.socialSharing.canShareVia("com.apple.social.facebook").then(
                 async () => {
                     this.canShareUsingModileApp = true;
+                    console.log("can share via mobile");
                 }).catch(
                     () => {
+                        console.log("can't share via mobile");
                         this.canShareUsingModileApp = false;
                     }
             );
@@ -64,11 +71,11 @@ export class AppComponent {
     }
 
     async shareInFbClick() {
-        this.socialSharing.canShareVia("facebook").then(
+        this.socialSharing.canShareVia("com.apple.social.facebook").then(
             async () => {
                 await this.socialSharing.shareViaFacebook("Some message here", null, "https://matseliukh.com");
             }).catch(
-                (e) => console.log("Error social sharing " + JSON.stringify(e))
+                (e) => console.log("Error social sharing ", e)
             );
     }
 
@@ -79,5 +86,17 @@ export class AppComponent {
             color: "primary"
         });
         toast.present();
+    }
+
+    showGetCoinsAlert() {
+        let self = this;
+
+        this.advProvider.loadAdv(() => {
+            this.events.publish("reward:received");
+        });
+
+        this.alertManager.showGetCoinsAlert(() => {
+            self.advProvider.showRewardedVideo();
+        });
     }
 }

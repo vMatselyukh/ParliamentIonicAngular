@@ -10,7 +10,11 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
-import { DbContext, ParliamentApi, ConfigManager, CoinsManager, WebServerLinkProvider } from '../providers/providers';
+import {
+    DbContext, ParliamentApi, ConfigManager,
+    WebServerLinkProvider, AlertManager,
+    AdvProvider
+} from '../providers/providers';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
 import { HttpClientModule } from '@angular/common/http';
 
@@ -35,9 +39,9 @@ import { ShareModule } from '@ngx-share/core';
         ConfigManager,
         WebServerLinkProvider,
         SocialSharing,
-        CoinsManager
-        ,
-        AdMobFree
+        AdMobFree,
+        AlertManager,
+        AdvProvider
     ],
     bootstrap: [AppComponent]
 })
