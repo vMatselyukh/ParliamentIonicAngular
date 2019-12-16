@@ -5,11 +5,12 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
+import { LanguagePage } from './language/language.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ShareService } from '@ngx-share/core';
 import { ToastController } from '@ionic/angular';
 
-import { AdvProvider, AlertManager } from '../providers/providers';
+import { AdvProvider, AlertManager, DbContext } from '../providers/providers';
 
 @Component({
     selector: 'app-root',
@@ -29,7 +30,8 @@ export class AppComponent {
         private toast: ToastController,
         private advProvider: AdvProvider,
         private alertManager: AlertManager,
-        private events: Events
+        private events: Events,
+        private dbContext: DbContext
     ) {
         this.initializeApp();
     }
@@ -38,6 +40,12 @@ export class AppComponent {
         this.platform.ready().then(() => {
             this.statusBar.styleDefault();
             this.splashScreen.hide();
+
+            this.dbContext.getLanguage().then(lang => {
+                if (lang === null) {
+                    this.presentChooseLanguageModal();
+                }
+            });
 
             this.socialSharing.canShareVia("com.apple.social.facebook").then(
                 async () => {
@@ -54,7 +62,7 @@ export class AppComponent {
         });
     }
 
-    async presentModal() {
+    async presentProposeQuotesModal() {
         const modal = await this.modalController.create({
             component: ProposeQuotePage
         });
@@ -64,6 +72,22 @@ export class AppComponent {
                 this.presentThankYouToast();
             }
 
+            console.log(data);
+        });
+
+        return await modal.present();
+    }
+
+    async presentChooseLanguageModal() {
+        const modal = await this.modalController.create({
+            component: LanguagePage
+        });
+
+        modal.onDidDismiss().then(data => {
+            if (data.data.language) {
+                this.dbContext.setLanguage(data.data.language);
+            }
+            //reload ui translations
             console.log(data);
         });
 

@@ -8,9 +8,9 @@
         </ion-header>
         <ion-content>
             <ion-list>
-                <ion-item (click)="presentModal();"><ion-icon name="quote"></ion-icon>Propose quotes</ion-item>
+                <ion-item (click)="presentProposeQuotesModal();"><ion-icon name="quote"></ion-icon>Propose quotes</ion-item>
                 <ion-item (click)="showGetCoinsAlert();"><ion-icon name="radio-button-off"></ion-icon>Get coins</ion-item>
-                <ion-item><ion-icon name="text"></ion-icon>Language</ion-item>
+                <ion-item (click)="presentChooseLanguageModal();"><ion-icon name="text"></ion-icon>Language</ion-item>
                 <ion-item><ion-icon name="star-half"></ion-icon>Put mark</ion-item>
                 <ion-item *ngIf="canShareUsingModileApp" (click)="shareInFbClick();"><ion-icon name="logo-facebook"></ion-icon>Share</ion-item>
                 <ion-item *ngIf="!canShareUsingModileApp" shareButton="facebook" url="https://matseliukh.com/">

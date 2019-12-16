@@ -21,15 +21,17 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { ProposeQuotePageModule } from './propose-quote/propose-quote.module';
+import { LanguagePage } from './language/language.page';
+import { LanguagePageModule } from './language/language.module';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ShareModule } from '@ngx-share/core';
 
 @NgModule({
     declarations: [AppComponent],
-    entryComponents: [ProposeQuotePage],
+    entryComponents: [ProposeQuotePage, LanguagePage],
     imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
-        FormsModule, ProposeQuotePageModule, ShareModule, IonicStorageModule.forRoot()],
+        FormsModule, ProposeQuotePageModule, LanguagePageModule, ShareModule, IonicStorageModule.forRoot()],
     providers: [
         StatusBar,
         SplashScreen,

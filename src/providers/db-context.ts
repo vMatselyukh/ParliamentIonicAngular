@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 export class DbContext {
     readonly configKey: string = "Config";
     readonly coinsKey: string = "Coins";
+    readonly languageKey: string = "Language";
     readonly coinsCountForWatchingAdv: number = 1;
 
     constructor(public storage: Storage) {
@@ -17,13 +18,7 @@ export class DbContext {
     }
 
     getConfig(): Promise<Config> {
-        return new Promise((resolve, reject) => {
-            this.storage.get(this.configKey).then((data: Config) => {
-                resolve(data);
-            }).catch(e => {
-                reject(e);
-            });
-        });
+        return this.storage.get(this.configKey);
     }
 
     async getCoinsCount(): Promise<number> {
@@ -59,5 +54,13 @@ export class DbContext {
 
             this.saveConfig(config);
         });
+    }
+
+    async getLanguage() {
+        return await this.storage.get(this.languageKey);
+    }
+
+    setLanguage(language) {
+        this.storage.set(this.languageKey, language);
     }
 }

@@ -1,9 +1,21 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>language</ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-title>Language</ion-title>
+
+        <ion-button fill="clear" slot="end" (click)="closemodal()">
+            Close
+        </ion-button>
+    </ion-toolbar>
 </ion-header>
 
 <ion-content>
+    <div>
+        <div class="language-item ukrainian" (click)="choseLanguage('ua')">
+            <img width="300" height="300" src="/assets/images/icons/ukraine.svg" />
+        </div>
 
+        <div class="language-item russian" (click)="choseLanguage('ru')">
+            <img width="300" height="300" src="/assets/images/icons/russia.svg" />
+        </div>
+    </div>
 </ion-content>

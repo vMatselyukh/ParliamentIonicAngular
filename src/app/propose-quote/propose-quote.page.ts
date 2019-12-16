@@ -34,7 +34,5 @@ export class ProposeQuotePage implements OnInit {
         this.modalController.dismiss({
             'dismissed': true
         });
-
-        //
     }
 }
