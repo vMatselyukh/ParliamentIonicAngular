@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { DbContext, ParliamentApi, ConfigManager } from '../../providers/providers';
+import { DbContext, ParliamentApi, AlertManager, LoadingManager } from '../../providers/providers';
 import { Config, Person } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
-import { MenuController, Platform, Events } from '@ionic/angular';
+import { Platform, Events } from '@ionic/angular';
 
 
 @Component({
@@ -22,7 +22,9 @@ export class HomePage {
         private router: Router,
         private dataService: DataService,
         private platform: Platform,
-        private events: Events) {
+        private events: Events,
+        private alertManager: AlertManager,
+        private loadingManager: LoadingManager) {
     }
 
     ionViewDidEnter() {
@@ -35,31 +37,64 @@ export class HomePage {
 
         this.platform.ready().then(() => {
             this.loadCoinsCount();
-
-            this.dbContext.getConfig().then(dbConfig => {
-                if (dbConfig == null) {
-                    this.parliamentApi.getConfig()
-                        .then(config => {
-                            this.config = config;
-                            this.dbContext.saveConfig(config);
-                        })
-                        .catch(e => console.log("getConfigError:" + JSON.stringify(e)));
-                }
-                else {
-                    console.log("db config isn't null.");
-                    this.config = dbConfig;
-
-                    //this.parliamentApi.getConfig()
-                    //    .then(config => {
-                    //        this.configToDownload = this.configManager.getConfigToDownload(this.config, config);
-                    //        this.fileManager.downloadFilesByConfig(this.configToDownload);
-
-                    //        console.log("Config to download:" + this.configToDownload);
-                    //    })
-                    //    .catch(e => console.log("Api get config error:" + e));
-                }
-            }); 
+            this.loadConfig();
         });
+    }
+
+    async loadConfig() {
+        await this.loadingManager.showConfigLoadingMessage();
+
+        this.dbContext.getConfig().then(dbConfig => {
+            if (dbConfig == null) {
+                this.loadConfigFromServer(() => {
+                    this.loadingManager.closeLoading();
+                });
+            }
+            else {
+                console.log("db config isn't null.");
+                this.config = dbConfig;
+                this.loadingManager.closeLoading();
+
+                this.parliamentApi.getConfigHash()
+                    .then(hash => {
+                        if (hash != this.config.Md5Hash) {
+                            this.alertManager.showUpdateConfigAlert(
+                                () => {
+                                    //this.configToDownload = this.configManager.getConfigToDownload(this.config, config);
+                                    //this.fileManager.downloadFilesByConfig(this.configToDownload);
+
+                                    //console.log("Config to download:" + this.configToDownload);
+                                },
+                                () => {
+                                //later
+                            })
+                        }
+                    })
+                    .catch(e => console.log("Api get config error:" + e));
+            }
+        }).catch(e => {
+            console.log("error getting config", e);
+            this.loadingManager.closeLoading();
+        });
+    }
+
+    loadConfigFromServer(loadingFinishCallback: any) {
+        this.parliamentApi.getConfig()
+            .then(config => {
+                this.config = config;
+                this.dbContext.saveConfig(config);
+                loadingFinishCallback();
+            })
+            .catch(e => {
+                this.alertManager.showNoInternetAlert(() => {
+                    this.loadConfig();
+                },
+                () => {
+                    navigator['app'].exitApp();
+                });
+                console.log("getConfigError", e);
+                loadingFinishCallback();
+            });
     }
 
     loadCoinsCount() {

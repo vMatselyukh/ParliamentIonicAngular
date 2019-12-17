@@ -15,7 +15,7 @@ export class ParliamentApi {
 
     getConfig() : Promise<Config> {
         return new Promise((resolve, reject) => {
-            this.http.get(this.baseUrl + "getConfig")
+            this.http.get(this.baseUrl + "getconfig")
             .subscribe(
                 (data) => {
                     resolve(data as Config);
@@ -23,6 +23,19 @@ export class ParliamentApi {
                 (error) => {
                     reject(error);
                 });
+        });
+    }
+
+    getConfigHash(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.http.get(this.baseUrl + "getconfighash")
+                .subscribe(
+                    (data) => {
+                        resolve(data as string);
+                    },
+                    (error) => {
+                        reject(error);
+                    });
         });
     }
 

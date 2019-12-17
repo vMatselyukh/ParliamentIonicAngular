@@ -1,14 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\keys",
     "\\src",
     "\\src\\app",
-    "\\src\\app\\details",
     "\\src\\app\\home",
+    "\\src\\app\\language",
     "\\src\\app\\propose-quote",
+    "\\src\\assets",
+    "\\src\\assets\\images",
+    "\\src\\assets\\images\\icons",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\providers\\adv-provider.ts",
+  "SelectedNode": "\\src\\app\\app.component.ts",
   "PreviewInSolutionExplorer": false
 }

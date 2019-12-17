@@ -123,4 +123,14 @@ export class AppComponent {
             self.advProvider.showRewardedVideo();
         });
     }
+
+    showExitButton() {
+        return this.platform.is("android");
+    }
+
+    exitApp() {
+        this.alertManager.showExitConfirmationAlert(() => {
+            navigator['app'].exitApp();
+        });
+    }
 }

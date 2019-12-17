@@ -69,6 +69,66 @@ export class AlertManager {
         await alert.present();
     }
 
+    async showExitConfirmationAlert(confirmCallback: any) {
+        const alert = await this.alertController.create({
+            header: 'Увага',
+            subHeader: '',
+            message: "Ви впевнені що хочете вийти з додатку?",
+            buttons: [
+                {
+                    text: 'Ні',
+                    role: 'cancel',
+                    cssClass: 'secondary'
+                }, {
+                    text: 'Так',
+                    handler: confirmCallback
+                }
+            ]
+        });
+
+        await alert.present();
+    }
+
+    async showNoInternetAlert(confirmCallback: any, exitAppCallback: any) {
+        const alert = await this.alertController.create({
+            header: 'Увага',
+            subHeader: '',
+            message: "Для завантаження контенту потрібно підключення до інтернету. Підключіться до інтернету і натисніть Ок",
+            buttons: [
+                {
+                    text: 'Вихід з додатку',
+                    handler: exitAppCallback
+                },
+                {
+                    text: 'Ок',
+                    handler: confirmCallback
+               }
+            ]
+        });
+
+        await alert.present();
+    }
+
+    async showUpdateConfigAlert(confirmCallback: any, laterCallback: any) {
+        const alert = await this.alertController.create({
+            header: 'Увага',
+            subHeader: '',
+            message: "Новий контент доступний для завантаження. Бажаєте розпочати завантаження?",
+            buttons: [
+                {
+                    text: 'Не зараз',
+                    handler: laterCallback
+                },
+                {
+                    text: 'Так',
+                    handler: confirmCallback
+                }
+            ]
+        });
+
+        await alert.present();
+    }
+
     closeAlerts() {
         this.alertController.dismiss();
     }

@@ -16,7 +16,7 @@
                 <ion-item *ngIf="!canShareUsingModileApp" shareButton="facebook" url="https://matseliukh.com/">
                     <ion-icon name="logo-facebook"></ion-icon>Share
                 </ion-item>
-                <ion-item><ion-icon name="exit"></ion-icon>Exit</ion-item>
+                <ion-item *ngIf="showExitButton" (click)="exitApp();"><ion-icon name="exit"></ion-icon>Exit</ion-item>
             </ion-list>
         </ion-content>
     </ion-menu>

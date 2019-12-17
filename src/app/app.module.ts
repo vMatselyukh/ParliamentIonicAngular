@@ -13,7 +13,7 @@ import { AppRoutingModule } from './app-routing.module';
 import {
     DbContext, ParliamentApi, ConfigManager,
     WebServerLinkProvider, AlertManager,
-    AdvProvider
+    AdvProvider, LoadingManager
 } from '../providers/providers';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
 import { HttpClientModule } from '@angular/common/http';
@@ -31,7 +31,9 @@ import { ShareModule } from '@ngx-share/core';
     declarations: [AppComponent],
     entryComponents: [ProposeQuotePage, LanguagePage],
     imports: [BrowserModule, IonicModule.forRoot(), AppRoutingModule, HttpClientModule,
-        FormsModule, ProposeQuotePageModule, LanguagePageModule, ShareModule, IonicStorageModule.forRoot()],
+        FormsModule, ProposeQuotePageModule, LanguagePageModule, ShareModule, IonicStorageModule.forRoot({
+            name: '__parliament_db'
+        })],
     providers: [
         StatusBar,
         SplashScreen,
@@ -43,7 +45,8 @@ import { ShareModule } from '@ngx-share/core';
         SocialSharing,
         AdMobFree,
         AlertManager,
-        AdvProvider
+        AdvProvider,
+        LoadingManager
     ],
     bootstrap: [AppComponent]
 })

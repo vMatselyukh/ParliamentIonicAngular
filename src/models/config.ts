@@ -2,5 +2,5 @@
 
 export class Config {
     Persons: Person[];
-    CoinsCount: number;
+    Md5Hash: string;
 }
