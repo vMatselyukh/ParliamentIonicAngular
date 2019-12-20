@@ -4,18 +4,18 @@ import { LoadingController } from '@ionic/angular';
 
 @Injectable()
 export class LoadingManager {
-
     constructor(private loadingController: LoadingController) {
     }
 
     async showConfigLoadingMessage() {
-        const loading = await this.loadingController.create({
+        let loading = await this.loadingController.create({
             message: 'Завантажується конфігурація. Будь ласка зачекайте.',
         });
-        await loading.present();
+
+        loading.present();
     }
 
     closeLoading() {
-        this.loadingController.dismiss();
+        this.loadingController.dismiss()  
     }
 }

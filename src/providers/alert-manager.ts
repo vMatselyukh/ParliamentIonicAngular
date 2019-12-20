@@ -129,6 +129,27 @@ export class AlertManager {
         await alert.present();
     }
 
+    async showNoConfigAlert(confirmCallback: any, exitAppCallback: any) {
+        const alert = await this.alertController.create({
+            header: 'Увага',
+            subHeader: '',
+            message: "При першому запуску додатку потрібно завантажити файл конфігурації та контент. Підключіться до мережі інтернет та натисність 'Ок' щоб розпочати завантаження файлів.",
+            buttons: [
+                {
+                    text: 'Вихід з додатку',
+                    handler: exitAppCallback
+                },
+                {
+                    text: 'Ок',
+                    handler: confirmCallback
+                }
+            ],
+            backdropDismiss: false
+        });
+
+        await alert.present();
+    }
+
     closeAlerts() {
         this.alertController.dismiss();
     }

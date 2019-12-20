@@ -8,17 +8,34 @@ export class DbContext {
     readonly configKey: string = "Config";
     readonly coinsKey: string = "Coins";
     readonly languageKey: string = "Language";
+    readonly nextTimeForUpdatesKey: string = "TimeToDownloadUpdates";
     readonly coinsCountForWatchingAdv: number = 1;
+    //readonly postponeHours: number = 24;
+    readonly postponeSeconds: number = 30;
+
+    cachedConfig: Config = null;
 
     constructor(public storage: Storage) {
     }
 
-    saveConfig(Config: Config): void {
-        this.storage.set(this.configKey, Config);
+    saveConfig(config: Config): void {
+        this.cachedConfig = config
+        this.storage.set(this.configKey, config);
     }
 
     getConfig(): Promise<Config> {
-        return this.storage.get(this.configKey);
+        if (this.cachedConfig) {
+            return Promise.resolve(this.cachedConfig);
+        }
+
+        return new Promise((resolve, reject) => {
+            this.storage.get(this.configKey)
+                .then(config => {
+                    this.cachedConfig = config;
+                    resolve(config);
+                })
+                .catch(error => reject(error));
+        })
     }
 
     async getCoinsCount(): Promise<number> {
@@ -62,5 +79,22 @@ export class DbContext {
 
     setLanguage(language) {
         this.storage.set(this.languageKey, language);
+    }
+
+    async getNextTimeToUpdate(): Promise<Date> {
+        let nextTimeString = await this.storage.get(this.nextTimeForUpdatesKey);
+        if (nextTimeString == null) {
+            return null;
+        }
+
+        return new Date(nextTimeString);
+    }
+
+    async postponeUpdateTime(currentDateTime: Date) {
+        //let newDate = currentDateTime.setHours(currentDateTime.getHours() + this.postponeHours);
+        this.storage.remove(this.nextTimeForUpdatesKey);
+
+        let newDate = currentDateTime.setSeconds(currentDateTime.getSeconds() + this.postponeSeconds);
+        await this.storage.set(this.nextTimeForUpdatesKey, newDate);
     }
 }

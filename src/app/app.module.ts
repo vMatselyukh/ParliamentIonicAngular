@@ -13,9 +13,12 @@ import { AppRoutingModule } from './app-routing.module';
 import {
     DbContext, ParliamentApi, ConfigManager,
     WebServerLinkProvider, AlertManager,
-    AdvProvider, LoadingManager
+    AdvProvider, LoadingManager,
+    FileManager
 } from '../providers/providers';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
+import { Network } from '@ionic-native/network/ngx';
+import { File } from '@ionic-native/file/ngx';
 import { HttpClientModule } from '@angular/common/http';
 
 import { FormsModule } from '@angular/forms';
@@ -44,9 +47,12 @@ import { ShareModule } from '@ngx-share/core';
         WebServerLinkProvider,
         SocialSharing,
         AdMobFree,
+        Network,
         AlertManager,
         AdvProvider,
-        LoadingManager
+        LoadingManager,
+        File,
+        FileManager
     ],
     bootstrap: [AppComponent]
 })

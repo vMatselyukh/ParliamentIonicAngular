@@ -1,9 +1,14 @@
 import { Component } from '@angular/core';
-import { DbContext, ParliamentApi, AlertManager, LoadingManager } from '../../providers/providers';
+import {
+    DbContext, ParliamentApi, AlertManager,
+    LoadingManager, ConfigManager,
+    FileManager
+} from '../../providers/providers';
 import { Config, Person } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
+import { Network } from '@ionic-native/network/ngx';
 
 
 @Component({
@@ -24,7 +29,10 @@ export class HomePage {
         private platform: Platform,
         private events: Events,
         private alertManager: AlertManager,
-        private loadingManager: LoadingManager) {
+        private loadingManager: LoadingManager,
+        private network: Network,
+        private configManager: ConfigManager,
+        private fileManager: FileManager) {
     }
 
     ionViewDidEnter() {
@@ -38,47 +46,86 @@ export class HomePage {
         this.platform.ready().then(() => {
             this.loadCoinsCount();
             this.loadConfig();
-        });
-    }
+    });
+}
 
-    async loadConfig() {
-        await this.loadingManager.showConfigLoadingMessage();
+async loadConfig() {
+    this.dbContext.getConfig().then(async dbConfig => {
+        if (dbConfig == null) {
+            this.alertManager.showNoConfigAlert(
+                async _ => {
+                    await this.loadingManager.showConfigLoadingMessage();
+                    this.loadConfigFromServer(() => {
+                        this.loadingManager.closeLoading();
+                    });
+                },
+                () => {
+                    navigator['app'].exitApp();
+                })
 
-        this.dbContext.getConfig().then(dbConfig => {
-            if (dbConfig == null) {
-                this.loadConfigFromServer(() => {
-                    this.loadingManager.closeLoading();
-                });
+        }
+        else {
+            console.log("db config isn't null.");
+            this.config = dbConfig;
+            //this.loadingManager.closeLoading();
+
+            if (this.network.type != 'none') {
+                // let's don't annouy the user. Give possibility to update later.
+                let nextTime = await this.dbContext.getNextTimeToUpdate();
+                let currentTime = await this.parliamentApi.getCurrentDateTime();
+
+                if (nextTime == null || nextTime < currentTime) {
+                    this.parliamentApi.getConfigHash()
+                        .then(hash => {
+                            if (hash != this.config.Md5Hash) {
+                                this.alertManager.showUpdateConfigAlert(
+                                    async () => {
+                                        //update process started
+                                        let serverConfig = await this.parliamentApi.getConfig();
+
+                                        let itemsToDownload = this.configManager.getResourcesToDownload(this.config, serverConfig);
+                                        let itemsToDelete = this.configManager.getResourcesToDelete(this.config, serverConfig);
+
+                                        let allItemsInLocalConfig = this.configManager.getAllResources(this.config);
+
+                                        console.log("all items", allItemsInLocalConfig);
+
+                                        let missingItems = await this.fileManager.getFilesToBeDownloaded(allItemsInLocalConfig);
+
+                                        console.log("missing items", missingItems);
+                                        console.log("to download", itemsToDownload);
+                                        console.log("to delete", itemsToDelete);
+                                        //this.fileManager.downloadFilesByConfig(this.configToDownload);
+
+                                        //console.log("Config to download:" + this.configToDownload);
+                                    },
+                                    () => {
+                                        this.dbContext.postponeUpdateTime(new Date(currentTime));
+                                    })
+                            }
+                        })
+                        .catch(e => console.log("Api get config error:" + e));
+                }
             }
-            else {
-                console.log("db config isn't null.");
-                this.config = dbConfig;
-                this.loadingManager.closeLoading();
+        }
+    }).catch(e => {
+        console.log("error getting config", e);
+        this.loadingManager.closeLoading();
+    });
+}
 
-                this.parliamentApi.getConfigHash()
-                    .then(hash => {
-                        if (hash != this.config.Md5Hash) {
-                            this.alertManager.showUpdateConfigAlert(
-                                () => {
-                                    //this.configToDownload = this.configManager.getConfigToDownload(this.config, config);
-                                    //this.fileManager.downloadFilesByConfig(this.configToDownload);
-
-                                    //console.log("Config to download:" + this.configToDownload);
-                                },
-                                () => {
-                                //later
-                            })
-                        }
-                    })
-                    .catch(e => console.log("Api get config error:" + e));
-            }
-        }).catch(e => {
-            console.log("error getting config", e);
-            this.loadingManager.closeLoading();
-        });
+loadConfigFromServer(loadingFinishCallback: any) {
+    if (this.network.type == 'none') {
+        this.alertManager.showNoInternetAlert(
+            () => {
+                this.loadConfig();
+            },
+            () => {
+                navigator['app'].exitApp();
+            });
+        loadingFinishCallback();
     }
-
-    loadConfigFromServer(loadingFinishCallback: any) {
+    else {
         this.parliamentApi.getConfig()
             .then(config => {
                 this.config = config;
@@ -86,39 +133,34 @@ export class HomePage {
                 loadingFinishCallback();
             })
             .catch(e => {
-                this.alertManager.showNoInternetAlert(() => {
-                    this.loadConfig();
-                },
-                () => {
-                    navigator['app'].exitApp();
-                });
                 console.log("getConfigError", e);
                 loadingFinishCallback();
             });
     }
+}
 
-    loadCoinsCount() {
+loadCoinsCount() {
 
-        //this.dbContext.saveCoins(0);
-        this.dbContext.getCoinsCount().then((count?: number) => {
-            if (count == null) {
-                count = 10;
+    //this.dbContext.saveCoins(0);
+    this.dbContext.getCoinsCount().then((count?: number) => {
+        if (count == null) {
+            count = 10;
 
-                this.dbContext.saveCoins(count)
-                    .then(() =>
-                        console.log('save'))
-                    .catch((error) =>
-                        console.log('app component error ' + JSON.stringify(error)));
-            }
+            this.dbContext.saveCoins(count)
+                .then(() =>
+                    console.log('save'))
+                .catch((error) =>
+                    console.log('app component error ' + JSON.stringify(error)));
+        }
 
-            this.coinsCount = count;
-        });
-    }
+        this.coinsCount = count;
+    });
+}
 
 
-    itemClick(person: Person) {
-        console.log('click');
-        this.dataService.setData(person.Id, person);
-        this.router.navigateByUrl(`/details/${person.Id}`);
-    }
+itemClick(person: Person) {
+    console.log('click');
+    this.dataService.setData(person.Id, person);
+    this.router.navigateByUrl(`/details/${person.Id}`);
+}
 }
