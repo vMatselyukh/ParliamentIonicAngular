@@ -3,14 +3,14 @@
     "",
     "\\src",
     "\\src\\app",
-    "\\src\\app\\details",
     "\\src\\app\\home",
+    "\\src\\app\\language",
     "\\src\\assets",
     "\\src\\assets\\images",
     "\\src\\assets\\images\\icons",
     "\\src\\models",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\providers\\config-manager.ts",
+  "SelectedNode": "\\src\\app\\app.module.ts",
   "PreviewInSolutionExplorer": false
 }

@@ -2,6 +2,10 @@
 import * as _ from 'lodash';
 import { Person, ImageInfo, Config, Track } from '../models/models';
 import { File, DirectoryEntry } from '@ionic-native/file/ngx';
+import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
+import { Platform } from '@ionic/angular';
+import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
+import { WebServerLinkProvider, DbContext } from "./providers";
 
 const IMAGES_DIR: string = "Politician_Images";
 const TRACKS_DIR: string = "Politicians_Tracks";
@@ -9,22 +13,44 @@ const TRACKS_DIR: string = "Politicians_Tracks";
 @Injectable()
 export class FileManager {
     readonly removePathBeginning = "\\resources\\";
+    readonly addPathBeginning = "resources";
     readonly topFolderName = "parliament";
     readonly fileDelimiter = "\\";
     //fileTransfer: FileTransferObject = this.transfer.create();
 
-    constructor(private file: File) {
+    constructor(private file: File,
+        private platform: Platform,
+        private fileTransfer: FileTransfer,
+        private webServerLinkProvider: WebServerLinkProvider,
+        private androidPermissions: AndroidPermissions,
+        private dbContext: DbContext) {
     }
 
-    getFilesToBeDownloaded(filesToCheck: string[]): Promise<string[]> {
+    normalizeFilePath(filePath): string {
+        return filePath.toLowerCase().replace(this.removePathBeginning, '').split('\\').join('/')
+    }
+
+    deNormalizeFilePath(filePath): string {
+        return `${this.addPathBeginning}/${filePath.toLowerCase()}`;
+    }
+
+    async getFilesToBeDownloaded(filesToCheck: string[]): Promise<string[]> {
+        let baseDirectory = this.file.dataDirectory;
+
+        let directoryName = await this.dbContext.getAndroidSelectedStorage();
+
+        if (this.platform.is('android') && directoryName == 'external') {
+            baseDirectory = this.file.externalRootDirectory;
+        }
+
         let nonExistingFiles = [];
 
         let allPromises = [];
 
         _.forEach(filesToCheck, file => {
-            let processedFileName = file.toLowerCase().replace(this.removePathBeginning, '').split('\\').join('/');
+            let processedFileName = this.normalizeFilePath(file);
 
-            allPromises.push(this.file.checkFile(this.file.dataDirectory, processedFileName).catch(e => {
+            allPromises.push(this.file.checkFile(baseDirectory, `${this.topFolderName}/${processedFileName}`).catch(e => {
                 nonExistingFiles.push(processedFileName);
             }));
         });
@@ -55,6 +81,66 @@ export class FileManager {
                 resolve(nonExistingFiles);
             });
         })
+    }
+
+    async downloadFile(filePath: string) {
+        // We added this check since this is only intended to work on devices and emulators 
+        if (!this.platform.is('cordova')) {
+            console.warn('Cannot download in local environment!');
+            return;
+        }
+
+        const fileTransfer: FileTransferObject = this.fileTransfer.create();
+
+        let uri = encodeURI(`${this.webServerLinkProvider.webServerBaseUrl}getfile?url=${filePath}`);
+
+        let path = await this.getDownloadPath();
+
+        return fileTransfer.download(
+            uri,
+            `${path}/${this.topFolderName}/${filePath}`
+        ).then(
+            result => {
+                console.log("filetransfer success", result);
+            },
+            error => {
+                console.log("filetransfer error", error);
+            }
+        );
+    }
+
+    async getDownloadPath(): Promise<string> {
+        if (this.platform.is('ios')) {
+            return this.file.dataDirectory;
+        }
+
+        let androidSelectedStorage = await this.dbContext.getAndroidSelectedStorage();
+
+        if (androidSelectedStorage == "local") {
+            return this.file.dataDirectory;
+        }
+        else if (androidSelectedStorage == "external") {
+            return this.file.externalRootDirectory;
+        }
+
+        // To be able to save files on Android, we first need to ask the user for permission. 
+        // We do not let the download proceed until they grant access
+        let permissionResponse = await this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE).then(
+            result => {
+                if (!result.hasPermission) {
+                    return this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE);
+                }
+            }
+        );
+
+        if (permissionResponse.hasPermission) {
+            await this.dbContext.setAndroidSelectedStorage('external');
+            return this.file.externalRootDirectory;
+        }
+
+
+        await this.dbContext.setAndroidSelectedStorage('local');
+        return this.file.dataDirectory;
     }
 
     //checkIfFileExists(filePath) {

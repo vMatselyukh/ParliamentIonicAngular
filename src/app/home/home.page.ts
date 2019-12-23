@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
 import { Network } from '@ionic-native/network/ngx';
+import * as _ from 'lodash';
 
 
 @Component({
@@ -83,20 +84,48 @@ async loadConfig() {
                                         //update process started
                                         let serverConfig = await this.parliamentApi.getConfig();
 
-                                        let itemsToDownload = this.configManager.getResourcesToDownload(this.config, serverConfig);
-                                        let itemsToDelete = this.configManager.getResourcesToDelete(this.config, serverConfig);
+                                        let itemsToDownload = this.configManager.getResourcesToDownload(this.config, serverConfig).map(filePath => {
+                                            return this.fileManager.normalizeFilePath(filePath);
+                                        });
+
+                                        let itemsToDelete = this.configManager.getResourcesToDelete(this.config, serverConfig).map(filePath => {
+                                            return this.fileManager.normalizeFilePath(filePath);
+                                        });
 
                                         let allItemsInLocalConfig = this.configManager.getAllResources(this.config);
+                                        let allItemsInServerConfig = this.configManager.getAllResources(serverConfig);
+
+                                        //items that are in both local and server configs
+                                        let allActualLocalItems = allItemsInServerConfig.filter(serverItem => {
+                                            let item = _.find(allItemsInLocalConfig, localItem => {
+                                                return localItem == serverItem;
+                                            });
+
+                                            return item;
+                                        })
 
                                         console.log("all items", allItemsInLocalConfig);
 
-                                        let missingItems = await this.fileManager.getFilesToBeDownloaded(allItemsInLocalConfig);
+                                        // let's download items from local config that are not present on device
+                                        // but are available on the server.
+                                        let missingItems = await this.fileManager.getFilesToBeDownloaded(allActualLocalItems);
 
-                                        console.log("missing items", missingItems);
-                                        console.log("to download", itemsToDownload);
+                                        let allItemsToDownload = missingItems.concat(itemsToDownload).sort();
+
+                                        console.log("all items to download", allItemsToDownload);
                                         console.log("to delete", itemsToDelete);
-                                        //this.fileManager.downloadFilesByConfig(this.configToDownload);
 
+                                        let firstItemToDownload = allItemsToDownload[0];
+
+                                        await this.fileManager.downloadFile(firstItemToDownload);
+
+                                        allItemsToDownload = allItemsToDownload.filter(item => {
+                                            return item != firstItemToDownload;
+                                        })
+
+                                        _.forEach(allItemsToDownload, (filePathToDownload) => {
+                                            this.fileManager.downloadFile(filePathToDownload);
+                                        });
                                         //console.log("Config to download:" + this.configToDownload);
                                     },
                                     () => {

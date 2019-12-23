@@ -6,6 +6,7 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 import { IonicStorageModule } from '@ionic/storage';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
+import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -19,6 +20,7 @@ import {
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
 import { Network } from '@ionic-native/network/ngx';
 import { File } from '@ionic-native/file/ngx';
+import { FileTransfer } from '@ionic-native/file-transfer/ngx';
 import { HttpClientModule } from '@angular/common/http';
 
 import { FormsModule } from '@angular/forms';
@@ -52,6 +54,8 @@ import { ShareModule } from '@ngx-share/core';
         AdvProvider,
         LoadingManager,
         File,
+        FileTransfer,
+        AndroidPermissions,
         FileManager
     ],
     bootstrap: [AppComponent]

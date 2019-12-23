@@ -7,8 +7,9 @@ import * as _ from 'lodash';
 export class DbContext {
     readonly configKey: string = "Config";
     readonly coinsKey: string = "Coins";
-    readonly languageKey: string = "Language";
+    readonly languageKey: string = "Language"; // ua, ru
     readonly nextTimeForUpdatesKey: string = "TimeToDownloadUpdates";
+    readonly androidSelectedStorageKey: string = "AndroidSelectedStorage"; // local, external
     readonly coinsCountForWatchingAdv: number = 1;
     //readonly postponeHours: number = 24;
     readonly postponeSeconds: number = 30;
@@ -96,5 +97,13 @@ export class DbContext {
 
         let newDate = currentDateTime.setSeconds(currentDateTime.getSeconds() + this.postponeSeconds);
         await this.storage.set(this.nextTimeForUpdatesKey, newDate);
+    }
+
+    async getAndroidSelectedStorage(): Promise<string> {
+        return await this.storage.get(this.androidSelectedStorageKey);
+    }
+
+    async setAndroidSelectedStorage(value): Promise<void> {
+        return await this.storage.set(this.androidSelectedStorageKey, value);
     }
 }
