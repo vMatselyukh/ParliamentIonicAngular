@@ -9,4 +9,5 @@ export class Person
     MainPicPath: ImageInfo;
     SmallButtonPicPath: ImageInfo;
     ListButtonPicPath: ImageInfo;
+    ListButtonDevicePath: string;
 }

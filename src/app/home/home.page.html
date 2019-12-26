@@ -24,7 +24,7 @@
         <div scroll-x="true" class="scroll-area">
             <div class="item" *ngFor="let person of config?.Persons" (tap)="itemClick(person)"
                 (click)="itemClick(person)">
-                <img class="size-helper" src="assets/images/politicians/klichko/klichko.png" width="129" height="183" />
+                <img class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
 
                 <div class="person-info">
                     <span class="person-name">{{person.Name}}</span>

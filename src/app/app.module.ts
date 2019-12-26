@@ -7,6 +7,7 @@ import { IonicStorageModule } from '@ionic/storage';
 import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
+import { WebView } from '@ionic-native/ionic-webview/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -55,6 +56,7 @@ import { ShareModule } from '@ngx-share/core';
         LoadingManager,
         File,
         FileTransfer,
+        WebView,
         AndroidPermissions,
         FileManager
     ],

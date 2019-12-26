@@ -26,6 +26,7 @@
     "@ionic-native/file": "^5.18.0",
     "@ionic-native/file-transfer": "^5.18.0",
     "@ionic-native/http": "^5.17.1",
+    "@ionic-native/ionic-webview": "^5.18.0",
     "@ionic-native/network": "^5.18.0",
     "@ionic-native/social-sharing": "^5.17.1",
     "@ionic-native/splash-screen": "^5.17.1",
@@ -93,9 +94,7 @@
       "cordova-plugin-whitelist": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-splashscreen": {},
-      "cordova-plugin-ionic-webview": {
-        "ANDROID_SUPPORT_ANNOTATIONS_VERSION": "27.+"
-      },
+      "cordova-plugin-ionic-webview": {},
       "cordova-plugin-ionic-keyboard": {},
       "cordova-sqlite-storage": {},
       "cordova-plugin-admob-free": {

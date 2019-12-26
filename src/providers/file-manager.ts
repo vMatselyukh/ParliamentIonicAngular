@@ -34,7 +34,7 @@ export class FileManager {
         return `${this.addPathBeginning}/${filePath.toLowerCase()}`;
     }
 
-    async getFilesToBeDownloaded(filesToCheck: string[]): Promise<string[]> {
+    async getBaseDirectory(): Promise<string> {
         let baseDirectory = this.file.dataDirectory;
 
         let directoryName = await this.dbContext.getAndroidSelectedStorage();
@@ -42,6 +42,12 @@ export class FileManager {
         if (this.platform.is('android') && directoryName == 'external') {
             baseDirectory = this.file.externalRootDirectory;
         }
+
+        return baseDirectory;
+    }
+
+    async getFilesToBeDownloaded(filesToCheck: string[]): Promise<string[]> {
+        let baseDirectory = await this.getBaseDirectory();
 
         let nonExistingFiles = [];
 
@@ -143,6 +149,18 @@ export class FileManager {
         return this.file.dataDirectory;
     }
 
+    async getReadPermission() {
+        let permissionResponse = await this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE).then(
+            result => {
+                if (!result.hasPermission) {
+                    return this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.READ_EXTERNAL_STORAGE);
+                }
+
+                console.log("read", result);
+            }
+        );
+    }
+
     //checkIfFileExists(filePath) {
     //    let pathParts = filePath.split(this.fileDelimiter);
     //    if (pathParts.length == 1) {
@@ -167,9 +185,9 @@ export class FileManager {
     //    });
     //}
 
-    getDirEntry(dirEntry: DirectoryEntry, dirName: string, successCallback) {
-        dirEntry.getDirectory(dirName, null, successCallback);
-    }
+    //getDirEntry(dirEntry: DirectoryEntry, dirName: string, successCallback) {
+    //    dirEntry.getDirectory(dirName, null, successCallback);
+    //}
 
     downloadFilesByConfig(config: Config): void {
         _.forEach(config.Persons, (person: Person) => {
@@ -200,6 +218,32 @@ export class FileManager {
                 // });
             }
         });
+    }
+
+    async getFileUrl(file: string): Promise<string> {
+        let processedFileName = this.normalizeFilePath(file);
+        let baseDirectory = await this.getBaseDirectory();
+
+        return new Promise((resolve, reject) => {
+            this.file.resolveDirectoryUrl(baseDirectory)// `${baseDirectory}/${this.topFolderName}/${processedFileName}`)
+                .then((result: DirectoryEntry) => {
+                    console.log("inside directory", result);
+
+                    this.file.getFile(result, `${this.topFolderName}/${processedFileName}`, {})
+                        .then((fileEntry: FileEntry) => {
+                            resolve(fileEntry.nativeURL);
+                        })
+                        .catch(fileEntryError => {
+                            reject(fileEntryError);
+                        });
+                })
+                .catch(error => {
+                    console.log("inside directory error", error);
+                });
+        })
+        
+
+        //this.file.getFile(baseDirectory, `${this.topFolderName}/${processedFileName}`, {});
     }
 
     // getImagesDirectoryOnDevice(): Promise<string> {

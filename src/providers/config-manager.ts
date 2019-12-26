@@ -47,6 +47,47 @@ export class ConfigManager {
         return resources;
     }
 
+    copyConfig(localConfig: Config, serverConfig: Config) {
+        this.copyUnlockedTracks(localConfig, serverConfig);
+    }
+
+    private copyUnlockedTracks(localConfig: Config, serverConfig: Config) {
+        _.forEach(localConfig.Persons, localPerson => {
+            let serverPerson = serverConfig.Persons.find(serverPerson => {
+                if (serverPerson.Id == localPerson.Id) {
+                    return true;
+                }
+
+                return false;
+            });
+
+            if (serverPerson != null) {
+                return;
+            }
+
+            let serverPersonIndex = serverConfig.Persons.indexOf(serverPerson);
+
+            _.foreach(localPerson.Tracks, localTrack => {
+                if (!localTrack.IsLocked) {
+                    let serverTrack = serverConfig.Persons[serverPersonIndex].Tracks.find(serverTrack => {
+                        if (serverTrack.Id == localTrack.Id) {
+                            return true;
+                        }
+
+                        return false;
+                    });
+
+                    if (serverTrack != null) {
+                        return;
+                    }
+
+                    let serverTrackIndex = serverConfig.Persons[serverPersonIndex].Tracks.indexOf(serverTrack);
+                    serverConfig.Persons[serverPersonIndex].Tracks[serverTrackIndex].IsLocked = false;
+                }
+            });
+        });
+    }
+
     private getImagesToDelete(dbConfig: Config, serverConfig: Config): string[] {
         let imagesList = [];
 
