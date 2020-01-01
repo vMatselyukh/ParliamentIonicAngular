@@ -9,7 +9,7 @@
 
 
 <div>
-    <img class="politician-main-image" src="/assets/images/politicians/klichko/klichko_main.png" />
+    <img class="politician-main-image" src="{{person.MainPicDevicePath}}" />
 
     <div class="politician-info">
         <span class="politician-post">
@@ -19,11 +19,10 @@
 </div>
 <ion-content>
     <ion-list>
-        <ion-item *ngFor="let track of this.person.Tracks" key="track.Id">
-            <img class="politician-small-image" slot="start" src="/assets/images/politicians/klichko/klichko_small.png" />
+        <ion-item *ngFor="let track of this.person.Tracks" key="track.Id" (tap)="playStopUnlockTrack(track)" (click)="playStopUnlockTrack(track)">
+            <img class="politician-small-image" slot="start" src="{{person.SmallButtonDevicePath}}" />
             <span>{{track.Name}}</span>
-            <ion-button (tap)="playStopUnlockTrack(track)" (click)="playStopUnlockTrack(track)"
-                        class="track-play-button" shape="round" slot="end" color="medium">
+            <ion-button class="track-play-button" shape="round" slot="end" color="medium">
                 <ion-icon [name]="getTrackIcon(track)" size="small"></ion-icon>
             </ion-button>
         </ion-item>

@@ -3,11 +3,12 @@
     "",
     "\\src",
     "\\src\\app",
+    "\\src\\app\\details",
     "\\src\\app\\home",
     "\\src\\app\\language",
     "\\src\\models",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\providers\\file-manager.ts",
+  "SelectedNode": "\\src\\app\\home\\home.page.ts",
   "PreviewInSolutionExplorer": false
 }

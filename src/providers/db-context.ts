@@ -19,9 +19,14 @@ export class DbContext {
     constructor(public storage: Storage) {
     }
 
-    saveConfig(config: Config): void {
-        this.cachedConfig = config
-        this.storage.set(this.configKey, config);
+    async saveConfig(config: Config): Promise<void> {
+        this.cachedConfig = config;
+
+        config.Persons = config.Persons.sort((a: Person, b: Person) => {
+            return a.OrderNumber > b.OrderNumber ? 1 : -1;
+        })
+
+        await this.storage.set(this.configKey, config);
     }
 
     getConfig(): Promise<Config> {

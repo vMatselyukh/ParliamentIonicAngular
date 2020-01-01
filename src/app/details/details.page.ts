@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Track, Person } from 'src/models/models';
 import { Howl } from 'howler';
-import { DbContext, AlertManager, AdvProvider } from '../../providers/providers';
+import { DbContext, AlertManager, AdvProvider, FileManager } from '../../providers/providers';
 
 @Component({
     selector: 'app-details',
@@ -14,10 +14,12 @@ export class DetailsPage implements OnInit {
     player: Howl = null;
     activeTrackId = 0;
 
-    constructor(private route: ActivatedRoute, private router: Router,
+    constructor(private route: ActivatedRoute,
+        private router: Router,
         private dbContext: DbContext,
         private advProvider: AdvProvider,        
-        private alertManager: AlertManager) {
+        private alertManager: AlertManager,
+        private fileManager: FileManager) {
     }
 
     ngOnInit() {
@@ -32,7 +34,7 @@ export class DetailsPage implements OnInit {
         }
     }
 
-    playStopUnlockTrack(track: Track) {
+    async playStopUnlockTrack(track: Track) {
         if (this.player) {
             this.player.stop();
         }
@@ -70,8 +72,11 @@ export class DetailsPage implements OnInit {
 
                 let self = this;
 
+                let src = await this.fileManager.getTrackDevicePath(track);
+
                 this.player = new Howl({
-                    src: "/assets/tracks/klichko/zavtrashniyDen.ogg",
+                    src: src,
+                    html5: true,
                     onend: function () {
                         self.activeTrackId = 0;
                     }

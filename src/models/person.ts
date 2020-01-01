@@ -3,6 +3,7 @@
 export class Person
 {
     Id: number;
+    OrderNumber: number;
     Name: string;
     Post: string;    
     Tracks: Track[];
@@ -10,4 +11,6 @@ export class Person
     SmallButtonPicPath: ImageInfo;
     ListButtonPicPath: ImageInfo;
     ListButtonDevicePath: string;
+    SmallButtonDevicePath: string;
+    MainPicDevicePath: string;
 }

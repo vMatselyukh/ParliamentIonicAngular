@@ -43,7 +43,7 @@ export class AppComponent {
 
             this.dbContext.getLanguage().then(lang => {
                 if (lang === null) {
-                    this.presentChooseLanguageModal();
+                    this.dbContext.setLanguage("ua");
                 }
             });
 

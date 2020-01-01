@@ -10,7 +10,6 @@ import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
 import { Network } from '@ionic-native/network/ngx';
 import * as _ from 'lodash';
-import { WebView } from '@ionic-native/ionic-webview/ngx';
 
 
 @Component({
@@ -34,8 +33,21 @@ export class HomePage {
         private loadingManager: LoadingManager,
         private network: Network,
         private configManager: ConfigManager,
-        private fileManager: FileManager,
-        private webview: WebView) {
+        private fileManager: FileManager) {
+        this.config = new Config();
+
+        let fakePersons = [];
+
+        for (let i = 0; i < 5; i++) {
+            let fakePerson = new Person();
+            fakePerson.ListButtonDevicePath = "assets/images/incognito.png";
+            fakePerson.Name = "Incognito";
+            fakePerson.Post = "-//-";
+
+            fakePersons.push(fakePerson);
+        }
+
+        this.config.Persons = fakePersons;
     }
 
     ionViewDidEnter() {
@@ -49,7 +61,29 @@ export class HomePage {
         this.platform.ready().then(() => {
             this.loadCoinsCount();
             this.loadConfig();
+
+            this.platform.resume.subscribe(() => {
+                this.loadConfig();
+            });
+
+            this.platform.pause.subscribe(() => {
+                console.log("pause");
+            });
         });
+
+        console.log("view did enter");
+    }
+
+    ionViewWillLeave() {
+        console.log("view will leave");
+    }
+
+    ionViewDidLeave() {
+        console.log("view did leave");
+    }
+
+    onPageWillLeave() {
+        console.log("page will leave");
     }
 
     async loadConfig() {
@@ -58,7 +92,10 @@ export class HomePage {
                 this.alertManager.showNoConfigAlert(
                     async _ => {
                         await this.loadingManager.showConfigLoadingMessage();
-                        this.loadConfigFromServer(() => {
+                        this.loadConfigFromServer(async () => {
+                            await this.downloadContent();
+
+                            await this.loadImagesDevicePath(true);
                             this.loadingManager.closeLoading();
                         });
                     },
@@ -71,13 +108,10 @@ export class HomePage {
                 console.log("db config isn't null.");
                 this.config = dbConfig;
 
-                for (var i = 0; i < this.config.Persons.length; i++) {
-                    this.config.Persons[i].ListButtonDevicePath = await this.getListButtonImagePath(this.config.Persons[i]);
-                }
-                //this.loadingManager.closeLoading();
+                await this.loadImagesDevicePath(false);
 
                 if (this.network.type != 'none') {
-                    // let's don't annouy the user. Give possibility to update later.
+                    // let's don't annoy the user. Give possibility to update later.
                     let nextTime = await this.dbContext.getNextTimeToUpdate();
                     let currentTime = await this.parliamentApi.getCurrentDateTime();
 
@@ -87,59 +121,17 @@ export class HomePage {
                                 if (hash != this.config.Md5Hash) {
                                     this.alertManager.showUpdateConfigAlert(
                                         async () => {
-                                            //update process started
-                                            let serverConfig = await this.parliamentApi.getConfig();
+                                            await this.loadingManager.showConfigLoadingMessage();
 
-                                            let itemsToDownload = this.configManager.getResourcesToDownload(this.config, serverConfig).map(filePath => {
-                                                return this.fileManager.normalizeFilePath(filePath);
-                                            });
-
-                                            let itemsToDelete = this.configManager.getResourcesToDelete(this.config, serverConfig).map(filePath => {
-                                                return this.fileManager.normalizeFilePath(filePath);
-                                            });
-
-                                            let allItemsInLocalConfig = this.configManager.getAllResources(this.config);
-                                            let allItemsInServerConfig = this.configManager.getAllResources(serverConfig);
-
-                                            //items that are in both local and server configs
-                                            let allActualLocalItems = allItemsInServerConfig.filter(serverItem => {
-                                                let item = _.find(allItemsInLocalConfig, localItem => {
-                                                    return localItem == serverItem;
+                                            this.downloadContent()
+                                                .then(() => {
+                                                    this.loadImagesDevicePath(true);
+                                                    this.loadingManager.closeLoading();
+                                                })
+                                                .catch((error) => {
+                                                    console.log("load content error", error);
+                                                    this.loadingManager.closeLoading();
                                                 });
-
-                                                return item;
-                                            })
-
-                                            console.log("all items", allItemsInLocalConfig);
-
-                                            // let's download items from local config that are not present on device
-                                            // but are available on the server.
-                                            let missingItems = await this.fileManager.getFilesToBeDownloaded(allActualLocalItems);
-
-                                            let allItemsToDownload = missingItems.concat(itemsToDownload).sort();
-
-                                            console.log("all items to download", allItemsToDownload);
-                                            console.log("to delete", itemsToDelete);
-
-                                            let firstItemToDownload = allItemsToDownload[0];
-
-                                            await this.fileManager.downloadFile(firstItemToDownload);
-
-                                            allItemsToDownload = allItemsToDownload.filter(item => {
-                                                return item != firstItemToDownload;
-                                            })
-
-                                            let allPromises = [];
-
-                                            _.forEach(allItemsToDownload, (filePathToDownload) => {
-                                                allPromises.push(this.fileManager.downloadFile(filePathToDownload));
-                                            });
-
-                                            await Promise.all(allPromises);
-
-                                            this.configManager.copyConfig(this.config, serverConfig);
-
-                                            this.dbContext.saveConfig(serverConfig);
                                         },
                                         () => {
                                             this.dbContext.postponeUpdateTime(new Date(currentTime));
@@ -206,11 +198,120 @@ export class HomePage {
         this.router.navigateByUrl(`/details/${person.Id}`);
     }
 
-    async getListButtonImagePath(person: Person): Promise<string> {
-        //console.log(person.ListButtonPicPath.ImagePath);
-        let path = await this.fileManager.getFileUrl(person.ListButtonPicPath.ImagePath);
-        path = this.webview.convertFileSrc(path);
-        return path;
-        //return person.ListButtonPicPath.ImagePath;
+    getTracksCount(person: Person): number {
+        if (person && person.Tracks) {
+            return person.Tracks.length;
+        }
+
+        return 0;
+    }
+
+    private async downloadFiles(allItemsToDownload): Promise<any[]> {
+        if (!allItemsToDownload || allItemsToDownload.length <= 0) {
+            return;
+        }
+
+        let firstItemToDownload = allItemsToDownload[0];
+
+        await this.fileManager.downloadFile(firstItemToDownload);
+
+        allItemsToDownload = allItemsToDownload.filter(item => {
+            return item != firstItemToDownload;
+        })
+
+        let allPromises = [];
+
+        _.forEach(allItemsToDownload, (filePathToDownload) => {
+            allPromises.push(this.fileManager.downloadFile(filePathToDownload));
+        });
+
+        return await Promise.all(allPromises);
+    }
+
+    private async downloadContent(): Promise<any> {
+        //update process started
+        let serverConfig = await this.parliamentApi.getConfig();
+
+        //get items that exist in serverConfig but don't exist in local config
+        let itemsToDownload = this.configManager.getResourcesToDownload(this.config, serverConfig).map(filePath => {
+            return this.fileManager.normalizeFilePath(filePath);
+        });
+
+        //delete items that exist in localConfig but don't exist in server config
+        let itemsToDelete = this.configManager.getResourcesToDelete(this.config, serverConfig).map(filePath => {
+            return this.fileManager.normalizeFilePath(filePath);
+        });
+
+        let allItemsInLocalConfig = this.configManager.getAllResources(this.config);
+        let allItemsInServerConfig = this.configManager.getAllResources(serverConfig);
+
+        //items that are in both local and server configs
+        let allActualLocalItems = allItemsInServerConfig.filter(serverItem => {
+            let item = _.find(allItemsInLocalConfig, localItem => {
+                return localItem == serverItem;
+            });
+
+            return item;
+        });
+
+
+        console.log("all items", allItemsInLocalConfig);
+
+        // let's download items from local config that are not present on device
+        // but are available on the server. User may delete file so, let's allow
+        // the user to download that file.
+        let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems);
+
+        let allItemsToDownload = missingItems.concat(itemsToDownload).sort();
+
+        console.log("all items to download", allItemsToDownload);
+        console.log("to delete", itemsToDelete);
+
+        return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
+            .then(() => {
+                this.configManager.copyConfig(this.config, serverConfig);
+                this.dbContext.saveConfig(serverConfig);
+                this.config = serverConfig;
+            })
+            .catch((error) => {
+                console.log("error happened", error);
+            });
+    }
+
+    private async loadImagesDevicePath(forceSystemCheck) {
+
+        let startPersonsCount = this.config.Persons.length;
+        for (var i = 0; i < this.config.Persons.length; i++) {
+            let listButtonImagePath = this.config.Persons[i].ListButtonDevicePath;
+            let smallButtonImagePath = this.config.Persons[i].SmallButtonDevicePath;
+            let mainPicImagePath = this.config.Persons[i].MainPicDevicePath;
+
+            if (forceSystemCheck || !listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
+                listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
+                smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
+                mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
+            }
+
+            if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
+                this.config.Persons.splice(i, 1);
+                this.dbContext.postponeUpdateTime(new Date("01/01/2019"));
+                continue;
+            }
+
+            this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
+            this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
+            this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
+        }
+        console.log("device path has been reloaded");
+
+        return new Promise(async (resolve, reject) => {
+            if (startPersonsCount != this.config.Persons.length) {
+                this.config.Md5Hash = this.config.Md5Hash + "need to be updated";
+            }
+
+            await this.dbContext.saveConfig(this.config);
+
+            resolve();
+        });
     }
 }

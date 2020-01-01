@@ -61,13 +61,13 @@ export class ConfigManager {
                 return false;
             });
 
-            if (serverPerson != null) {
+            if (serverPerson == null) {
                 return;
             }
 
             let serverPersonIndex = serverConfig.Persons.indexOf(serverPerson);
 
-            _.foreach(localPerson.Tracks, localTrack => {
+            _.forEach(localPerson.Tracks, localTrack => {
                 if (!localTrack.IsLocked) {
                     let serverTrack = serverConfig.Persons[serverPersonIndex].Tracks.find(serverTrack => {
                         if (serverTrack.Id == localTrack.Id) {
@@ -77,7 +77,7 @@ export class ConfigManager {
                         return false;
                     });
 
-                    if (serverTrack != null) {
+                    if (serverTrack == null) {
                         return;
                     }
 
@@ -193,13 +193,13 @@ export class ConfigManager {
         let imagesToUpdate = [];
 
         if (dbPerson.ListButtonPicPath == null || dbPerson.ListButtonPicPath.Md5Hash !== webServicePerson.ListButtonPicPath.Md5Hash) {
-            imagesToUpdate.push(webServicePerson.ListButtonPicPath);
+            imagesToUpdate.push(webServicePerson.ListButtonPicPath.ImagePath);
         }
         if (dbPerson.MainPicPath == null || dbPerson.MainPicPath.Md5Hash !== webServicePerson.MainPicPath.Md5Hash) {
-            imagesToUpdate.push(webServicePerson.MainPicPath);
+            imagesToUpdate.push(webServicePerson.MainPicPath.ImagePath);
         }
         if (dbPerson.SmallButtonPicPath == null || dbPerson.SmallButtonPicPath.Md5Hash !== webServicePerson.SmallButtonPicPath.Md5Hash) {
-            imagesToUpdate.push(webServicePerson.SmallButtonPicPath);
+            imagesToUpdate.push(webServicePerson.SmallButtonPicPath.ImagePath);
         }
 
         return imagesToUpdate;
