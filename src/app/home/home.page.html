@@ -27,10 +27,10 @@
                 <img class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
 
                 <div class="person-info">
-                    <span class="person-name">{{person.Name}}</span>
+                    <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>
                     <br />
-                    <span class="person-post">{{person.Post}}</span>
-                    <br />
+                    <span class="person-post" [innerHTML]="person.Infos[languageManager.languageIndex]?.Post"></span>
+                    
 
                     <ion-badge class="person-traks-count" color="medium">
                         <ion-icon name="quote"></ion-icon>

@@ -3,7 +3,6 @@ import * as _ from 'lodash';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
 import { Platform, Events } from '@ionic/angular';
 import { DbContext, AlertManager } from '../providers/providers'
-import { Observable, forkJoin } from 'rxjs';
 
 @Injectable({
     providedIn: 'root'

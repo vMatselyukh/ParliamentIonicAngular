@@ -109,6 +109,22 @@ export class AlertManager {
         await alert.present();
     }
 
+    async showInternetNeededForPostingQuotesAlert(confirmCallback: any) {
+        const alert = await this.alertController.create({
+            header: 'Увага',
+            subHeader: '',
+            message: "Для відправки фрази потрібно подключення до інтернету. Підключіться та спробуйте знову.",
+            buttons: [
+                {
+                    text: 'Ок',
+                    handler: confirmCallback
+                }
+            ]
+        });
+
+        await alert.present();
+    }
+
     async showUpdateConfigAlert(confirmCallback: any, laterCallback: any) {
         const alert = await this.alertController.create({
             header: 'Увага',

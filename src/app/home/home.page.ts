@@ -2,15 +2,14 @@ import { Component } from '@angular/core';
 import {
     DbContext, ParliamentApi, AlertManager,
     LoadingManager, ConfigManager,
-    FileManager
+    FileManager, LanguageManager
 } from '../../providers/providers';
-import { Config, Person } from '../../models/models';
+import { Config, Person, PersonInfo } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
 import { Network } from '@ionic-native/network/ngx';
 import * as _ from 'lodash';
-
 
 @Component({
     selector: 'app-home',
@@ -33,16 +32,25 @@ export class HomePage {
         private loadingManager: LoadingManager,
         private network: Network,
         private configManager: ConfigManager,
-        private fileManager: FileManager) {
+        private fileManager: FileManager,
+        private languageManager: LanguageManager) {
         this.config = new Config();
+
+        this.dbContext.getLanguageIndex().then(index => {
+            this.languageManager.languageIndex = index;
+        });
 
         let fakePersons = [];
 
         for (let i = 0; i < 5; i++) {
             let fakePerson = new Person();
             fakePerson.ListButtonDevicePath = "assets/images/incognito.png";
-            fakePerson.Name = "Incognito";
-            fakePerson.Post = "-//-";
+
+            let personInfo = new PersonInfo();
+            personInfo.Name = "Incognito";
+            personInfo.Post = "-//-";
+
+            fakePerson.Infos = [personInfo];
 
             fakePersons.push(fakePerson);
         }
@@ -51,7 +59,6 @@ export class HomePage {
     }
 
     ionViewDidEnter() {
-
         let seft = this;
 
         this.events.subscribe("reward:received", () => {
@@ -59,6 +66,7 @@ export class HomePage {
         });
 
         this.platform.ready().then(() => {
+            this.assignUserId();
             this.loadCoinsCount();
             this.loadConfig();
 
@@ -107,6 +115,8 @@ export class HomePage {
             else {
                 console.log("db config isn't null.");
                 this.config = dbConfig;
+
+                console.log("config", this.config);
 
                 await this.loadImagesDevicePath(false);
 
@@ -171,6 +181,10 @@ export class HomePage {
                     loadingFinishCallback();
                 });
         }
+    }
+
+    assignUserId() {
+        this.dbContext.getUserGuid();
     }
 
     loadCoinsCount() {

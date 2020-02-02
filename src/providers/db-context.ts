@@ -5,14 +5,15 @@ import * as _ from 'lodash';
 
 @Injectable()
 export class DbContext {
-    readonly configKey: string = "Config";
-    readonly coinsKey: string = "Coins";
-    readonly languageKey: string = "Language"; // ua, ru
-    readonly nextTimeForUpdatesKey: string = "TimeToDownloadUpdates";
-    readonly androidSelectedStorageKey: string = "AndroidSelectedStorage"; // local, external
-    readonly coinsCountForWatchingAdv: number = 1;
+    private readonly configKey: string = "Config";
+    private readonly coinsKey: string = "Coins";
+    private readonly languageKey: string = "Language"; // ua, ru
+    private readonly nextTimeForUpdatesKey: string = "TimeToDownloadUpdates";
+    private readonly androidSelectedStorageKey: string = "AndroidSelectedStorage"; // local, external
+    private readonly userGuidKey: string = "UserGuid";
+    private readonly coinsCountForWatchingAdv: number = 1;
     //readonly postponeHours: number = 24;
-    readonly postponeSeconds: number = 30;
+    private readonly postponeSeconds: number = 30;
 
     cachedConfig: Config = null;
 
@@ -42,6 +43,15 @@ export class DbContext {
                 })
                 .catch(error => reject(error));
         })
+    }
+
+    async getUserGuid(): Promise<string> {
+        let userGuid = await this.storage.get(this.userGuidKey);
+        if (userGuid == null) {
+            await this.storage.set(this.userGuidKey, this.uuidv4());
+        }
+
+        return userGuid;
     }
 
     async getCoinsCount(): Promise<number> {
@@ -79,8 +89,20 @@ export class DbContext {
         });
     }
 
+
+    //russian - 0, ukraine - 1
     async getLanguage() {
         return await this.storage.get(this.languageKey);
+    }
+
+    async getLanguageIndex(): Promise<number>{
+        let countryName = await this.storage.get(this.languageKey);
+
+        if (countryName == "ua") {
+            return 1;
+        }
+
+        return 0;
     }
 
     setLanguage(language) {
@@ -110,5 +132,12 @@ export class DbContext {
 
     async setAndroidSelectedStorage(value): Promise<void> {
         return await this.storage.set(this.androidSelectedStorageKey, value);
+    }
+
+    uuidv4() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }

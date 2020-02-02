@@ -82,7 +82,7 @@ export class FileManager {
         _.forEach(filesToDelete, fileToDelete => {
             deleteFilesPromises.push(this.getFile(fileToDelete).then((fileEntry: FileEntry) => {
                 fileEntry.getParent((parentDirectory: DirectoryEntry) => {
-                    parentDirectory.remove(
+                    parentDirectory.removeRecursively(
                         () => {
                             console.log("file deleted");
                         },

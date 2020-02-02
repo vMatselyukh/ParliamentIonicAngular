@@ -1,11 +1,10 @@
-﻿import { Track, ImageInfo } from './models';
+﻿import { Track, ImageInfo, PersonInfo } from './models';
 
 export class Person
 {
     Id: number;
     OrderNumber: number;
     Name: string;
-    Post: string;    
     Tracks: Track[];
     MainPicPath: ImageInfo;
     SmallButtonPicPath: ImageInfo;
@@ -13,4 +12,5 @@ export class Person
     ListButtonDevicePath: string;
     SmallButtonDevicePath: string;
     MainPicDevicePath: string;
+    Infos: PersonInfo[];
 }

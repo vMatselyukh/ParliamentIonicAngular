@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Track, Person } from 'src/models/models';
 import { Howl } from 'howler';
-import { DbContext, AlertManager, AdvProvider, FileManager } from '../../providers/providers';
+import {
+    DbContext, AlertManager, AdvProvider,
+    FileManager, LanguageManager
+} from '../../providers/providers';
 
 @Component({
     selector: 'app-details',
@@ -19,7 +22,8 @@ export class DetailsPage implements OnInit {
         private dbContext: DbContext,
         private advProvider: AdvProvider,        
         private alertManager: AlertManager,
-        private fileManager: FileManager) {
+        private fileManager: FileManager,
+        private languageManager: LanguageManager) {
     }
 
     ngOnInit() {

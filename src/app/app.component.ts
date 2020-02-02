@@ -10,7 +10,7 @@ import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ShareService } from '@ngx-share/core';
 import { ToastController } from '@ionic/angular';
 
-import { AdvProvider, AlertManager, DbContext } from '../providers/providers';
+import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
 
 @Component({
     selector: 'app-root',
@@ -31,7 +31,8 @@ export class AppComponent {
         private advProvider: AdvProvider,
         private alertManager: AlertManager,
         private events: Events,
-        private dbContext: DbContext
+        private dbContext: DbContext,
+        private languageManager: LanguageManager
     ) {
         this.initializeApp();
     }
@@ -71,6 +72,9 @@ export class AppComponent {
             if (data.data.submitted) {
                 this.presentThankYouToast();
             }
+            else {
+                this.presentErrorToast(data.data.error);
+            }
 
             console.log(data);
         });
@@ -83,9 +87,10 @@ export class AppComponent {
             component: LanguagePage
         });
 
-        modal.onDidDismiss().then(data => {
+        modal.onDidDismiss().then(async data => {
             if (data.data.language) {
-                this.dbContext.setLanguage(data.data.language);
+                await this.dbContext.setLanguage(data.data.language);
+                this.languageManager.languageIndex = await this.dbContext.getLanguageIndex();
             }
             //reload ui translations
             console.log(data);
@@ -108,6 +113,15 @@ export class AppComponent {
             message: 'Thank you.',
             duration: 2000,
             color: "primary"
+        });
+        toast.present();
+    }
+
+    async presentErrorToast(error) {
+        const toast = await this.toast.create({
+            message: error,
+            duration: 2000,
+            color: "warning"
         });
         toast.present();
     }
