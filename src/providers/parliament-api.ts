@@ -6,7 +6,7 @@ import { WebServerLinkProvider } from '../providers/providers';
 @Injectable()
 export class ParliamentApi {
     //private baseUrl = "http://localhost:2101/Api/Parliament/";
-    private baseUrl = this.linkProvider.webServerBaseUrl; //"http://11fa7543-0ee0-4-231-b9ee.azurewebsites.net/Api/Parliament/";
+    private baseUrl = this.linkProvider.webServerBaseUrl;
     private countryName = "ukraine";
 
     private requestOptions = {

@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
 import {
-    DbContext, ParliamentApi, AlertManager,
-    LoadingManager, ConfigManager,
-    FileManager, LanguageManager
+    DbContext, ConfigManager,
+    LanguageManager
 } from '../../providers/providers';
 import { Config, Person, PersonInfo } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
-import { Network } from '@ionic-native/network/ngx';
+import { ToastController } from '@ionic/angular';
 import * as _ from 'lodash';
 
 @Component({
@@ -19,21 +18,16 @@ import * as _ from 'lodash';
 export class HomePage {
 
     config: Config;
-    configToDownload: Config;
     coinsCount: number = 0;
 
     constructor(private dbContext: DbContext,
-        private parliamentApi: ParliamentApi,
         private router: Router,
         private dataService: DataService,
         private platform: Platform,
         private events: Events,
-        private alertManager: AlertManager,
-        private loadingManager: LoadingManager,
-        private network: Network,
         private configManager: ConfigManager,
-        private fileManager: FileManager,
-        private languageManager: LanguageManager) {
+        private languageManager: LanguageManager,
+        private toast: ToastController) {
         this.config = new Config();
 
         this.dbContext.getLanguageIndex().then(index => {
@@ -59,19 +53,36 @@ export class HomePage {
     }
 
     ionViewDidEnter() {
-        let seft = this;
+        let self = this;
 
         this.events.subscribe("reward:received", () => {
-            seft.loadCoinsCount();
+            self.loadCoinsCount();
+        });
+
+        this.events.subscribe("config:update", () => {
+            self.configManager.loadConfig(true).then((result: any) => {
+                if (result.status) {
+                    self.config = self.configManager.config;
+                    self.presentConfigUpdatedToast();
+                }
+                else {
+                    self.presentConfigUpdatedToast(result.message);
+                }
+            });
         });
 
         this.platform.ready().then(() => {
             this.assignUserId();
             this.loadCoinsCount();
-            this.loadConfig();
+            this.configManager.loadConfig().then(() =>
+            {
+                this.config = this.configManager.config;
+            });
 
             this.platform.resume.subscribe(() => {
-                this.loadConfig();
+                this.configManager.loadConfig().then(() => {
+                    this.config = this.configManager.config;
+                });
             });
 
             this.platform.pause.subscribe(() => {
@@ -92,95 +103,6 @@ export class HomePage {
 
     onPageWillLeave() {
         console.log("page will leave");
-    }
-
-    async loadConfig() {
-        this.dbContext.getConfig().then(async dbConfig => {
-            if (dbConfig == null) {
-                this.alertManager.showNoConfigAlert(
-                    async _ => {
-                        await this.loadingManager.showConfigLoadingMessage();
-                        this.loadConfigFromServer(async () => {
-                            await this.downloadContent();
-
-                            await this.loadImagesDevicePath(true);
-                            this.loadingManager.closeLoading();
-                        });
-                    },
-                    () => {
-                        navigator['app'].exitApp();
-                    })
-
-            }
-            else {
-                console.log("db config isn't null.");
-                this.config = dbConfig;
-
-                console.log("config", this.config);
-
-                await this.loadImagesDevicePath(false);
-
-                if (this.network.type != 'none') {
-                    // let's don't annoy the user. Give possibility to update later.
-                    let nextTime = await this.dbContext.getNextTimeToUpdate();
-                    let currentTime = await this.parliamentApi.getCurrentDateTime();
-
-                    if (nextTime == null || nextTime < currentTime) {
-                        this.parliamentApi.getConfigHash()
-                            .then(hash => {
-                                if (hash != this.config.Md5Hash) {
-                                    this.alertManager.showUpdateConfigAlert(
-                                        async () => {
-                                            await this.loadingManager.showConfigLoadingMessage();
-
-                                            this.downloadContent()
-                                                .then(() => {
-                                                    this.loadImagesDevicePath(true);
-                                                    this.loadingManager.closeLoading();
-                                                })
-                                                .catch((error) => {
-                                                    console.log("load content error", error);
-                                                    this.loadingManager.closeLoading();
-                                                });
-                                        },
-                                        () => {
-                                            this.dbContext.postponeUpdateTime(new Date(currentTime));
-                                        })
-                                }
-                            })
-                            .catch(e => console.log("Api get config error:" + e));
-                    }
-                }
-            }
-        }).catch(e => {
-            console.log("error getting config", e);
-            this.loadingManager.closeLoading();
-        });
-    }
-
-    loadConfigFromServer(loadingFinishCallback: any) {
-        if (this.network.type == 'none') {
-            this.alertManager.showNoInternetAlert(
-                () => {
-                    this.loadConfig();
-                },
-                () => {
-                    navigator['app'].exitApp();
-                });
-            loadingFinishCallback();
-        }
-        else {
-            this.parliamentApi.getConfig()
-                .then(config => {
-                    this.config = config;
-                    this.dbContext.saveConfig(config);
-                    loadingFinishCallback();
-                })
-                .catch(e => {
-                    console.log("getConfigError", e);
-                    loadingFinishCallback();
-                });
-        }
     }
 
     assignUserId() {
@@ -220,112 +142,12 @@ export class HomePage {
         return 0;
     }
 
-    private async downloadFiles(allItemsToDownload): Promise<any[]> {
-        if (!allItemsToDownload || allItemsToDownload.length <= 0) {
-            return;
-        }
-
-        let firstItemToDownload = allItemsToDownload[0];
-
-        await this.fileManager.downloadFile(firstItemToDownload);
-
-        allItemsToDownload = allItemsToDownload.filter(item => {
-            return item != firstItemToDownload;
-        })
-
-        let allPromises = [];
-
-        _.forEach(allItemsToDownload, (filePathToDownload) => {
-            allPromises.push(this.fileManager.downloadFile(filePathToDownload));
+    async presentConfigUpdatedToast(message: string = "Config up to date.") {
+        const toast = await this.toast.create({
+            message: message,
+            duration: 2000,
+            color: "primary"
         });
-
-        return await Promise.all(allPromises);
-    }
-
-    private async downloadContent(): Promise<any> {
-        //update process started
-        let serverConfig = await this.parliamentApi.getConfig();
-
-        //get items that exist in serverConfig but don't exist in local config
-        let itemsToDownload = this.configManager.getResourcesToDownload(this.config, serverConfig).map(filePath => {
-            return this.fileManager.normalizeFilePath(filePath);
-        });
-
-        //delete items that exist in localConfig but don't exist in server config
-        let itemsToDelete = this.configManager.getResourcesToDelete(this.config, serverConfig).map(filePath => {
-            return this.fileManager.normalizeFilePath(filePath);
-        });
-
-        let allItemsInLocalConfig = this.configManager.getAllResources(this.config);
-        let allItemsInServerConfig = this.configManager.getAllResources(serverConfig);
-
-        //items that are in both local and server configs
-        let allActualLocalItems = allItemsInServerConfig.filter(serverItem => {
-            let item = _.find(allItemsInLocalConfig, localItem => {
-                return localItem == serverItem;
-            });
-
-            return item;
-        });
-
-
-        console.log("all items", allItemsInLocalConfig);
-
-        // let's download items from local config that are not present on device
-        // but are available on the server. User may delete file so, let's allow
-        // the user to download that file.
-        let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems);
-
-        let allItemsToDownload = missingItems.concat(itemsToDownload).sort();
-
-        console.log("all items to download", allItemsToDownload);
-        console.log("to delete", itemsToDelete);
-
-        return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
-            .then(() => {
-                this.configManager.copyConfig(this.config, serverConfig);
-                this.dbContext.saveConfig(serverConfig);
-                this.config = serverConfig;
-            })
-            .catch((error) => {
-                console.log("error happened", error);
-            });
-    }
-
-    private async loadImagesDevicePath(forceSystemCheck) {
-
-        let startPersonsCount = this.config.Persons.length;
-        for (var i = 0; i < this.config.Persons.length; i++) {
-            let listButtonImagePath = this.config.Persons[i].ListButtonDevicePath;
-            let smallButtonImagePath = this.config.Persons[i].SmallButtonDevicePath;
-            let mainPicImagePath = this.config.Persons[i].MainPicDevicePath;
-
-            if (forceSystemCheck || !listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
-                listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
-                smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
-                mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
-            }
-
-            if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
-                this.config.Persons.splice(i, 1);
-                this.dbContext.postponeUpdateTime(new Date("01/01/2019"));
-                continue;
-            }
-
-            this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
-            this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
-            this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
-        }
-        console.log("device path has been reloaded");
-
-        return new Promise(async (resolve, reject) => {
-            if (startPersonsCount != this.config.Persons.length) {
-                this.config.Md5Hash = this.config.Md5Hash + "need to be updated";
-            }
-
-            await this.dbContext.saveConfig(this.config);
-
-            resolve();
-        });
+        toast.present();
     }
 }

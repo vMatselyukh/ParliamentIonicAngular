@@ -10,7 +10,7 @@ import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ShareService } from '@ngx-share/core';
 import { ToastController } from '@ionic/angular';
 
-import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
+import { AdvProvider, AlertManager, DbContext, LanguageManager, ConfigManager } from '../providers/providers';
 
 @Component({
     selector: 'app-root',
@@ -32,7 +32,8 @@ export class AppComponent {
         private alertManager: AlertManager,
         private events: Events,
         private dbContext: DbContext,
-        private languageManager: LanguageManager
+        private languageManager: LanguageManager,
+        private configManager: ConfigManager
     ) {
         this.initializeApp();
     }
@@ -124,6 +125,10 @@ export class AppComponent {
             color: "warning"
         });
         toast.present();
+    }
+
+    updateConfig() {
+        this.events.publish("config:update");
     }
 
     showGetCoinsAlert() {

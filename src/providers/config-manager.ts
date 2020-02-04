@@ -1,9 +1,21 @@
 ﻿import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { Person, Config, Track } from '../models/models';
+import { DbContext, ParliamentApi, AlertManager, LoadingManager, FileManager } from './providers';
+import { Network } from '@ionic-native/network/ngx';
 
 @Injectable()
 export class ConfigManager {
+
+    config: Config;
+
+    constructor(private dbContext: DbContext,
+        private parliamentApi: ParliamentApi,
+        private alertManager: AlertManager,
+        private loadingManager: LoadingManager,
+        private network: Network,
+        private fileManager: FileManager) {
+    }
 
     getResourcesToDownload(dbConfig: Config, serverConfig: Config): string[] {
 
@@ -49,6 +61,200 @@ export class ConfigManager {
 
     copyConfig(localConfig: Config, serverConfig: Config) {
         this.copyUnlockedTracks(localConfig, serverConfig);
+    }
+
+    async loadConfig(forceLoading: boolean = false) {
+        return new Promise((resolve, reject) => {
+            this.dbContext.getConfig().then(async dbConfig => {
+                if (dbConfig == null) {
+                    this.alertManager.showNoConfigAlert(
+                        async _ => {
+                            await this.loadingManager.showConfigLoadingMessage();
+                            this.loadConfigFromServer(async () => {
+                                await this.downloadContent();
+                                await this.loadImagesDevicePath(true);
+                                this.loadingManager.closeLoading();
+                                resolve({ "status": true });
+                            });
+                        },
+                        () => {
+                            navigator['app'].exitApp();
+                            resolve({ "status": false, "message": "exit app" });
+                        })
+                }
+                else {
+                    console.log("db config isn't null.");
+                    this.config = dbConfig;
+
+                    console.log("config", this.config);
+
+                    await this.loadImagesDevicePath(false);
+
+                    if (this.network.type != 'none') {
+                        // let's don't annoy the user. Give possibility to update later.
+                        let nextTime = await this.dbContext.getNextTimeToUpdate();
+                        let currentTime = await this.parliamentApi.getCurrentDateTime();
+
+                        if (forceLoading || nextTime == null || nextTime < currentTime) {
+                            this.parliamentApi.getConfigHash()
+                                .then(hash => {
+                                    if (hash != this.config.Md5Hash) {
+                                        this.alertManager.showUpdateConfigAlert(
+                                            async () => {
+                                                await this.loadingManager.showConfigLoadingMessage();
+
+                                                this.downloadContent()
+                                                    .then(() => {
+                                                        this.loadImagesDevicePath(true);
+                                                        this.loadingManager.closeLoading();
+                                                        resolve({ "status": true });
+                                                    })
+                                                    .catch((error) => {
+                                                        console.log("load content error", error);
+                                                        this.loadingManager.closeLoading();
+                                                        reject(error);
+                                                    });
+                                            },
+                                            () => {
+                                                this.dbContext.postponeUpdateTime(new Date(currentTime));
+                                                resolve({ "status": false, "message": "postponed" });
+                                            })
+                                    }
+                                    else {
+                                        resolve({"status": false, "message":"nothing to update"});
+                                    }
+                                })
+                                .catch(e => {
+                                    console.log("Api get config error:" + e)
+                                    reject(e);
+                                });
+                        }
+                        else {
+                            resolve({ "status": false, "message": "postponed" });
+                        }
+                    }
+                    else {
+                        resolve({ "status": false, "message": "no internet" });
+                    }
+                }
+            }).catch(e => {
+                console.log("error getting config", e);
+                this.loadingManager.closeLoading();
+                reject(e);
+            });
+        });
+    }
+
+    loadConfigFromServer(loadingFinishCallback: any) {
+        if (this.network.type == 'none') {
+            this.alertManager.showNoInternetAlert(
+                () => {
+                    this.loadConfig();
+                },
+                () => {
+                    navigator['app'].exitApp();
+                });
+            loadingFinishCallback();
+        }
+        else {
+            this.parliamentApi.getConfig()
+                .then(config => {
+                    this.config = config;
+                    this.dbContext.saveConfig(config);
+                    loadingFinishCallback();
+                })
+                .catch(e => {
+                    console.log("getConfigError", e);
+                    loadingFinishCallback();
+                });
+        }
+    }
+
+    private async downloadContent(): Promise<any> {
+        //update process started
+        let serverConfig = await this.parliamentApi.getConfig();
+
+        //get items that exist in serverConfig but don't exist in local config
+        let itemsToDownload = this.getResourcesToDownload(this.config, serverConfig).map(filePath => {
+            return this.fileManager.normalizeFilePath(filePath);
+        });
+
+        //delete items that exist in localConfig but don't exist in server config
+        let itemsToDelete = this.getResourcesToDelete(this.config, serverConfig).map(filePath => {
+            return this.fileManager.normalizeFilePath(filePath);
+        });
+
+        let allItemsInLocalConfig = this.getAllResources(this.config);
+        let allItemsInServerConfig = this.getAllResources(serverConfig);
+
+        //items that are in both local and server configs
+        let allActualLocalItems = allItemsInServerConfig.filter(serverItem => {
+            let item = _.find(allItemsInLocalConfig, localItem => {
+                return localItem == serverItem;
+            });
+
+            return item;
+        });
+
+
+        console.log("all items", allItemsInLocalConfig);
+
+        // let's download items from local config that are not present on device
+        // but are available on the server. User may delete file so, let's allow
+        // the user to download that file.
+        let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems);
+
+        let allItemsToDownload = missingItems.concat(itemsToDownload).sort();
+
+        console.log("all items to download", allItemsToDownload);
+        console.log("to delete", itemsToDelete);
+
+        return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
+            .then(() => {
+                this.copyConfig(this.config, serverConfig);
+                this.dbContext.saveConfig(serverConfig);
+                this.config = serverConfig;
+            })
+            .catch((error) => {
+                console.log("error happened", error);
+            });
+    }
+
+    private async loadImagesDevicePath(forceSystemCheck) {
+
+        let startPersonsCount = this.config.Persons.length;
+        for (var i = 0; i < this.config.Persons.length; i++) {
+            let listButtonImagePath = this.config.Persons[i].ListButtonDevicePath;
+            let smallButtonImagePath = this.config.Persons[i].SmallButtonDevicePath;
+            let mainPicImagePath = this.config.Persons[i].MainPicDevicePath;
+
+            if (forceSystemCheck || !listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
+                listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
+                smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
+                mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
+            }
+
+            if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
+                this.config.Persons.splice(i, 1);
+                this.dbContext.postponeUpdateTime(new Date("01/01/2019"));
+                continue;
+            }
+
+            this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
+            this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
+            this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
+        }
+        console.log("device path has been reloaded");
+
+        return new Promise(async (resolve, reject) => {
+            if (startPersonsCount != this.config.Persons.length) {
+                this.config.Md5Hash = this.config.Md5Hash + "need to be updated";
+            }
+
+            await this.dbContext.saveConfig(this.config);
+
+            resolve();
+        });
     }
 
     private copyUnlockedTracks(localConfig: Config, serverConfig: Config) {
@@ -226,5 +432,27 @@ export class ConfigManager {
         });
 
         return tracksToUpdate;
+    }
+
+    private async downloadFiles(allItemsToDownload): Promise<any[]> {
+        if (!allItemsToDownload || allItemsToDownload.length <= 0) {
+            return;
+        }
+
+        let firstItemToDownload = allItemsToDownload[0];
+
+        await this.fileManager.downloadFile(firstItemToDownload);
+
+        allItemsToDownload = allItemsToDownload.filter(item => {
+            return item != firstItemToDownload;
+        })
+
+        let allPromises = [];
+
+        _.forEach(allItemsToDownload, (filePathToDownload) => {
+            allPromises.push(this.fileManager.downloadFile(filePathToDownload));
+        });
+
+        return await Promise.all(allPromises);
     }
 }
