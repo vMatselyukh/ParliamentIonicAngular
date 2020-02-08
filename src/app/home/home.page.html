@@ -20,10 +20,10 @@
     </div>
     
 
-    <div id="MainList">
+    <div id="MainList" #MainList>
         <div scroll-x="true" class="scroll-area">
-            <div class="item" *ngFor="let person of config?.Persons" (tap)="itemClick(person)"
-                (click)="itemClick(person)">
+            <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of config?.Persons" (tap)="itemClick(person)"
+                (click)="itemClick(person)" >
                 <img class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
 
                 <div class="person-info">

@@ -73,7 +73,7 @@ export class ParliamentApi {
 
     getCurrentDateTime(): Promise<Date> {
         return new Promise((resolve, reject) => {
-            this.http.get(this.baseUrl + "gettimeutc").subscribe(
+            this.http.get(this.baseUrl + "gettimeutc", this.requestOptions).subscribe(
                 (data: string) => {
                     resolve(new Date(data));
                 },

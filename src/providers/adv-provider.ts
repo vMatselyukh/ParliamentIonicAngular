@@ -10,7 +10,11 @@ import { DbContext, AlertManager } from '../providers/providers'
 export class AdvProvider {
 
     rewardedAndroid: string = "ca-app-pub-3291616985383560/7058759376";
+    bannerAndroid: string = "ca-app-pub-3291616985383560/2201604199";
+    testBannerAndroid: string = "ca-app-pub-3940256099942544/6300978111";
+
     rewardedIos: string = "ca-app-pub-3291616985383560/9452138367";
+
 
     requireAdvClicked: boolean = false;
     advLoadingFailed: boolean = false;
@@ -28,7 +32,6 @@ export class AdvProvider {
         private dbContext: DbContext,
         private alertManager: AlertManager,
         private events: Events) {
-        let self = this;
     }
 
     loadAdv(rewardCallback: any = null) {
@@ -44,8 +47,19 @@ export class AdvProvider {
                 autoShow: false
             });
 
+            self.admob.banner.config({
+                id: this.testBannerAndroid,
+                isTesting: true,
+                autoShow: false
+            });
+
+            // Create banner
+            self.admob.banner.prepare().then(() => {
+                console.log("admob banner prepared");
+            });
+
             self.admob.rewardVideo.prepare().then(() => {
-                console.log("prepared");
+                console.log("rewarded video prepared");
             });
 
             //document.addEventListener('admob.reward_video.complete', () => {
@@ -105,8 +119,17 @@ export class AdvProvider {
 
     showRewardedVideo() {
         this.requireAdvClicked = true;
-
         this.showAdvOrAlert();
+    }
+
+    showBanner() {
+        this.admob.banner.show();
+    }
+
+    hideBanner(hideCallback) {
+        this.admob.banner.hide().then(() => {
+            hideCallback();
+        });
     }
 
     showAdvOrAlert() {

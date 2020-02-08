@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Track, Person } from 'src/models/models';
+import { Platform } from '@ionic/angular';
 import { Howl } from 'howler';
 import {
     DbContext, AlertManager, AdvProvider,
-    FileManager, LanguageManager
+    FileManager,
+    LanguageManager
 } from '../../providers/providers';
 
 @Component({
@@ -23,18 +25,45 @@ export class DetailsPage implements OnInit {
         private advProvider: AdvProvider,        
         private alertManager: AlertManager,
         private fileManager: FileManager,
-        private languageManager: LanguageManager) {
+        public languageManager: LanguageManager,
+        private platform: Platform) {
     }
 
     ngOnInit() {
-        if (this.route.snapshot.data['special']) {
-            this.person = this.route.snapshot.data['special'];
-        }
+        this.platform.ready().then(() => {
+            if (this.route.snapshot.data['special']) {
+                this.person = this.route.snapshot.data['special'];
+            } else {
+                this.router.navigateByUrl(`/home`);
+            }
+        });
     }
 
     ionViewDidLeave() {
         if (this.player) {
             this.player.stop();
+        }        
+    }
+
+    ionViewDidEnter() {
+        if (this.dbContext.shouldBannerBeShown) {
+            this.advProvider.showBanner();
+        }
+    }
+
+    getBackButtonIcon() {
+        return "arrow-back";
+    }
+
+    goToHomePage() {
+        console.log("go to home");
+        if (this.dbContext.shouldBannerBeShown) {
+            this.advProvider.hideBanner(() => {
+                this.router.navigateByUrl(`/home`);
+            });
+        }
+        else {
+            this.router.navigateByUrl(`/home`);
         }
     }
 

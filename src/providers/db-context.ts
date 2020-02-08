@@ -3,7 +3,9 @@ import { Person, ImageInfo, Config } from '../models/models';
 import { Storage } from '@ionic/storage';
 import * as _ from 'lodash';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root'
+})
 export class DbContext {
     private readonly configKey: string = "Config";
     private readonly coinsKey: string = "Coins";
@@ -16,6 +18,7 @@ export class DbContext {
     private readonly postponeSeconds: number = 30;
 
     cachedConfig: Config = null;
+    shouldBannerBeShown = false;
 
     constructor(public storage: Storage) {
     }
@@ -32,6 +35,7 @@ export class DbContext {
 
     getConfig(): Promise<Config> {
         if (this.cachedConfig) {
+            this.updateBannerShouldBeShown(this.cachedConfig);
             return Promise.resolve(this.cachedConfig);
         }
 
@@ -39,10 +43,28 @@ export class DbContext {
             this.storage.get(this.configKey)
                 .then(config => {
                     this.cachedConfig = config;
+                    this.updateBannerShouldBeShown(config);
                     resolve(config);
                 })
                 .catch(error => reject(error));
         })
+    }
+
+    updateBannerShouldBeShown(config: Config) {
+        let totalTrackCount = 0;
+        let totalUnlockedTracks = 0;
+
+        for (let i = 0; i < config.Persons.length; i++) {
+            totalTrackCount += config.Persons[i].Tracks.length;
+
+            for (let j = 0; j < config.Persons[i].Tracks.length; j++) {
+                if (!config.Persons[i].Tracks[j].IsLocked) {
+                    totalUnlockedTracks++;
+                }
+            }
+        }
+
+        this.shouldBannerBeShown = Math.floor((totalTrackCount - totalUnlockedTracks) / 10) < 1;
     }
 
     async getUserGuid(): Promise<string> {

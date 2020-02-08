@@ -15,6 +15,12 @@ export class FileManager {
     readonly topFolderName = "parliament";
     readonly fileDelimiter = "\\";
 
+    private requestOptions = {
+        headers: {
+            'AuthorizeHeader': '1569b7bd-94d2-428c-962b-858e3f46b8a2'
+        },
+    };
+
     constructor(private file: File,
         private platform: Platform,
         private fileTransfer: FileTransfer,
@@ -115,7 +121,9 @@ export class FileManager {
         return new Promise((resove, reject) => {
             fileTransfer.download(
                 uri,
-                `${path}/${this.topFolderName}/${filePath}`
+                `${path}/${this.topFolderName}/${filePath}`,
+                true,
+                this.requestOptions
             ).then(
                 result => {
                     resove(true);

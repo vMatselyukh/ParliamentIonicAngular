@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import {
     DbContext, ConfigManager,
     LanguageManager
@@ -20,6 +20,10 @@ export class HomePage {
     config: Config;
     coinsCount: number = 0;
 
+    @ViewChild('MainList', { static: false }) mainList: ElementRef;
+
+    listItemWidth: number = 0;
+
     constructor(private dbContext: DbContext,
         private router: Router,
         private dataService: DataService,
@@ -30,8 +34,10 @@ export class HomePage {
         private toast: ToastController) {
         this.config = new Config();
 
-        this.dbContext.getLanguageIndex().then(index => {
-            this.languageManager.languageIndex = index;
+        this.platform.ready().then(() => {
+            this.dbContext.getLanguageIndex().then(index => {
+                this.languageManager.languageIndex = index;
+            });
         });
 
         let fakePersons = [];
@@ -91,6 +97,11 @@ export class HomePage {
         });
 
         console.log("view did enter");
+        console.log("main list height", this.mainList.nativeElement.clientHeight);
+
+        let mainListHeight = this.mainList.nativeElement.clientHeight;
+        let itemImageHeight = (mainListHeight - 2) * 0.7;
+        this.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
     }
 
     ionViewWillLeave() {
