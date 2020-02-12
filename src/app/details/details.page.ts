@@ -33,6 +33,17 @@ export class DetailsPage implements OnInit {
         this.platform.ready().then(() => {
             if (this.route.snapshot.data['special']) {
                 this.person = this.route.snapshot.data['special'];
+
+                this.person.Tracks = this.person.Tracks.sort((track1: Track, track2: Track) => {
+                    if (track1.Date > track2.Date) {
+                        return -1;
+                    }
+                    if (track1.Date < track2.Date) {
+                        return 1;
+                    }
+
+                    return 0;
+                })
             } else {
                 this.router.navigateByUrl(`/home`);
             }
