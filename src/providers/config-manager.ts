@@ -65,17 +65,23 @@ export class ConfigManager {
 
     async loadConfig(forceLoading: boolean = false) {
         return new Promise((resolve, reject) => {
+            let promiseExecutionFlag = "not set";
+
             this.dbContext.getConfig().then(async dbConfig => {
                 if (dbConfig == null) {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
                             await this.loadingManager.showConfigLoadingMessage();
                             this.loadConfigFromServer(async () => {
-                                await this.downloadContent();
-                                await this.loadImagesDevicePath(true);
-                                this.loadingManager.closeLoading();
-                                resolve({ "status": true });
-                            });
+                                    await this.downloadContent();
+                                    await this.loadImagesDevicePath(true);
+                                    this.loadingManager.closeLoading();
+                                    resolve({ "status": true, "message": "" }); //config downloaded
+                                },
+                                () => {
+                                    resolve({ "status": false, "message": "server error" });
+                                }
+                            );
                         },
                         () => {
                             navigator['app'].exitApp();
@@ -93,7 +99,17 @@ export class ConfigManager {
                     if (this.network.type != 'none') {
                         // let's don't annoy the user. Give possibility to update later.
                         let nextTime = await this.dbContext.getNextTimeToUpdate();
-                        let currentTime = await this.parliamentApi.getCurrentDateTime();
+                        let currentTime = new Date();
+
+                        await this.parliamentApi.getCurrentDateTime().then(result => {
+                            currentTime = result;
+                        }).catch(() => {
+                            promiseExecutionFlag = "false";
+                        });
+
+                        if (promiseExecutionFlag == "false") {
+                            return resolve({ "status": true, "message": "server error" });
+                        }
 
                         if (forceLoading || nextTime == null || nextTime < currentTime) {
                             this.parliamentApi.getConfigHash()
@@ -104,33 +120,33 @@ export class ConfigManager {
                                                 await this.loadingManager.showConfigLoadingMessage();
 
                                                 this.downloadContent()
-                                                    .then(() => {
+                                                    .then(async () => {
                                                         this.loadImagesDevicePath(true);
-                                                        this.loadingManager.closeLoading();
-                                                        resolve({ "status": true });
+                                                        await this.loadingManager.closeLoading();
+                                                        resolve({ "status": true, "message": "config updated" });
                                                     })
-                                                    .catch((error) => {
+                                                    .catch(async (error) => {
                                                         console.log("load content error", error);
-                                                        this.loadingManager.closeLoading();
+                                                        await this.loadingManager.closeLoading();
                                                         reject(error);
                                                     });
                                             },
                                             () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
-                                                resolve({ "status": false, "message": "postponed" });
-                                            })
+                                                resolve({ "status": true, "message": "postponed" });
+                                            });
                                     }
                                     else {
-                                        resolve({"status": false, "message":"nothing to update"});
+                                        resolve({ "status": true, "message": "nothing to update" }); // nothing to update
                                     }
                                 })
                                 .catch(e => {
                                     console.log("Api get config error:" + e)
-                                    reject(e);
+                                    resolve({ "status": false, "message": "server error" });
                                 });
                         }
                         else {
-                            resolve({ "status": false, "message": "postponed" });
+                            resolve({ "status": true, "message": "postponed" });
                         }
                     }
                     else {
@@ -145,7 +161,7 @@ export class ConfigManager {
         });
     }
 
-    loadConfigFromServer(loadingFinishCallback: any) {
+    loadConfigFromServer(loadingFinishCallback: any, loadingFailedCallback: any) {
         if (this.network.type == 'none') {
             this.alertManager.showNoInternetAlert(
                 () => {
@@ -165,7 +181,7 @@ export class ConfigManager {
                 })
                 .catch(e => {
                     console.log("getConfigError", e);
-                    loadingFinishCallback();
+                    loadingFailedCallback();
                 });
         }
     }

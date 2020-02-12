@@ -15,7 +15,7 @@ export class LoadingManager {
         loading.present();
     }
 
-    closeLoading() {
-        this.loadingController.dismiss()  
+    async closeLoading() {
+        await this.loadingController.dismiss(); 
     }
 }

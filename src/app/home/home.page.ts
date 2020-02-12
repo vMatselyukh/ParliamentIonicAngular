@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import {
     DbContext, ConfigManager,
-    LanguageManager
+    LanguageManager, AlertManager
 } from '../../providers/providers';
 import { Config, Person, PersonInfo } from '../../models/models';
 import { Router } from '@angular/router';
@@ -31,14 +31,9 @@ export class HomePage {
         private events: Events,
         private configManager: ConfigManager,
         private languageManager: LanguageManager,
-        private toast: ToastController) {
+        private toast: ToastController,
+        private alertManager: AlertManager) {
         this.config = new Config();
-
-        this.platform.ready().then(() => {
-            this.dbContext.getLanguageIndex().then(index => {
-                this.languageManager.languageIndex = index;
-            });
-        });
 
         let fakePersons = [];
 
@@ -56,6 +51,16 @@ export class HomePage {
         }
 
         this.config.Persons = fakePersons;
+
+        this.platform.ready().then(() => {
+            this.dbContext.getLanguageIndex().then(index => {
+                this.languageManager.languageIndex = index;
+            });
+
+            this.dbContext.getConfig().then(config => {
+                this.config = config;
+            });
+        });
     }
 
     ionViewDidEnter() {
@@ -67,27 +72,20 @@ export class HomePage {
 
         this.events.subscribe("config:update", () => {
             self.configManager.loadConfig(true).then((result: any) => {
-                if (result.status) {
-                    self.config = self.configManager.config;
-                    self.presentConfigUpdatedToast();
-                }
-                else {
-                    self.presentConfigUpdatedToast(result.message);
-                }
+                this.loadConfigProcessResult(result, true);
             });
         });
 
         this.platform.ready().then(() => {
             this.assignUserId();
             this.loadCoinsCount();
-            this.configManager.loadConfig().then(() =>
-            {
-                this.config = this.configManager.config;
+            this.configManager.loadConfig().then((result: any) => {
+                this.loadConfigProcessResult(result, false);
             });
 
             this.platform.resume.subscribe(() => {
-                this.configManager.loadConfig().then(() => {
-                    this.config = this.configManager.config;
+                this.configManager.loadConfig().then((result: any) => {
+                    this.loadConfigProcessResult(result, false);
                 });
             });
 
@@ -102,6 +100,18 @@ export class HomePage {
         let mainListHeight = this.mainList.nativeElement.clientHeight;
         let itemImageHeight = (mainListHeight - 2) * 0.7;
         this.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
+    }
+
+    loadConfigProcessResult(result: any, showMessage: boolean = true) {
+        if (result.status) {
+            this.config = this.configManager.config;
+            if (showMessage) {
+                this.presentConfigStatusMessageAlert(result.message);
+            }
+        }
+        else {
+            this.alertManager.showInfoAlert(result.message);
+        }
     }
 
     ionViewWillLeave() {
@@ -153,12 +163,11 @@ export class HomePage {
         return 0;
     }
 
-    async presentConfigUpdatedToast(message: string = "Config up to date.") {
-        const toast = await this.toast.create({
-            message: message,
-            duration: 2000,
-            color: "primary"
-        });
-        toast.present();
+    async presentConfigStatusMessageAlert(message: string = "") {
+        if (!message) {
+            return;
+        }
+
+        await this.alertManager.showInfoAlert(message);
     }
 }

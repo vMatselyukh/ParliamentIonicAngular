@@ -166,6 +166,23 @@ export class AlertManager {
         await alert.present();
     }
 
+    async showInfoAlert(message: string) {
+        const alert = await this.alertController.create({
+            header: 'Увага',
+            subHeader: '',
+            message: message,
+            buttons: [
+                {
+                    text: 'Ок',
+                    role: 'cancel'
+                }
+            ],
+            backdropDismiss: true
+        });
+
+        await alert.present();
+    }
+
     closeAlerts() {
         this.alertController.dismiss();
     }

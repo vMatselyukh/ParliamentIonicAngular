@@ -115,7 +115,7 @@ export class AppComponent {
         const toast = await this.toast.create({
             message: 'Thank you.',
             duration: 2000,
-            color: "primary"
+            color: "medium"
         });
         toast.present();
     }
@@ -136,9 +136,9 @@ export class AppComponent {
     showGetCoinsAlert() {
         let self = this;
 
-        this.advProvider.loadAdv(() => {
-            this.events.publish("reward:received");
-        });
+        //this.advProvider.loadAdv(() => {
+        //    this.events.publish("reward:received");
+        //});
 
         this.alertManager.showGetCoinsAlert(() => {
             self.advProvider.showRewardedVideo();

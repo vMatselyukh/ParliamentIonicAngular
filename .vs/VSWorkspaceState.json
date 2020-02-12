@@ -10,6 +10,6 @@
     "\\src\\models",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\providers\\adv-provider.ts",
+  "SelectedNode": "\\src\\providers\\config-manager.ts",
   "PreviewInSolutionExplorer": false
 }
