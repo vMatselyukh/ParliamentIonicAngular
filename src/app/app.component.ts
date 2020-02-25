@@ -75,7 +75,7 @@ export class AppComponent {
             if (data.data.submitted) {
                 this.presentThankYouToast();
             }
-            else {
+            else if(data.data.error){
                 this.presentErrorToast(data.data.error);
             }
 

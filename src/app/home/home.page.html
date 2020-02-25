@@ -30,12 +30,14 @@
                     <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>
                     <br />
                     <span class="person-post" [innerHTML]="person.Infos[languageManager.languageIndex]?.Post"></span>
-                    
+
 
                     <ion-badge class="person-traks-count" color="medium">
                         <ion-icon name="quote"></ion-icon>
                         &nbsp;{{getTracksCount(person)}}
                     </ion-badge>
+
+                    <ion-icon *ngIf="areUnlockedTracksAvailable(person)" name="eye" class="new-tracks-available" size="large"></ion-icon>
                 </div>
             </div>
         </div>

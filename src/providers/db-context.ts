@@ -18,6 +18,7 @@ export class DbContext {
     private readonly postponeSeconds: number = 30;
 
     cachedConfig: Config = null;
+    cachedLanguage: string = "";
     shouldBannerBeShown = false;
 
     constructor(public storage: Storage) {
@@ -114,7 +115,15 @@ export class DbContext {
 
     //russian - 0, ukraine - 1
     async getLanguage() {
-        return await this.storage.get(this.languageKey);
+        if (this.cachedLanguage) {
+            return this.cachedLanguage;
+        }
+
+        let savedLanguage = await this.storage.get(this.languageKey);
+
+        this.cachedLanguage = savedLanguage;
+
+        return savedLanguage;
     }
 
     async getLanguageIndex(): Promise<number>{
@@ -129,6 +138,7 @@ export class DbContext {
 
     setLanguage(language) {
         this.storage.set(this.languageKey, language);
+        this.cachedLanguage = language;
     }
 
     async getNextTimeToUpdate(): Promise<Date> {

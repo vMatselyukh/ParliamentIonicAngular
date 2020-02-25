@@ -68,16 +68,18 @@ export class ConfigManager {
             let promiseExecutionFlag = "not set";
 
             this.dbContext.getConfig().then(async dbConfig => {
+                console.log("config equals", dbConfig);
+
                 if (dbConfig == null) {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
                             await this.loadingManager.showConfigLoadingMessage();
                             this.loadConfigFromServer(async () => {
-                                    await this.downloadContent();
-                                    await this.loadImagesDevicePath(true);
-                                    this.loadingManager.closeLoading();
-                                    resolve({ "status": true, "message": "" }); //config downloaded
-                                },
+                                await this.downloadContent();
+                                await this.loadImagesDevicePath(true);
+                                this.loadingManager.closeLoading();
+                                resolve({ "status": true, "message": "" }); //config downloaded
+                            },
                                 () => {
                                     resolve({ "status": false, "message": "server error" });
                                 }
@@ -115,6 +117,8 @@ export class ConfigManager {
                             this.parliamentApi.getConfigHash()
                                 .then(hash => {
                                     if (hash != this.config.Md5Hash) {
+
+                                        console.log("hashes are different, showing message about config update");
                                         this.alertManager.showUpdateConfigAlert(
                                             async () => {
                                                 await this.loadingManager.showConfigLoadingMessage();
@@ -134,6 +138,25 @@ export class ConfigManager {
                                             () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
                                                 resolve({ "status": true, "message": "postponed" });
+                                            });
+                                    }
+                                    //show renew missing files message
+                                    else if (forceLoading) {
+                                        this.alertManager.showRenewMissedFilesAlert(
+                                            async () => {
+                                                await this.loadingManager.showConfigLoadingMessage();
+
+                                                this.downloadContent()
+                                                    .then(async () => {
+                                                        this.loadImagesDevicePath(true);
+                                                        await this.loadingManager.closeLoading();
+                                                        resolve({ "status": true, "message": "config updated" });
+                                                    })
+                                                    .catch(async (error) => {
+                                                        console.log("load content error", error);
+                                                        await this.loadingManager.closeLoading();
+                                                        reject(error);
+                                                    });
                                             });
                                     }
                                     else {
@@ -212,7 +235,6 @@ export class ConfigManager {
             return item;
         });
 
-
         console.log("all items", allItemsInLocalConfig);
 
         // let's download items from local config that are not present on device
@@ -251,7 +273,7 @@ export class ConfigManager {
             }
 
             if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
-                this.config.Persons.splice(i, 1);
+                //this.config.Persons.splice(i, 1);
                 this.dbContext.postponeUpdateTime(new Date("01/01/2019"));
                 continue;
             }
@@ -455,6 +477,7 @@ export class ConfigManager {
             return;
         }
 
+        //getting permission
         let firstItemToDownload = allItemsToDownload[0];
 
         await this.fileManager.downloadFile(firstItemToDownload);

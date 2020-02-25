@@ -31,6 +31,7 @@ import { LanguagePage } from './language/language.page';
 import { LanguagePageModule } from './language/language.module';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
+import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { ShareModule } from '@ngx-share/core';
 
 @NgModule({
@@ -59,7 +60,8 @@ import { ShareModule } from '@ngx-share/core';
         WebView,
         AndroidPermissions,
         FileManager,
-        LanguageManager
+        LanguageManager,
+        Diagnostic
     ],
     bootstrap: [AppComponent]
 })

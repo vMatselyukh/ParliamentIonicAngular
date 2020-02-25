@@ -10,6 +10,6 @@
     "\\src\\models",
     "\\src\\providers"
   ],
-  "SelectedNode": "\\src\\providers\\db-context.ts",
+  "SelectedNode": "\\src\\providers\\file-manager.ts",
   "PreviewInSolutionExplorer": false
 }

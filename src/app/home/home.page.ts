@@ -1,13 +1,13 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import {
     DbContext, ConfigManager,
-    LanguageManager, AlertManager
+    LanguageManager, AlertManager,
+    AdvProvider, FileManager
 } from '../../providers/providers';
-import { Config, Person, PersonInfo } from '../../models/models';
+import { Config, Person, PersonInfo, Track } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
-import { ToastController } from '@ionic/angular';
 import * as _ from 'lodash';
 
 @Component({
@@ -31,8 +31,9 @@ export class HomePage {
         private events: Events,
         private configManager: ConfigManager,
         private languageManager: LanguageManager,
-        private toast: ToastController,
-        private alertManager: AlertManager) {
+        private alertManager: AlertManager,
+        private advProvider: AdvProvider,
+        private fileManager: FileManager) {
         this.config = new Config();
 
         let fakePersons = [];
@@ -58,6 +59,8 @@ export class HomePage {
             });
 
             this.dbContext.getConfig().then(config => {
+
+                console.log("config from constructor", config);
                 this.config = config;
             });
         });
@@ -66,27 +69,41 @@ export class HomePage {
     ionViewDidEnter() {
         let self = this;
 
+        this.advProvider.hideBanner().then(() => {
+            setTimeout(() => {
+                let mainListHeight = self.mainList.nativeElement.clientHeight;
+                let itemImageHeight = (mainListHeight - 2) * 0.7;
+                self.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
+            }, 1);
+        });
+
         this.events.subscribe("reward:received", () => {
             self.loadCoinsCount();
         });
 
         this.events.subscribe("config:update", () => {
+            console.log("config:update");
             self.configManager.loadConfig(true).then((result: any) => {
                 this.loadConfigProcessResult(result, true);
             });
         });
 
-        this.platform.ready().then(() => {
+        this.platform.ready().then(async () => {
             this.assignUserId();
             this.loadCoinsCount();
-            this.configManager.loadConfig().then((result: any) => {
-                this.loadConfigProcessResult(result, false);
+            console.log("platform.ready");
+
+            await this.fileManager.getDownloadPath().then(() => {
+                this.platform.resume.subscribe(() => {
+                    console.log("resume");
+                    this.configManager.loadConfig().then((result: any) => {
+                        this.loadConfigProcessResult(result, false);
+                    });
+                });
             });
 
-            this.platform.resume.subscribe(() => {
-                this.configManager.loadConfig().then((result: any) => {
-                    this.loadConfigProcessResult(result, false);
-                });
+            this.configManager.loadConfig().then((result: any) => {
+                this.loadConfigProcessResult(result, false);
             });
 
             this.platform.pause.subscribe(() => {
@@ -96,10 +113,6 @@ export class HomePage {
 
         console.log("view did enter");
         console.log("main list height", this.mainList.nativeElement.clientHeight);
-
-        let mainListHeight = this.mainList.nativeElement.clientHeight;
-        let itemImageHeight = (mainListHeight - 2) * 0.7;
-        this.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
     }
 
     loadConfigProcessResult(result: any, showMessage: boolean = true) {
@@ -116,6 +129,10 @@ export class HomePage {
 
     ionViewWillLeave() {
         console.log("view will leave");
+
+        this.events.unsubscribe("reward:received");
+
+        this.events.unsubscribe("config:update");
     }
 
     ionViewDidLeave() {
@@ -161,6 +178,19 @@ export class HomePage {
         }
 
         return 0;
+    }
+
+    areUnlockedTracksAvailable(person: Person): boolean {
+        if (person && person.Tracks) {
+
+            var lockedTracks = person.Tracks.filter((track: Track) => {
+                return track.IsLocked;
+            });
+
+            return lockedTracks.length > 0;
+        }
+
+        return false;
     }
 
     async presentConfigStatusMessageAlert(message: string = "") {

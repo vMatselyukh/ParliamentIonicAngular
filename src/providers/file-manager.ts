@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { File, DirectoryEntry, FileEntry } from '@ionic-native/file/ngx';
+import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { Platform } from '@ionic/angular';
 import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
@@ -27,7 +28,8 @@ export class FileManager {
         private webServerLinkProvider: WebServerLinkProvider,
         private androidPermissions: AndroidPermissions,
         private dbContext: DbContext,
-        private webview: WebView) {
+        private webview: WebView,
+        private diagnostic: Diagnostic) {
     }
 
     normalizeFilePath(filePath): string {
@@ -46,20 +48,20 @@ export class FileManager {
         return "";
     }
 
-    async getBaseDirectory(): Promise<string> {
-        let baseDirectory = this.file.dataDirectory;
+    //async getBaseDirectory(): Promise<string> {
+    //    let baseDirectory = this.file.dataDirectory;
 
-        let directoryName = await this.dbContext.getAndroidSelectedStorage();
+    //    let directoryName = await this.dbContext.getAndroidSelectedStorage();
 
-        if (this.platform.is('android') && directoryName == 'external') {
-            baseDirectory = this.file.externalRootDirectory;
-        }
+    //    if (this.platform.is('android') && directoryName == 'external') {
+    //        baseDirectory = this.file.externalRootDirectory;
+    //    }
 
-        return baseDirectory;
-    }
+    //    return baseDirectory;
+    //}
 
     async getMissingFiles(filesToCheck: string[]): Promise<string[]> {
-        let baseDirectory = await this.getBaseDirectory();
+        let baseDirectory = await this.getDownloadPath();
 
         let nonExistingFiles = [];
 
@@ -67,8 +69,13 @@ export class FileManager {
 
         _.forEach(filesToCheck, file => {
             let processedFileName = this.normalizeFilePath(file);
+            let fileParts = processedFileName.split('/');
+            let fileName = fileParts[fileParts.length - 1];
+            fileParts = fileParts.slice(0, fileParts.length - 1);
 
-            allPromises.push(this.file.checkFile(baseDirectory, `${this.topFolderName}/${processedFileName}`).catch(e => {
+            let dirPath = `${baseDirectory}/${this.topFolderName}/${fileParts.join('/')}/`;
+
+            allPromises.push(this.file.checkFile(dirPath, fileName).catch(e => {
                 nonExistingFiles.push(processedFileName);
             }));
         });
@@ -137,6 +144,7 @@ export class FileManager {
         });
     }
 
+    //get path for downloads on device
     async getDownloadPath(): Promise<string> {
         if (this.platform.is('ios')) {
             return this.file.dataDirectory;
@@ -148,32 +156,31 @@ export class FileManager {
             return this.file.dataDirectory;
         }
         else if (androidSelectedStorage == "external") {
-            return this.file.externalRootDirectory;
-        }
+            let externalSdCardPath = await this.getSdCardStoragePath();
 
-        // To be able to save files on Android, we first need to ask the user for permission. 
-        // We do not let the download proceed until they grant access
-        let permissionResponse = await this.androidPermissions.checkPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE).then(
-            result => {
-                if (!result.hasPermission) {
-                    return this.androidPermissions.requestPermission(this.androidPermissions.PERMISSION.WRITE_EXTERNAL_STORAGE);
-                }
+            if (externalSdCardPath !== "") {
+                await this.dbContext.setAndroidSelectedStorage('external');
+                return externalSdCardPath;
             }
-        );
-
-        if (permissionResponse.hasPermission) {
-            await this.dbContext.setAndroidSelectedStorage('external');
-            return this.file.externalRootDirectory;
+            else { //no external storage
+                await this.dbContext.setAndroidSelectedStorage('local');
+                return this.file.dataDirectory;
+            }
         }
 
-
+        let externalSdCardPath = await this.getSdCardStoragePath();
+        if (externalSdCardPath !== "") {
+            await this.dbContext.setAndroidSelectedStorage('external');
+            return externalSdCardPath;
+        }
+        
         await this.dbContext.setAndroidSelectedStorage('local');
         return this.file.dataDirectory;
     }
 
     async getFile(filePath: string) {
         let processedFileName = this.normalizeFilePath(filePath);
-        let baseDirectory = await this.getBaseDirectory();
+        let baseDirectory = await this.getDownloadPath();
 
         return new Promise((resolve, reject) => {
             this.file.resolveDirectoryUrl(baseDirectory)
@@ -221,5 +228,31 @@ export class FileManager {
         let path = await this.getFileUrl(track.Path);
         path = this.webview.convertFileSrc(path);
         return path;
+    }
+
+    async getSdCardStoragePath(): Promise<string> {
+        let externalStoragePath = "";
+
+        await this.getStorageWritePermission().then(async status => {
+            if (status === this.diagnostic.permissionStatus.GRANTED) {
+                await this.diagnostic.getExternalSdCardDetails().then(details => {
+                    details.forEach(function (detail) {
+                        //157286400 = 100Mb
+                        if (detail.canWrite && detail.freeSpace > 157286400 && externalStoragePath === "") {
+                            console.log("diagnostic external file path", detail.filePath);
+                            externalStoragePath = detail.filePath;
+                        }
+                    });
+                }, error => {
+                    console.error("diagnostic external file path", error);
+                });
+            }
+        });
+
+        return externalStoragePath;
+    }
+
+    async getStorageWritePermission(): Promise<any> {
+        return this.diagnostic.requestExternalStorageAuthorization();
     }
 }

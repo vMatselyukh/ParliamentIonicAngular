@@ -22,7 +22,7 @@ export class DetailsPage implements OnInit {
     constructor(private route: ActivatedRoute,
         private router: Router,
         private dbContext: DbContext,
-        private advProvider: AdvProvider,        
+        private advProvider: AdvProvider,      
         private alertManager: AlertManager,
         private fileManager: FileManager,
         public languageManager: LanguageManager,
@@ -68,14 +68,10 @@ export class DetailsPage implements OnInit {
 
     goToHomePage() {
         console.log("go to home");
-        if (this.dbContext.shouldBannerBeShown) {
-            this.advProvider.hideBanner(() => {
-                this.router.navigateByUrl(`/home`);
-            });
-        }
-        else {
+
+        this.advProvider.hideBanner().then(() => {
             this.router.navigateByUrl(`/home`);
-        }
+        });
     }
 
     async playStopUnlockTrack(track: Track) {

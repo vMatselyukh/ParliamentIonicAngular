@@ -126,10 +126,8 @@ export class AdvProvider {
         this.admob.banner.show();
     }
 
-    hideBanner(hideCallback) {
-        this.admob.banner.hide().then(() => {
-            hideCallback();
-        });
+    hideBanner() {
+        return this.admob.banner.hide();
     }
 
     showAdvOrAlert() {
