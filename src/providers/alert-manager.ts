@@ -14,14 +14,14 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "У вас закінчились монети для розблокування фраз. Для отримання додаткових 10 монет потрібно переглянути короткий рекламний ролик.",
+            message: await this.languageManager.getTranslations("get_coins_by_watching_video"),
             buttons: [
                 {
-                    text: 'Скасувати',
+                    text: await this.languageManager.getTranslations("cancel"),
                     role: 'cancel',
                     cssClass: 'secondary'
                 }, {
-                    text: 'Переглянути',
+                    text: await this.languageManager.getTranslations("watch"),
                     handler: confirmCallback
                 }
             ]
@@ -34,7 +34,7 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Рекламний ролик не підвантажився. Перевірте з'єднання з інтернетом",
+            message: await this.languageManager.getTranslations("adv_not_loaded"), 
             buttons: ['OK']
         });
 
@@ -45,14 +45,14 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Отримати додаткових 10 монеток можна шляхом перегляду короткого рекламного ролику.",
+            message: await this.languageManager.getTranslations("get_coins_by_wathing_video_menu"),
             buttons: [
                 {
-                    text: 'Скасувати',
+                    text: await this.languageManager.getTranslations("cancel"),
                     role: 'cancel',
                     cssClass: 'secondary'
                 }, {
-                    text: 'Переглянути',
+                    text: await this.languageManager.getTranslations("watch"),
                     handler: confirmCallback
                 }
             ]
@@ -65,7 +65,7 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Рекламний ролик підвантажується. Будь ласка, зачекайте."
+            message: await this.languageManager.getTranslations("rewarded_video_is_loading")
         });
 
         await alert.present();
@@ -75,14 +75,14 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Ви впевнені що хочете вийти з додатку?",
+            message: await this.languageManager.getTranslations("are_you_sure_you_want_to_quit"),
             buttons: [
                 {
-                    text: 'Ні',
+                    text: await this.languageManager.getTranslations("no"),
                     role: 'cancel',
                     cssClass: 'secondary'
                 }, {
-                    text: 'Так',
+                    text: await this.languageManager.getTranslations("yes"),
                     handler: confirmCallback
                 }
             ]
@@ -95,14 +95,14 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Для завантаження контенту потрібно підключення до інтернету. Підключіться до інтернету і натисніть Ок",
+            message: await this.languageManager.getTranslations("internet_connection_needed_to_download_content"),
             buttons: [
                 {
-                    text: 'Вихід з додатку',
+                    text: await this.languageManager.getTranslations("exit_from_app"),
                     handler: exitAppCallback
                 },
                 {
-                    text: 'Ок',
+                    text: await this.languageManager.getTranslations("ok"),
                     handler: confirmCallback
                 }
             ]
@@ -115,7 +115,7 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Для відправки фрази потрібно подключення до інтернету. Підключіться та спробуйте знову.",
+            message: await this.languageManager.getTranslations("internet_connection_needed_to_post_quote"),
             buttons: [
                 {
                     text: 'Ок',
@@ -131,14 +131,14 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: "Новий контент доступний для завантаження. Бажаєте розпочати завантаження?",
+            message: await this.languageManager.getTranslations("new_content_is_ready_for_downloading"),
             buttons: [
                 {
-                    text: 'Не зараз',
+                    text: await this.languageManager.getTranslations("later"),
                     handler: laterCallback
                 },
                 {
-                    text: 'Так',
+                    text: await this.languageManager.getTranslations("yes"),
                     handler: confirmCallback
                 }
             ],
@@ -171,8 +171,8 @@ export class AlertManager {
     async showNoConfigAlert(confirmCallback: any, exitAppCallback: any) {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
-            subHeader: await this.languageManager.getTranslations("no_config_first_time_loading"),
-            message: "При першому запуску додатку потрібно завантажити файл конфігурації та контент. Підключіться до мережі інтернет та натисність 'Ок' щоб розпочати завантаження файлів.",
+            subHeader: '',
+            message: await this.languageManager.getTranslations("no_config_first_time_loading"),
             buttons: [
                 {
                     text: await this.languageManager.getTranslations("exit_from_app"),
@@ -196,7 +196,7 @@ export class AlertManager {
             message: message,
             buttons: [
                 {
-                    text: 'Ок',
+                    text: await this.languageManager.getTranslations("ok"),
                     role: 'cancel'
                 }
             ],

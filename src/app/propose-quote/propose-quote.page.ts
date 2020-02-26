@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { ParliamentApi, DbContext, AlertManager } from '../../providers/providers';
+import { ParliamentApi, DbContext, AlertManager, LanguageManager } from '../../providers/providers';
 import { ModalController } from '@ionic/angular';
 import { ProposeQuote } from '../../models/propose-quote';
 import { Network } from '@ionic-native/network/ngx';
@@ -13,19 +13,33 @@ import { Network } from '@ionic-native/network/ngx';
 export class ProposeQuotePage implements OnInit {
 
     proposeQuoteModel = new ProposeQuote("", "fakeGuid");
+    translations: any = null;
 
     constructor(public formBuilder: FormBuilder,
         private parliamentApi: ParliamentApi,
         private modalController: ModalController,
         private dbContext: DbContext,
         private network: Network,
-        private alertManager: AlertManager) {
+        private alertManager: AlertManager,
+        private languageManager: LanguageManager) {
 
         this.dbContext.getUserGuid().then(guid => {
             this.proposeQuoteModel = new ProposeQuote("", guid);
         }).catch(exception => {
             console.log("propose-quote", exception);
         });
+
+        (async () => {
+            this.translations = {
+                "politician_name": await this.languageManager.getTranslations("politician_name"),
+                "add_quote": await this.languageManager.getTranslations("add_quote"),
+                "quote": await this.languageManager.getTranslations("quote"),
+                "quote_is_required": await this.languageManager.getTranslations("quote_is_required"),
+                "url": await this.languageManager.getTranslations("url"),
+                "close": await this.languageManager.getTranslations("close"),
+                "send": await this.languageManager.getTranslations("send")
+            }
+        })();
     }
 
     ngOnInit() {
@@ -40,10 +54,12 @@ export class ProposeQuotePage implements OnInit {
                         'submitted': true
                     });
                 })
-                .catch(e => {
+                .catch(async e => {
+                    let errorMessage = await this.languageManager.getTranslations("error_happened_sorry");
+
                     this.modalController.dismiss({
                         'submitted': false,
-                        'error': e.error.Message
+                        'error': errorMessage
                     });
 
                     console.log("error posting quotes", e);

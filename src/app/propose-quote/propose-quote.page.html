@@ -1,9 +1,9 @@
 <ion-header>
     <ion-toolbar>
-        <ion-title>proposeQuote</ion-title>
+        <ion-title>{{translations && translations["add_quote"]}}</ion-title>
 
         <ion-button fill="clear" slot="end" (click)="closemodal()">
-            Close
+            {{translations && translations["close"]}}
         </ion-button>
     </ion-toolbar>
 </ion-header>
@@ -13,25 +13,24 @@
 
         <ion-list>
             <ion-item>
-                <ion-label color="medium" position="floating">PoliticianName</ion-label>
+                <ion-label color="medium" position="floating">{{translations && translations["politician_name"]}}</ion-label>
                 <ion-input clear-input [(ngModel)]="proposeQuoteModel.politicianName" id="politicianName" name="politicianName"></ion-input>
             </ion-item>
 
             <ion-item>
-                <ion-label color="medium" position="floating">Quote</ion-label>
+                <ion-label color="medium" position="floating">{{translations && translations["quote"]}}</ion-label>
                 <ion-textarea autoGrow #quote="ngModel" [(ngModel)]="proposeQuoteModel.quote" id="quote" name="quote" type="text" required></ion-textarea>
-                <div [hidden]="quote.valid"
-                     class="alert alert-danger">
-                    Quote is required
+                <div [hidden]="quote.valid" class="alert alert-danger">
+                    {{translations && translations["quote_is_required"]}}
                 </div>
             </ion-item>
 
             <ion-item>
-                <ion-label color="medium" position="floating">Url</ion-label>
+                <ion-label color="medium" position="floating">{{translations && translations["url"]}}</ion-label>
                 <ion-input clear-input [(ngModel)]="proposeQuoteModel.url" id="url" name="url" type="text"></ion-input>
             </ion-item>
 
-            <ion-button class="submit" padding-end="16" type="submit" [disabled]="!quoteForm.form.valid">Send</ion-button>
+            <ion-button class="submit" padding-end="16" type="submit" [disabled]="!quoteForm.form.valid">{{translations && translations["send"]}}</ion-button>
         </ion-list>
     </form>
 </ion-content>

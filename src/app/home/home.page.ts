@@ -20,6 +20,8 @@ export class HomePage {
     config: Config;
     coinsCount: number = 0;
 
+    translations: any = null;
+
     @ViewChild('MainList', { static: false }) mainList: ElementRef;
 
     listItemWidth: number = 0;
@@ -64,6 +66,12 @@ export class HomePage {
                 this.config = config;
             });
         });
+
+        (async () => {
+            this.translations = {
+                "list": await this.languageManager.getTranslations("list")
+            }
+        })();
     }
 
     ionViewDidEnter() {

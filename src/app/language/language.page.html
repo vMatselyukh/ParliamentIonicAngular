@@ -1,9 +1,9 @@
 ﻿<ion-header>
     <ion-toolbar>
-        <ion-title>Оберіть мову інтерфейсу</ion-title>
+        <ion-title>{{ translations && translations["chose_ui_language"]}}</ion-title>
 
         <ion-button fill="clear" slot="end" (click)="closemodal()">
-            Close
+            {{ translations && translations["close"]}}
         </ion-button>
     </ion-toolbar>
 </ion-header>

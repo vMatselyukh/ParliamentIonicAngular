@@ -1,16 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { LanguageManager } from '../../providers/providers';
 
 @Component({
     selector: 'app-language',
     templateUrl: './language.page.html',
     styleUrls: ['./language.page.scss'],
 })
-export class LanguagePage implements OnInit {
+export class LanguagePage {
 
-    constructor(private modalController: ModalController) { }
+    translations: any = null;
 
-    ngOnInit() {
+    constructor(private modalController: ModalController,
+        private languageManager: LanguageManager) {
+
+        (async () => {
+            this.translations = {
+                "chose_ui_language": await this.languageManager.getTranslations("chose_ui_language"),
+                "close": await this.languageManager.getTranslations("close")
+            }
+        })();
     }
 
     closemodal() {

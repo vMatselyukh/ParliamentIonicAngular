@@ -10,7 +10,7 @@ import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ShareService } from '@ngx-share/core';
 import { ToastController } from '@ionic/angular';
 
-import { AdvProvider, AlertManager, DbContext, LanguageManager, ConfigManager } from '../providers/providers';
+import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
 
 @Component({
     selector: 'app-root',
@@ -19,6 +19,8 @@ import { AdvProvider, AlertManager, DbContext, LanguageManager, ConfigManager } 
 })
 export class AppComponent {
     canShareUsingModileApp: boolean;
+
+    translations: any = null;
 
     constructor(
         public share: ShareService,
@@ -32,14 +34,15 @@ export class AppComponent {
         private alertManager: AlertManager,
         private events: Events,
         private dbContext: DbContext,
-        private languageManager: LanguageManager,
-        private configManager: ConfigManager
+        private languageManager: LanguageManager
     ) {
         this.initializeApp();
+
+        this.reloadLanguage();
     }
 
     initializeApp() {
-        this.platform.ready().then(() => {
+        this.platform.ready().then(async () => {
             this.statusBar.styleDefault();
             this.splashScreen.hide();
 
@@ -61,9 +64,26 @@ export class AppComponent {
             );
 
             this.advProvider.loadAdv();
+
+           
         }).catch((error) => {
             console.log("platform ready error " + JSON.stringify(error));
         });
+    }
+
+    reloadLanguage() {
+        (async () => {
+            this.translations = {
+                "propose_quotes": await this.languageManager.getTranslations("propose_quotes"),
+                "check_for_updates": await this.languageManager.getTranslations("check_for_updates"),
+                "get_coins": await this.languageManager.getTranslations("get_coins"),
+                "chose_languge": await this.languageManager.getTranslations("chose_languge"),
+                "put_mark_for_app": await this.languageManager.getTranslations("put_mark_for_app"),
+                "share_in_fb": await this.languageManager.getTranslations("share_in_fb"),
+                "exit": await this.languageManager.getTranslations("exit"),
+                "menu": await this.languageManager.getTranslations("menu")
+            };
+        })();
     }
 
     async presentProposeQuotesModal() {
@@ -94,6 +114,8 @@ export class AppComponent {
             if (data.data.language) {
                 await this.dbContext.setLanguage(data.data.language);
                 this.languageManager.languageIndex = await this.dbContext.getLanguageIndex();
+
+                this.reloadLanguage();
             }
             //reload ui translations
             console.log(data);
@@ -105,7 +127,16 @@ export class AppComponent {
     async shareInFbClick() {
         this.socialSharing.canShareVia("com.apple.social.facebook").then(
             async () => {
-                await this.socialSharing.shareViaFacebook("Some message here", null, "https://matseliukh.com");
+                let shareText = await this.languageManager.getTranslations("share_text");
+                let currentLanguage = await this.dbContext.getLanguage();
+
+                if (currentLanguage === "ru") {
+                    await this.socialSharing.shareViaFacebook(shareText, null, "https://parliament.matseliukh.com?language=ru");
+                }
+                else {
+                    await this.socialSharing.shareViaFacebook(shareText, null, "https://parliament.matseliukh.com");
+                }
+                
             }).catch(
                 (e) => console.log("Error social sharing ", e)
             );
@@ -113,7 +144,7 @@ export class AppComponent {
 
     async presentThankYouToast() {
         const toast = await this.toast.create({
-            message: 'Thank you.',
+            message: await this.languageManager.getTranslations("thank_you"),
             duration: 2000,
             color: "medium"
         });
@@ -135,10 +166,6 @@ export class AppComponent {
 
     showGetCoinsAlert() {
         let self = this;
-
-        //this.advProvider.loadAdv(() => {
-        //    this.events.publish("reward:received");
-        //});
 
         this.alertManager.showGetCoinsAlert(() => {
             self.advProvider.showRewardedVideo();

@@ -1,7 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { Person, Config, Track } from '../models/models';
-import { DbContext, ParliamentApi, AlertManager, LoadingManager, FileManager } from './providers';
+import {
+    DbContext, ParliamentApi, AlertManager,
+    LoadingManager, FileManager, LanguageManager
+} from './providers';
 import { Network } from '@ionic-native/network/ngx';
 
 @Injectable()
@@ -14,7 +17,8 @@ export class ConfigManager {
         private alertManager: AlertManager,
         private loadingManager: LoadingManager,
         private network: Network,
-        private fileManager: FileManager) {
+        private fileManager: FileManager,
+        private languageManager: LanguageManager) {
     }
 
     getResourcesToDownload(dbConfig: Config, serverConfig: Config): string[] {
@@ -80,14 +84,14 @@ export class ConfigManager {
                                 this.loadingManager.closeLoading();
                                 resolve({ "status": true, "message": "" }); //config downloaded
                             },
-                                () => {
-                                    resolve({ "status": false, "message": "server error" });
+                                async () => {
+                                    resolve({ "status": false, "message": await this.languageManager.getTranslations("error_happened_sorry") });
                                 }
                             );
                         },
-                        () => {
+                        async () => {
                             navigator['app'].exitApp();
-                            resolve({ "status": false, "message": "exit app" });
+                            resolve({ "status": false, "message": await this.languageManager.getTranslations("exit_from_app") });
                         })
                 }
                 else {
@@ -110,12 +114,12 @@ export class ConfigManager {
                         });
 
                         if (promiseExecutionFlag == "false") {
-                            return resolve({ "status": true, "message": "server error" });
+                            return resolve({ "status": true, "message": await this.languageManager.getTranslations("error_happened_sorry") });
                         }
 
                         if (forceLoading || nextTime == null || nextTime < currentTime) {
                             this.parliamentApi.getConfigHash()
-                                .then(hash => {
+                                .then(async hash => {
                                     if (hash != this.config.Md5Hash) {
 
                                         console.log("hashes are different, showing message about config update");
@@ -127,7 +131,7 @@ export class ConfigManager {
                                                     .then(async () => {
                                                         this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
-                                                        resolve({ "status": true, "message": "config updated" });
+                                                        resolve({ "status": true, "message": await this.languageManager.getTranslations("config_updated") });
                                                     })
                                                     .catch(async (error) => {
                                                         console.log("load content error", error);
@@ -135,9 +139,9 @@ export class ConfigManager {
                                                         reject(error);
                                                     });
                                             },
-                                            () => {
+                                            async () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
-                                                resolve({ "status": true, "message": "postponed" });
+                                                resolve({ "status": true, "message": await this.languageManager.getTranslations("postponed") });
                                             });
                                     }
                                     //show renew missing files message
@@ -150,7 +154,7 @@ export class ConfigManager {
                                                     .then(async () => {
                                                         this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
-                                                        resolve({ "status": true, "message": "config updated" });
+                                                        resolve({ "status": true, "message": await this.languageManager.getTranslations("config_updated") });
                                                     })
                                                     .catch(async (error) => {
                                                         console.log("load content error", error);
@@ -160,20 +164,20 @@ export class ConfigManager {
                                             });
                                     }
                                     else {
-                                        resolve({ "status": true, "message": "nothing to update" }); // nothing to update
+                                        resolve({ "status": true, "message": await this.languageManager.getTranslations("nothing_to_update") }); // nothing to update
                                     }
                                 })
-                                .catch(e => {
+                                .catch(async e => {
                                     console.log("Api get config error:" + e)
-                                    resolve({ "status": false, "message": "server error" });
+                                    resolve({ "status": false, "message": await this.languageManager.getTranslations("error_happened_sorry") });
                                 });
                         }
                         else {
-                            resolve({ "status": true, "message": "postponed" });
+                            resolve({ "status": true, "message": await this.languageManager.getTranslations("postponed") });
                         }
                     }
                     else {
-                        resolve({ "status": false, "message": "no internet" });
+                        resolve({ "status": false, "message": await this.languageManager.getTranslations("no_internet") });
                     }
                 }
             }).catch(e => {

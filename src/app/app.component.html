@@ -3,21 +3,21 @@
     <ion-menu contentId="content1" side="end" menuId="menu">
         <ion-header>
             <ion-toolbar color="medium">
-                <ion-title>Menu</ion-title>
+                <ion-title>{{translations && translations["menu"]}}</ion-title>
             </ion-toolbar>
         </ion-header>
         <ion-content>
             <ion-list>
-                <ion-item (click)="presentProposeQuotesModal();"><ion-icon name="quote"></ion-icon>Propose quotes</ion-item>
-                <ion-item (click)="updateConfig();"><ion-icon name="refresh"></ion-icon>Check for updates</ion-item>
-                <ion-item (click)="showGetCoinsAlert();"><ion-icon name="radio-button-off"></ion-icon>Get coins</ion-item>
-                <ion-item (click)="presentChooseLanguageModal();"><ion-icon name="text"></ion-icon>Language</ion-item>
-                <ion-item><ion-icon name="star-half"></ion-icon>Put mark</ion-item>
-                <ion-item *ngIf="canShareUsingModileApp" (click)="shareInFbClick();"><ion-icon name="logo-facebook"></ion-icon>Share</ion-item>
+                <ion-item (click)="presentProposeQuotesModal();"><ion-icon name="quote"></ion-icon>{{translations && translations["propose_quotes"]}}</ion-item>
+                <ion-item (click)="updateConfig();"><ion-icon name="refresh"></ion-icon>{{translations && translations["check_for_updates"]}}</ion-item>
+                <ion-item (click)="showGetCoinsAlert();"><ion-icon name="radio-button-off"></ion-icon>{{translations && translations["get_coins"]}}</ion-item>
+                <ion-item (click)="presentChooseLanguageModal();"><ion-icon name="text"></ion-icon>{{translations && translations["chose_languge"]}}</ion-item>
+                <ion-item><ion-icon name="star-half"></ion-icon>{{translations && translations["put_mark_for_app"]}}</ion-item>
+                <ion-item *ngIf="canShareUsingModileApp" (click)="shareInFbClick();"><ion-icon name="logo-facebook"></ion-icon>{{translations && translations["share_in_fb"]}}</ion-item>
                 <ion-item *ngIf="!canShareUsingModileApp" shareButton="facebook" url="https://matseliukh.com/">
-                    <ion-icon name="logo-facebook"></ion-icon>Share
+                    <ion-icon name="logo-facebook"></ion-icon>{{translations && translations["share_in_fb"]}}
                 </ion-item>
-                <ion-item *ngIf="showExitButton" (click)="exitApp();"><ion-icon name="exit"></ion-icon>Exit</ion-item>
+                <ion-item *ngIf="showExitButton" (click)="exitApp();"><ion-icon name="exit"></ion-icon>{{translations && translations["exit"]}}</ion-item>
             </ion-list>
         </ion-content>
     </ion-menu>

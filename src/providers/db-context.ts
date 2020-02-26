@@ -113,7 +113,7 @@ export class DbContext {
     }
 
 
-    //russian - 0, ukraine - 1
+    //ru - 0, ua - 1 
     async getLanguage() {
         if (this.cachedLanguage) {
             return this.cachedLanguage;
