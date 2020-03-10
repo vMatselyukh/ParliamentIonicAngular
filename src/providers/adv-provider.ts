@@ -3,6 +3,7 @@ import * as _ from 'lodash';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
 import { Platform, Events } from '@ionic/angular';
 import { DbContext, AlertManager } from '../providers/providers'
+import { Network } from '@ionic-native/network/ngx';
 
 @Injectable({
     providedIn: 'root'
@@ -19,19 +20,22 @@ export class AdvProvider {
     requireAdvClicked: boolean = false;
     advLoadingFailed: boolean = false;
     advLoaded: boolean = false;
+    advLoadingStarted: boolean = false;
 
     //handlers booleans
     rewardedVideoLoadedEventListenerAdded = false;
     rewardedVideoLoadFailEventListenerAdded = false;
     rewardedVideoCloseEventListenerAdded = false;
     rewardedVideoRewardEventListenerAdded = false;
+    rewardedVideoLoadingStartedEventListenerAdded = false;
 
 
     constructor(private admob: AdMobFree,
         private platform: Platform,
         private dbContext: DbContext,
         private alertManager: AlertManager,
-        private events: Events) {
+        private events: Events,
+        private network: Network) {
     }
 
     loadAdv(rewardCallback: any = null) {
@@ -67,12 +71,20 @@ export class AdvProvider {
             //});
 
             //document.addEventListener('admob.rewardvideo.events.OPEN', function (data) { console.log('admob.banner.reward_video.OPEN', data); });
-            //document.addEventListener('admob.rewardvideo.events.EXIT_APP', function (data) { console.log('admob.reward_video.events.EXIT_APP', data); });
-            //document.addEventListener('admob.rewardvideo.events.START', function (data) { console.log('admob.reward_video.events.START', data); });
+
+            //if (!self.rewardedVideoStartedEventListenerAdded) {
+            //    document.addEventListener('admob.rewardvideo.events.START', function (data) {
+            //        self.alertManager.closeAlerts();
+            //        console.log('admob.reward_video.events.START', data);
+            //    });
+
+            //    self.rewardedVideoStartedEventListenerAdded = true;
+            //}
 
             if (!self.rewardedVideoLoadedEventListenerAdded) {
                 document.addEventListener('admob.rewardvideo.events.LOAD', function (data) {
                     self.advLoaded = true;
+                    self.advLoadingFailed = false;
 
                     self.showAdvOrAlert();
                     console.log('admob.reward_video.events.LOAD', data);
@@ -95,7 +107,7 @@ export class AdvProvider {
             if (!self.rewardedVideoCloseEventListenerAdded) {
                 document.addEventListener('admob.rewardvideo.events.CLOSE', function () {
                     self.admob.rewardVideo.prepare().then(() => {
-                        console.log("admob.rewardvideo.events.CLOSE prepared");
+                        console.log("admob.rewardvideo.events.CLOSE");
                     });
                 });
 
@@ -130,20 +142,21 @@ export class AdvProvider {
         return this.admob.banner.hide();
     }
 
+    //requireAdvClicked means the user tapped require more coins.
     showAdvOrAlert() {
-        if (this.requireAdvClicked && this.advLoadingFailed) {
+        if (this.requireAdvClicked && this.advLoadingFailed && this.network.type == 'none') {
             this.alertManager.showAdNotAvailableAlert();
             this.resetValues();
         }
-
-        if (this.requireAdvClicked) {
+        else if (this.requireAdvClicked) {
             if (this.advLoaded) {
                 this.alertManager.closeAlerts();
                 this.showAdv();
                 this.resetValues();
             }
-            else {
+            else if (this.network.type != 'none') {
                 this.alertManager.showAddLoadingAlert();
+                this.loadAdv();
             }
         }
     }

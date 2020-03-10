@@ -65,7 +65,8 @@ export class AlertManager {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
-            message: await this.languageManager.getTranslations("rewarded_video_is_loading")
+            message: await this.languageManager.getTranslations("rewarded_video_is_loading"),
+            backdropDismiss: true
         });
 
         await alert.present();
@@ -85,7 +86,8 @@ export class AlertManager {
                     text: await this.languageManager.getTranslations("yes"),
                     handler: confirmCallback
                 }
-            ]
+            ],
+            backdropDismiss: true
         });
 
         await alert.present();
@@ -105,7 +107,8 @@ export class AlertManager {
                     text: await this.languageManager.getTranslations("ok"),
                     handler: confirmCallback
                 }
-            ]
+            ],
+            backdropDismiss: true
         });
 
         await alert.present();
@@ -121,7 +124,8 @@ export class AlertManager {
                     text: 'Ок',
                     handler: confirmCallback
                 }
-            ]
+            ],
+            backdropDismiss: true
         });
 
         await alert.present();

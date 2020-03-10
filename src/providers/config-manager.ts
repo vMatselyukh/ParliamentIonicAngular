@@ -68,6 +68,9 @@ export class ConfigManager {
     }
 
     async loadConfig(forceLoading: boolean = false) {
+        let showNoInternetMessage = forceLoading;
+        let showNoContentToDownloadMessage = forceLoading;
+
         return new Promise((resolve, reject) => {
             let promiseExecutionFlag = "not set";
 
@@ -82,16 +85,16 @@ export class ConfigManager {
                                 await this.downloadContent();
                                 await this.loadImagesDevicePath(true);
                                 this.loadingManager.closeLoading();
-                                resolve({ "status": true, "message": "" }); //config downloaded
+                                resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
                             },
                                 async () => {
-                                    resolve({ "status": false, "message": await this.languageManager.getTranslations("error_happened_sorry") });
+                                    resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
                                 }
                             );
                         },
                         async () => {
                             navigator['app'].exitApp();
-                            resolve({ "status": false, "message": await this.languageManager.getTranslations("exit_from_app") });
+                            resolve({ "message": await this.languageManager.getTranslations("exit_from_app"), "showMessage": true });
                         })
                 }
                 else {
@@ -114,7 +117,7 @@ export class ConfigManager {
                         });
 
                         if (promiseExecutionFlag == "false") {
-                            return resolve({ "status": true, "message": await this.languageManager.getTranslations("error_happened_sorry") });
+                            return resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
                         }
 
                         if (forceLoading || nextTime == null || nextTime < currentTime) {
@@ -131,7 +134,7 @@ export class ConfigManager {
                                                     .then(async () => {
                                                         this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
-                                                        resolve({ "status": true, "message": await this.languageManager.getTranslations("config_updated") });
+                                                        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
                                                     })
                                                     .catch(async (error) => {
                                                         console.log("load content error", error);
@@ -141,7 +144,7 @@ export class ConfigManager {
                                             },
                                             async () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
-                                                resolve({ "status": true, "message": await this.languageManager.getTranslations("postponed") });
+                                                resolve({ "message": await this.languageManager.getTranslations("postponed"), "showMessage": true });
                                             });
                                     }
                                     //show renew missing files message
@@ -154,7 +157,7 @@ export class ConfigManager {
                                                     .then(async () => {
                                                         this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
-                                                        resolve({ "status": true, "message": await this.languageManager.getTranslations("config_updated") });
+                                                        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
                                                     })
                                                     .catch(async (error) => {
                                                         console.log("load content error", error);
@@ -164,20 +167,20 @@ export class ConfigManager {
                                             });
                                     }
                                     else {
-                                        resolve({ "status": true, "message": await this.languageManager.getTranslations("nothing_to_update") }); // nothing to update
+                                        resolve({ "message": await this.languageManager.getTranslations("nothing_to_update"), "showMessage": showNoContentToDownloadMessage });
                                     }
                                 })
                                 .catch(async e => {
                                     console.log("Api get config error:" + e)
-                                    resolve({ "status": false, "message": await this.languageManager.getTranslations("error_happened_sorry") });
+                                    resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
                                 });
                         }
                         else {
-                            resolve({ "status": true, "message": await this.languageManager.getTranslations("postponed") });
+                            resolve({ "message": await this.languageManager.getTranslations("postponed"), "showMessage": false });
                         }
                     }
                     else {
-                        resolve({ "status": false, "message": await this.languageManager.getTranslations("no_internet") });
+                        resolve({ "message": await this.languageManager.getTranslations("no_internet"), "showMessage": showNoInternetMessage });
                     }
                 }
             }).catch(e => {
@@ -253,6 +256,8 @@ export class ConfigManager {
 
         return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
             .then(() => {
+                //lock all tracks because in copyConfig we will unlock needed ones.
+                this.lockAllTracksInServerConfig(serverConfig);
                 this.copyConfig(this.config, serverConfig);
                 this.dbContext.saveConfig(serverConfig);
                 this.config = serverConfig;
@@ -297,6 +302,14 @@ export class ConfigManager {
 
             resolve();
         });
+    }
+
+    private lockAllTracksInServerConfig(serverConfig: Config) {
+        for (let i = 0; i < serverConfig.Persons.length; i++) {
+            for (let j = 0; j < serverConfig.Persons[i].Tracks.length; j++) {
+                serverConfig.Persons[i].Tracks[j].IsLocked = true;
+            }
+        }
     }
 
     private copyUnlockedTracks(localConfig: Config, serverConfig: Config) {

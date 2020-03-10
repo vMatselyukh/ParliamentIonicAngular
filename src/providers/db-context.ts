@@ -20,6 +20,7 @@ export class DbContext {
     cachedConfig: Config = null;
     cachedLanguage: string = "";
     shouldBannerBeShown = false;
+    cachedCoinsCount: number = -1;
 
     constructor(public storage: Storage) {
     }
@@ -48,7 +49,7 @@ export class DbContext {
                     resolve(config);
                 })
                 .catch(error => reject(error));
-        })
+        });
     }
 
     updateBannerShouldBeShown(config: Config) {
@@ -78,7 +79,18 @@ export class DbContext {
     }
 
     async getCoinsCount(): Promise<number> {
-        return await this.storage.get(this.coinsKey);
+        if (this.cachedCoinsCount != -1) {
+            return Promise.resolve(this.cachedCoinsCount);
+        }
+
+        return new Promise((resolve, reject) => {
+            this.storage.get(this.coinsKey)
+                .then(coins => {
+                    this.cachedCoinsCount = coins;
+                    resolve(coins);
+                })
+                .catch(error => reject(error));
+        });
     };
 
     async saveCoins(count: number): Promise<any> {
@@ -88,7 +100,9 @@ export class DbContext {
     async earnCoinsByWatchingAdv(): Promise<any> {
         let self = this;
         return await this.getCoinsCount().then(count => {
-            self.storage.set(self.coinsKey, count + self.coinsCountForWatchingAdv);
+            let newCount = count + self.coinsCountForWatchingAdv;
+            self.storage.set(self.coinsKey, newCount);
+            self.cachedCoinsCount = newCount;
         })
     }
 

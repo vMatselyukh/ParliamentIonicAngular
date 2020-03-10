@@ -19,6 +19,9 @@ export class HomePage {
 
     config: Config;
     coinsCount: number = 0;
+    configUpdateSubscribed: boolean = false;
+    rewardReceivedSubscribed: boolean = false;
+    platformResumeSubscribed: boolean = false;
 
     translations: any = null;
 
@@ -85,37 +88,49 @@ export class HomePage {
             }, 1);
         });
 
-        this.events.subscribe("reward:received", () => {
-            self.loadCoinsCount();
-        });
-
-        this.events.subscribe("config:update", () => {
-            console.log("config:update");
-            self.configManager.loadConfig(true).then((result: any) => {
-                this.loadConfigProcessResult(result, true);
+        if (!this.rewardReceivedSubscribed) {
+            this.events.subscribe("reward:received", () => {
+                self.loadCoinsCount();
             });
-        });
+
+            this.rewardReceivedSubscribed = true;
+        }
+
+        //user taps update config from menu
+        if (!this.configUpdateSubscribed) {
+            this.events.subscribe("config:update", () => {
+                console.log("config:update");
+                self.configManager.loadConfig(true).then((result: any) => {
+                    this.loadConfigProcessResult(result);
+                });
+            });
+
+            this.configUpdateSubscribed = true;
+        }
 
         this.platform.ready().then(async () => {
             this.assignUserId();
             this.loadCoinsCount();
             console.log("platform.ready");
 
-            await this.fileManager.getDownloadPath().then(() => {
-                this.platform.resume.subscribe(() => {
-                    console.log("resume");
-                    this.configManager.loadConfig().then((result: any) => {
-                        this.loadConfigProcessResult(result, false);
+            if (!this.platformResumeSubscribed) {
+
+                await this.fileManager.getDownloadPath().then(() => {
+                    //user gets back into the app
+                    this.platform.resume.subscribe(() => {
+                        console.log("resume");
+                        this.configManager.loadConfig().then((result: any) => {
+                            this.loadConfigProcessResult(result);
+                        });
                     });
                 });
-            });
 
+                this.platformResumeSubscribed = true;
+            }
+
+            //happens on the initial page loading
             this.configManager.loadConfig().then((result: any) => {
-                this.loadConfigProcessResult(result, false);
-            });
-
-            this.platform.pause.subscribe(() => {
-                console.log("pause");
+                this.loadConfigProcessResult(result);
             });
         });
 
@@ -123,24 +138,15 @@ export class HomePage {
         console.log("main list height", this.mainList.nativeElement.clientHeight);
     }
 
-    loadConfigProcessResult(result: any, showMessage: boolean = true) {
-        if (result.status) {
-            this.config = this.configManager.config;
-            if (showMessage) {
-                this.presentConfigStatusMessageAlert(result.message);
-            }
-        }
-        else {
-            this.alertManager.showInfoAlert(result.message);
+    loadConfigProcessResult(result: any) {
+        this.config = this.configManager.config;
+        if (result.showMessage) {
+            this.presentConfigStatusMessageAlert(result.message);
         }
     }
 
     ionViewWillLeave() {
         console.log("view will leave");
-
-        this.events.unsubscribe("reward:received");
-
-        this.events.unsubscribe("config:update");
     }
 
     ionViewDidLeave() {

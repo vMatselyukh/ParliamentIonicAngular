@@ -146,7 +146,7 @@ export class AppComponent {
         const toast = await this.toast.create({
             message: await this.languageManager.getTranslations("thank_you"),
             duration: 2000,
-            color: "medium"
+            color: "dark"
         });
         toast.present();
     }
