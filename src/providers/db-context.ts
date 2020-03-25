@@ -28,15 +28,18 @@ export class DbContext {
     async saveConfig(config: Config): Promise<void> {
         this.cachedConfig = config;
 
-        config.Persons = config.Persons.sort((a: Person, b: Person) => {
-            return a.OrderNumber > b.OrderNumber ? 1 : -1;
-        })
+        if(config)
+        {
+            config.Persons = config.Persons.sort((a: Person, b: Person) => {
+                return a.OrderNumber > b.OrderNumber ? 1 : -1;
+            });
+        }
 
         await this.storage.set(this.configKey, config);
     }
 
     getConfig(): Promise<Config> {
-        if (this.cachedConfig) {
+        if (this.cachedConfig !== null) {
             this.updateBannerShouldBeShown(this.cachedConfig);
             return Promise.resolve(this.cachedConfig);
         }
@@ -45,7 +48,11 @@ export class DbContext {
             this.storage.get(this.configKey)
                 .then(config => {
                     this.cachedConfig = config;
-                    this.updateBannerShouldBeShown(config);
+                    if(config !== null)
+                    {
+                        this.updateBannerShouldBeShown(config);
+                    }
+                    
                     resolve(config);
                 })
                 .catch(error => reject(error));

@@ -37,6 +37,7 @@
     "@ngx-share/core": "^7.1.4",
     "cordova-admob-sdk": "^0.24.1",
     "cordova-android": "^8.1.0",
+    "cordova-ios": "5.1.1",
     "cordova-plugin-admob-free": "^0.27.0",
     "cordova-plugin-android-permissions": "^1.0.2",
     "cordova-plugin-enable-multidex": "^0.2.0",
@@ -92,7 +93,10 @@
   "description": "An Ionic project",
   "cordova": {
     "plugins": {
-      "cordova-plugin-x-socialsharing": {},
+      "cordova-plugin-x-socialsharing": {
+        "PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION": "This app requires photo library access to function properly.",
+        "PHOTO_LIBRARY_USAGE_DESCRIPTION": "This app requires photo library access to function properly."
+      },
       "cordova-plugin-whitelist": {},
       "cordova-plugin-statusbar": {},
       "cordova-plugin-splashscreen": {},
@@ -109,7 +113,8 @@
       "cordova.plugins.diagnostic": {}
     },
     "platforms": [
-      "android"
+      "android",
+      "ios"
     ]
   }
 }

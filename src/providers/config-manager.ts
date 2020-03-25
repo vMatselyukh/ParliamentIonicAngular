@@ -268,6 +268,10 @@ export class ConfigManager {
     }
 
     private async loadImagesDevicePath(forceSystemCheck) {
+        if(!this.config)
+        {
+            return;
+        }
 
         let startPersonsCount = this.config.Persons.length;
         for (var i = 0; i < this.config.Persons.length; i++) {
@@ -293,12 +297,14 @@ export class ConfigManager {
         }
         console.log("device path has been reloaded");
 
+        let self = this;
+
         return new Promise(async (resolve, reject) => {
-            if (startPersonsCount != this.config.Persons.length) {
-                this.config.Md5Hash = this.config.Md5Hash + "need to be updated";
+            if (startPersonsCount != self.config.Persons.length) {
+                self.config.Md5Hash = self.config.Md5Hash + "need to be updated";
             }
 
-            await this.dbContext.saveConfig(this.config);
+            await self.dbContext.saveConfig(self.config);
 
             resolve();
         });

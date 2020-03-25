@@ -21,9 +21,13 @@ export class ParliamentApi {
 
     getConfig() : Promise<Config> {
         return new Promise((resolve, reject) => {
+
+            console.log("getting config from ", `${this.baseUrl}getconfig?countryName=${this.countryName}`);
+
             this.http.get(`${this.baseUrl}getconfig?countryName=${this.countryName}`, this.requestOptions)
             .subscribe(
                 (data) => {
+                    console.log("data received ", data);
                     resolve(data as Config);
                 },
                 (error) => {
