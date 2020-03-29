@@ -16,6 +16,8 @@ export class FileManager {
     readonly topFolderName = "parliament";
     readonly fileDelimiter = "\\";
 
+    win: any = window;
+
     private requestOptions = {
         headers: {
             'AuthorizeHeader': '1569b7bd-94d2-428c-962b-858e3f46b8a2'
@@ -197,6 +199,7 @@ export class FileManager {
         return new Promise((resolve, reject) => {
             this.getFile(filePath)
                 .then((fileEntry: FileEntry) => {
+                     console.log("native url");
                     resolve(fileEntry.nativeURL);
                 })
                 .catch(fileEntryError => {
@@ -208,19 +211,40 @@ export class FileManager {
 
     async getListButtonImagePath(person: Person): Promise<string> {
         let path = await this.getFileUrl(person.ListButtonPicPath.ImagePath);
-        path = this.webview.convertFileSrc(path);
+
+        if (this.platform.is('ios')) {
+            path = this.win.Ionic.WebView.convertFileSrc(path);
+        }
+        else{
+            path = this.webview.convertFileSrc(path);
+        }
+        
         return path;
     }
 
     async getSmallButtonImagePath(person: Person): Promise<string> {
         let path = await this.getFileUrl(person.SmallButtonPicPath.ImagePath);
-        path = this.webview.convertFileSrc(path);
+        
+        if (this.platform.is('ios')) {
+            path = this.win.Ionic.WebView.convertFileSrc(path);
+        }
+        else{
+            path = this.webview.convertFileSrc(path);
+        }
+
         return path;
     }
 
     async getMainPicImagePath(person: Person): Promise<string> {
         let path = await this.getFileUrl(person.MainPicPath.ImagePath);
-        path = this.webview.convertFileSrc(path);
+        
+        if (this.platform.is('ios')) {
+            path = this.win.Ionic.WebView.convertFileSrc(path);
+        }
+        else{
+            path = this.webview.convertFileSrc(path);
+        }
+
         return path;
     }
 

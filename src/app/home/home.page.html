@@ -18,13 +18,15 @@
         <div class="coins-icon"></div>
         <span class="coins-count">{{this.dbContext.cachedCoinsCount}}</span>
     </div>
-    
 
     <div id="MainList" #MainList>
         <div scroll-x="true" class="scroll-area">
             <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of config?.Persons" (tap)="itemClick(person)"
                 (click)="itemClick(person)" >
-                <img class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
+
+                <img *ngIf="!isIos" class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
+
+                <img *ngIf="isIos" class="size-helper" [src]="person.ListButtonDevicePathIos" width="129" height="183" />
 
                 <div class="person-info">
                     <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>

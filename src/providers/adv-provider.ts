@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
-import { Platform, Events } from '@ionic/angular';
 import { DbContext, AlertManager } from '../providers/providers'
 import { Network } from '@ionic-native/network/ngx';
+import { Platform } from '@ionic/angular';
 
 @Injectable({
     providedIn: 'root'
@@ -34,7 +34,6 @@ export class AdvProvider {
         private platform: Platform,
         private dbContext: DbContext,
         private alertManager: AlertManager,
-        private events: Events,
         private network: Network) {
     }
 
@@ -60,6 +59,10 @@ export class AdvProvider {
             // Create banner
             self.admob.banner.prepare().then(() => {
                 console.log("admob banner prepared");
+
+                if (self.platform.is('ios')) {
+                    this.hideBanner();
+                }
             });
 
             self.admob.rewardVideo.prepare().then(() => {
@@ -135,10 +138,12 @@ export class AdvProvider {
     }
 
     showBanner() {
+        console.log("show banner");
         this.admob.banner.show();
     }
 
     hideBanner() {
+        console.log("hide banner");
         return this.admob.banner.hide();
     }
 

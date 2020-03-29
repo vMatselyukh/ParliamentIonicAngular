@@ -16,6 +16,7 @@ export class DbContext {
     private readonly coinsCountForWatchingAdv: number = 1;
     //readonly postponeHours: number = 24;
     private readonly postponeSeconds: number = 30;
+    private readonly initialCoinsCount = 10;
 
     cachedConfig: Config = null;
     cachedLanguage: string = "";
@@ -73,7 +74,14 @@ export class DbContext {
             }
         }
 
-        this.shouldBannerBeShown = Math.floor((totalTrackCount - totalUnlockedTracks) / 10) < 1;
+        if(totalTrackCount == 0)
+        {
+            this.shouldBannerBeShown = false;
+        }
+        else
+        {
+            this.shouldBannerBeShown = Math.floor((totalTrackCount - totalUnlockedTracks) / 10) < 1;
+        }   
     }
 
     async getUserGuid(): Promise<string> {
@@ -93,7 +101,12 @@ export class DbContext {
         return new Promise((resolve, reject) => {
             this.storage.get(this.coinsKey)
                 .then(coins => {
-                    this.cachedCoinsCount = coins;
+                    if(coins == null) {
+                        coins = this.initialCoinsCount;
+
+                        this.saveCoins(coins);
+                    }
+
                     resolve(coins);
                 })
                 .catch(error => reject(error));
@@ -101,6 +114,7 @@ export class DbContext {
     };
 
     async saveCoins(count: number): Promise<any> {
+        this.cachedCoinsCount = count;
         return await this.storage.set(this.coinsKey, count);
     };
 
@@ -108,8 +122,7 @@ export class DbContext {
         let self = this;
         return await this.getCoinsCount().then(count => {
             let newCount = count + self.coinsCountForWatchingAdv;
-            self.storage.set(self.coinsKey, newCount);
-            self.cachedCoinsCount = newCount;
+            self.saveCoins(newCount);
         })
     }
 

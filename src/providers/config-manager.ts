@@ -1,4 +1,6 @@
-﻿import { Injectable } from '@angular/core';
+﻿import { DomSanitizer } from '@angular/platform-browser';
+import { Platform } from '@ionic/angular';
+import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { Person, Config, Track } from '../models/models';
 import {
@@ -18,7 +20,9 @@ export class ConfigManager {
         private loadingManager: LoadingManager,
         private network: Network,
         private fileManager: FileManager,
-        private languageManager: LanguageManager) {
+        private languageManager: LanguageManager,
+        private platform: Platform,
+        private domSanitizer: DomSanitizer) {
     }
 
     getResourcesToDownload(dbConfig: Config, serverConfig: Config): string[] {
@@ -283,6 +287,18 @@ export class ConfigManager {
                 listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
                 smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
                 mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
+
+                if (this.platform.is('ios')) {
+                    this.config.Persons[i].ListButtonDevicePathIos = this.domSanitizer.bypassSecurityTrustUrl(listButtonImagePath);
+                }
+                
+
+                this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
+                console.log("list path:", listButtonImagePath);
+                this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
+                console.log("main path:", mainPicImagePath);
+                this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
+                console.log("small path:", smallButtonImagePath);
             }
 
             if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
@@ -290,10 +306,6 @@ export class ConfigManager {
                 this.dbContext.postponeUpdateTime(new Date("01/01/2019"));
                 continue;
             }
-
-            this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
-            this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
-            this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
         }
         console.log("device path has been reloaded");
 
@@ -316,9 +328,16 @@ export class ConfigManager {
                 serverConfig.Persons[i].Tracks[j].IsLocked = true;
             }
         }
+
+        console.log("all tracks should be locked");
     }
 
     private copyUnlockedTracks(localConfig: Config, serverConfig: Config) {
+        if(localConfig == null)
+        {
+            return;
+        }
+
         _.forEach(localConfig.Persons, localPerson => {
             let serverPerson = serverConfig.Persons.find(serverPerson => {
                 if (serverPerson.Id == localPerson.Id) {

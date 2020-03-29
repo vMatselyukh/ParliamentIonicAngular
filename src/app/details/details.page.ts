@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Track, Person } from 'src/models/models';
 import { Platform } from '@ionic/angular';
 import { Howl } from 'howler';
@@ -18,6 +19,7 @@ export class DetailsPage implements OnInit {
     person: Person;
     player: Howl = null;
     activeTrackId = 0;
+    isIos: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -26,11 +28,16 @@ export class DetailsPage implements OnInit {
         private alertManager: AlertManager,
         private fileManager: FileManager,
         public languageManager: LanguageManager,
-        private platform: Platform) {
+        private platform: Platform,
+        private domSanitizer: DomSanitizer) {
     }
 
     ngOnInit() {
         this.platform.ready().then(() => {
+            if (this.platform.is('ios')) {
+                this.isIos = true;
+            }
+
             if (this.route.snapshot.data['special']) {
                 this.person = this.route.snapshot.data['special'];
 

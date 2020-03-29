@@ -10,6 +10,7 @@ export class Person
     SmallButtonPicPath: ImageInfo;
     ListButtonPicPath: ImageInfo;
     ListButtonDevicePath: string;
+    ListButtonDevicePathIos: any;
     SmallButtonDevicePath: string;
     MainPicDevicePath: string;
     Infos: PersonInfo[];

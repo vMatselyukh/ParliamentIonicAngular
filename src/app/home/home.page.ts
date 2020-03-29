@@ -23,6 +23,8 @@ export class HomePage {
     rewardReceivedSubscribed: boolean = false;
     platformResumeSubscribed: boolean = false;
 
+    isIos: boolean = false;
+
     translations: any = null;
 
     @ViewChild('MainList', { static: false }) mainList: ElementRef;
@@ -39,6 +41,7 @@ export class HomePage {
         private alertManager: AlertManager,
         private advProvider: AdvProvider,
         private fileManager: FileManager) {
+
         this.config = new Config();
 
         let fakePersons = [];
@@ -59,6 +62,10 @@ export class HomePage {
         this.config.Persons = fakePersons;
 
         this.platform.ready().then(() => {
+            if (this.platform.is('ios')) {
+                this.isIos = true;
+            }
+
             this.dbContext.getLanguageIndex().then(index => {
                 this.languageManager.languageIndex = index;
             });
@@ -81,11 +88,7 @@ export class HomePage {
         let self = this;
 
         this.advProvider.hideBanner().then(() => {
-            setTimeout(() => {
-                let mainListHeight = self.mainList.nativeElement.clientHeight;
-                let itemImageHeight = (mainListHeight - 2) * 0.7;
-                self.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
-            }, 1);
+            this.recalcListImagesWidthHeight();
         });
 
         if (!this.rewardReceivedSubscribed) {
@@ -133,6 +136,8 @@ export class HomePage {
                 this.loadConfigProcessResult(result);
             });
         });
+
+        this.recalcListImagesWidthHeight();
 
         console.log("view did enter");
         console.log("main list height", this.mainList.nativeElement.clientHeight);
@@ -213,5 +218,13 @@ export class HomePage {
         }
 
         await this.alertManager.showInfoAlert(message);
+    }
+
+    recalcListImagesWidthHeight() {
+        setTimeout(() => {
+            let mainListHeight = this.mainList.nativeElement.clientHeight;
+            let itemImageHeight = (mainListHeight - 2) * 0.7;
+            this.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
+        }, 1);
     }
 }
