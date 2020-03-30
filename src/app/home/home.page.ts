@@ -17,7 +17,6 @@ import * as _ from 'lodash';
 })
 export class HomePage {
 
-    config: Config;
     coinsCount: number = 0;
     configUpdateSubscribed: boolean = false;
     rewardReceivedSubscribed: boolean = false;
@@ -41,14 +40,15 @@ export class HomePage {
         private alertManager: AlertManager,
         private advProvider: AdvProvider,
         private fileManager: FileManager) {
-
-        this.config = new Config();
+    
+        this.configManager.config = new Config();
 
         let fakePersons = [];
 
         for (let i = 0; i < 5; i++) {
             let fakePerson = new Person();
-            fakePerson.ListButtonDevicePath = "assets/images/incognito.png";
+
+            fakePerson.ListButtonDevicePath = "assets/images/incognito.png";            
 
             let personInfo = new PersonInfo();
             personInfo.Name = "Incognito";
@@ -59,7 +59,7 @@ export class HomePage {
             fakePersons.push(fakePerson);
         }
 
-        this.config.Persons = fakePersons;
+        this.configManager.config.Persons = fakePersons;
 
         this.platform.ready().then(() => {
             if (this.platform.is('ios')) {
@@ -70,11 +70,11 @@ export class HomePage {
                 this.languageManager.languageIndex = index;
             });
 
-            this.dbContext.getConfig().then(config => {
+            // this.dbContext.getConfig().then(config => {
 
-                console.log("config from constructor", config);
-                this.config = config;
-            });
+            //     console.log("config from constructor", config);
+            //     this.config = config;
+            // });
         });
 
         (async () => {
@@ -144,7 +144,6 @@ export class HomePage {
     }
 
     loadConfigProcessResult(result: any) {
-        this.config = this.configManager.config;
         if (result.showMessage) {
             this.presentConfigStatusMessageAlert(result.message);
         }
@@ -170,17 +169,7 @@ export class HomePage {
 
         //this.dbContext.saveCoins(0);
         this.dbContext.getCoinsCount().then((count?: number) => {
-            if (count == null) {
-                count = 10;
-
-                this.dbContext.saveCoins(count)
-                    .then(() =>
-                        console.log('save'))
-                    .catch((error) =>
-                        console.log('app component error ' + JSON.stringify(error)));
-            }
-
-            this.coinsCount = count;
+            this.coinsCount = count;    
         });
     }
 

@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'Roboto Slab', serif;
+    src: url('/assets/fonts/RobotoSlab-VariableFont_wght.ttf');
+}
+  
+* {
+    font-family: 'Roboto Slab', serif;
+}
+
 body{
     font-size: 100%;
 }
@@ -43,7 +52,6 @@ body{
     .coins-count {
         position: relative;
         top: -3px;
-        font-family: cursive;
         margin-left: 2px;
         color: black;
         text-shadow: 1px 1px 1px grey;

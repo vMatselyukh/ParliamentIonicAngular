@@ -21,12 +21,14 @@
 
     <div id="MainList" #MainList>
         <div scroll-x="true" class="scroll-area">
-            <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of config?.Persons" (tap)="itemClick(person)"
+            <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of configManager.config?.Persons" (tap)="itemClick(person)"
                 (click)="itemClick(person)" >
 
                 <img *ngIf="!isIos" class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
 
-                <img *ngIf="isIos" class="size-helper" [src]="person.ListButtonDevicePathIos" width="129" height="183" />
+                <img *ngIf="isIos && person.Infos[0]?.Name != 'Incognito'" class="size-helper" [src]="person.ListButtonDevicePathIos" width="129" height="183" />
+
+                <img *ngIf="isIos && person.Infos[0]?.Name == 'Incognito'" class="size-helper" [src]="person.ListButtonDevicePath" width="129" height="183" />
 
                 <div class="person-info">
                     <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>

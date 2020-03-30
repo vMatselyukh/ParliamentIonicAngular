@@ -28,6 +28,7 @@ export class DbContext {
 
     async saveConfig(config: Config): Promise<void> {
         this.cachedConfig = config;
+        this.updateBannerShouldBeShown(config);
 
         if(config)
         {
@@ -105,8 +106,10 @@ export class DbContext {
                         coins = this.initialCoinsCount;
 
                         this.saveCoins(coins);
+                        resolve(coins);
                     }
 
+                    this.cachedCoinsCount = coins;
                     resolve(coins);
                 })
                 .catch(error => reject(error));
@@ -155,9 +158,16 @@ export class DbContext {
 
         let savedLanguage = await this.storage.get(this.languageKey);
 
-        this.cachedLanguage = savedLanguage;
-
-        return savedLanguage;
+        if(savedLanguage == null)
+        {
+            this.setLanguage("ua");
+            return "ua";
+        }
+        else
+        {
+            this.cachedLanguage = savedLanguage;
+            return savedLanguage;
+        }
     }
 
     async getLanguageIndex(): Promise<number>{

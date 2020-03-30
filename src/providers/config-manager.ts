@@ -1,6 +1,6 @@
 ﻿import { DomSanitizer } from '@angular/platform-browser';
 import { Platform } from '@ionic/angular';
-import { Injectable } from '@angular/core';
+import { Injectable, SecurityContext } from '@angular/core';
 import * as _ from 'lodash';
 import { Person, Config, Track } from '../models/models';
 import {
@@ -34,9 +34,10 @@ export class ConfigManager {
     }
 
     getResourcesToDelete(dbConfig: Config, serverConfig: Config): string[] {
-
         let imagesToDelete = this.getImagesToDelete(dbConfig, serverConfig);
+        console.log('images to delete calculated');
         let tracksToDelete = this.getTracksToDelete(dbConfig, serverConfig);
+        console.log('tracks to delete calculated');
 
         return imagesToDelete.concat(tracksToDelete);
     }
@@ -79,14 +80,13 @@ export class ConfigManager {
             let promiseExecutionFlag = "not set";
 
             this.dbContext.getConfig().then(async dbConfig => {
-                console.log("config equals", dbConfig);
 
                 if (dbConfig == null) {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
                             await this.loadingManager.showConfigLoadingMessage();
                             this.loadConfigFromServer(async () => {
-                                await this.downloadContent();
+                                await this.downloadContent(this.dbContext.cachedConfig);
                                 await this.loadImagesDevicePath(true);
                                 this.loadingManager.closeLoading();
                                 resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
@@ -103,9 +103,11 @@ export class ConfigManager {
                 }
                 else {
                     console.log("db config isn't null.");
+                    this.reloadPathIos();
+
                     this.config = dbConfig;
 
-                    console.log("config", this.config);
+                    //console.log("config", JSON.stringify(this.config));
 
                     await this.loadImagesDevicePath(false);
 
@@ -136,7 +138,7 @@ export class ConfigManager {
 
                                                 this.downloadContent()
                                                     .then(async () => {
-                                                        this.loadImagesDevicePath(true);
+                                                        await this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
                                                         resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
                                                     })
@@ -159,7 +161,7 @@ export class ConfigManager {
 
                                                 this.downloadContent()
                                                     .then(async () => {
-                                                        this.loadImagesDevicePath(true);
+                                                        await this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
                                                         resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
                                                     })
@@ -195,6 +197,30 @@ export class ConfigManager {
         });
     }
 
+    reloadPathIos(){
+        if(this.platform.is('ios')){
+            for (var i = 0; i < this.config.Persons.length; i++) {
+                let listButtonImagePath = this.config.Persons[i].ListButtonDevicePath;
+
+                let newSafeUrlObj = this.domSanitizer.bypassSecurityTrustResourceUrl(listButtonImagePath);
+                let newSafeUrl = this.domSanitizer.sanitize(SecurityContext.RESOURCE_URL, newSafeUrlObj);
+                let oldSafeUrl = '';
+                
+                if(this.config.Persons[i].ListButtonDevicePathIos != null) {
+                    oldSafeUrl = this.domSanitizer.sanitize(SecurityContext.RESOURCE_URL, this.config.Persons[i].ListButtonDevicePathIos);
+                }
+
+                //console.log("current path", oldSafeUrl);
+                
+                if(newSafeUrl != oldSafeUrl)
+                {
+                    this.config.Persons[i].ListButtonDevicePathIos = newSafeUrlObj;
+                    //console.log("new path", newSafeUrl);
+                }
+            }
+        }
+    }
+
     loadConfigFromServer(loadingFinishCallback: any, loadingFailedCallback: any) {
         if (this.network.type == 'none') {
             this.alertManager.showNoInternetAlert(
@@ -209,8 +235,8 @@ export class ConfigManager {
         else {
             this.parliamentApi.getConfig()
                 .then(config => {
-                    this.config = config;
                     this.dbContext.saveConfig(config);
+                    console.log("Loading from server shoud be finished. Calling callback.");
                     loadingFinishCallback();
                 })
                 .catch(e => {
@@ -220,21 +246,36 @@ export class ConfigManager {
         }
     }
 
-    private async downloadContent(): Promise<any> {
+    private async downloadContent(serverConfig: Config = null): Promise<any> {
+        console.log("downloadContent started");
         //update process started
-        let serverConfig = await this.parliamentApi.getConfig();
+        if(serverConfig == null) {
+            serverConfig = await this.parliamentApi.getConfig();
+        }
+
+        let localConfig = this.config;
+
+        if(this.config.Persons.length == 5 && this.config.Persons[0].Infos[0].Name == 'Incognito')
+        {
+            localConfig = new Config();
+        }
 
         //get items that exist in serverConfig but don't exist in local config
-        let itemsToDownload = this.getResourcesToDownload(this.config, serverConfig).map(filePath => {
+        let itemsToDownload = this.getResourcesToDownload(localConfig, serverConfig).map(filePath => {
             return this.fileManager.normalizeFilePath(filePath);
         });
+
+        console.log("items to download calculated");
 
         //delete items that exist in localConfig but don't exist in server config
-        let itemsToDelete = this.getResourcesToDelete(this.config, serverConfig).map(filePath => {
+        let itemsToDelete = this.getResourcesToDelete(localConfig, serverConfig).map(filePath => {
+            console.log("delete file path", filePath);
             return this.fileManager.normalizeFilePath(filePath);
         });
 
-        let allItemsInLocalConfig = this.getAllResources(this.config);
+        console.log("items to delete calculated");
+
+        let allItemsInLocalConfig = this.getAllResources(localConfig);
         let allItemsInServerConfig = this.getAllResources(serverConfig);
 
         //items that are in both local and server configs
@@ -288,17 +329,12 @@ export class ConfigManager {
                 smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
                 mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
 
-                if (this.platform.is('ios')) {
-                    this.config.Persons[i].ListButtonDevicePathIos = this.domSanitizer.bypassSecurityTrustUrl(listButtonImagePath);
-                }
-                
-
                 this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
-                console.log("list path:", listButtonImagePath);
+                //console.log("list path:", listButtonImagePath);
                 this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
-                console.log("main path:", mainPicImagePath);
+                //console.log("main path:", mainPicImagePath);
                 this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
-                console.log("small path:", smallButtonImagePath);
+                //console.log("small path:", smallButtonImagePath);
             }
 
             if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
@@ -308,6 +344,8 @@ export class ConfigManager {
             }
         }
         console.log("device path has been reloaded");
+
+        this.reloadPathIos();
 
         let self = this;
 
