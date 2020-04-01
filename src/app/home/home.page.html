@@ -21,31 +21,34 @@
 
     <div id="MainList" #MainList>
         <!--<div scroll-x="true" class="scroll-area">-->
-        <ion-list class="scroll-area">
-            <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of configManager.config?.Persons" (tap)="itemClick(person)"
-                 (click)="itemClick(person)">
 
-                <img *ngIf="!isIos" class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
+        <ion-content scroll-x="true">
+            <ion-list class="scroll-area">
+                <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of configManager.config?.Persons" (tap)="itemClick(person)"
+                     (click)="itemClick(person)">
 
-                <img *ngIf="isIos && person.Infos[0]?.Name != 'Incognito'" class="size-helper" [src]="person.ListButtonDevicePathIos" width="129" height="183" />
+                    <img *ngIf="!isIos" class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
 
-                <img *ngIf="isIos && person.Infos[0]?.Name == 'Incognito'" class="size-helper" [src]="person.ListButtonDevicePath" width="129" height="183" />
+                    <img *ngIf="isIos && person.Infos[0]?.Name != 'Incognito'" class="size-helper" [src]="person.ListButtonDevicePathIos" width="129" height="183" />
 
-                <div class="person-info">
-                    <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>
-                    <hr class="person-info-hr"/>
-                    <span class="person-post" [innerHTML]="person.Infos[languageManager.languageIndex]?.Post"></span>
+                    <img *ngIf="isIos && person.Infos[0]?.Name == 'Incognito'" class="size-helper" [src]="person.ListButtonDevicePath" width="129" height="183" />
+
+                    <div class="person-info">
+                        <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>
+                        <hr class="person-info-hr" />
+                        <span class="person-post" [innerHTML]="person.Infos[languageManager.languageIndex]?.Post"></span>
 
 
-                    <ion-badge class="person-traks-count" color="medium">
-                        <ion-icon name="quote"></ion-icon>
-                        &nbsp;{{getTracksCount(person)}}
-                    </ion-badge>
+                        <ion-badge class="person-traks-count" color="medium">
+                            <ion-icon name="quote"></ion-icon>
+                            &nbsp;{{getTracksCount(person)}}
+                        </ion-badge>
 
-                    <ion-icon *ngIf="areUnlockedTracksAvailable(person)" name="eye" class="new-tracks-available" size="large"></ion-icon>
+                        <ion-icon *ngIf="areUnlockedTracksAvailable(person)" name="eye" class="new-tracks-available" size="large"></ion-icon>
+                    </div>
                 </div>
-            </div>
-        </ion-list>
+            </ion-list>
+        </ion-content>
     </div>
 
     <div style="clear:both;"></div>

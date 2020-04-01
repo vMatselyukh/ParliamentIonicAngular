@@ -1,3 +1,12 @@
+@font-face {
+    font-family: 'Roboto Slab', serif;
+    src: url('/assets/fonts/RobotoSlab-VariableFont_wght.ttf');
+}
+
+* {
+    font-family: 'Roboto Slab', serif;
+}
+
 .politician-main-image{
     width: 100%;
     height: auto;
@@ -28,9 +37,9 @@ ion-item:not(:last-child) {
 
 .centered-title {
     position: absolute;
-    left: 15%;
-    width: 70%;
-    top: calc(50% - 10px);
+    left: 7%;
+    width: 86%;
+    top: calc(50% - 15%);
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
