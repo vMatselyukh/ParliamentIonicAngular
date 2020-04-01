@@ -199,7 +199,6 @@ export class FileManager {
         return new Promise((resolve, reject) => {
             this.getFile(filePath)
                 .then((fileEntry: FileEntry) => {
-                     console.log("native url");
                     resolve(fileEntry.nativeURL);
                 })
                 .catch(fileEntryError => {

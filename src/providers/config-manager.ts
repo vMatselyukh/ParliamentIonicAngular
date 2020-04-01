@@ -85,12 +85,11 @@ export class ConfigManager {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
                             await this.loadingManager.showConfigLoadingMessage();
-                            this.loadConfigFromServer(async () => {
-                                await this.downloadContent(this.dbContext.cachedConfig);
-                                await this.loadImagesDevicePath(true);
-                                this.loadingManager.closeLoading();
-                                resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
-                            },
+                            await this.loadConfigFromServer(async () => {
+                                    await this.loadImagesDevicePath(true);
+                                    this.loadingManager.closeLoading();
+                                    resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
+                                },
                                 async () => {
                                     resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
                                 }
@@ -103,13 +102,23 @@ export class ConfigManager {
                 }
                 else {
                     console.log("db config isn't null.");
-                    this.reloadPathIos();
 
-                    this.config = dbConfig;
+                    //console.log("config before manipulations:", JSON.stringify(this.config));
 
+                    if(!this.config || this.config.Md5Hash != dbConfig.Md5Hash)
+                    {
+                        console.log("config md5", this.config.Md5Hash);
+                        console.log("dbConfig md5", dbConfig.Md5Hash);
+
+                        console.log("changing config to db config");
+                        this.config = dbConfig;
+                    }
+                    
                     //console.log("config", JSON.stringify(this.config));
 
                     await this.loadImagesDevicePath(false);
+
+                    //console.log("config equals:", JSON.stringify(this.config));
 
                     if (this.network.type != 'none') {
                         // let's don't annoy the user. Give possibility to update later.
@@ -136,7 +145,7 @@ export class ConfigManager {
                                             async () => {
                                                 await this.loadingManager.showConfigLoadingMessage();
 
-                                                this.downloadContent()
+                                                await this.downloadContent()
                                                     .then(async () => {
                                                         await this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
@@ -159,7 +168,7 @@ export class ConfigManager {
                                             async () => {
                                                 await this.loadingManager.showConfigLoadingMessage();
 
-                                                this.downloadContent()
+                                                await this.downloadContent()
                                                     .then(async () => {
                                                         await this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
@@ -197,35 +206,32 @@ export class ConfigManager {
         });
     }
 
-    reloadPathIos(){
-        if(this.platform.is('ios')){
-            for (var i = 0; i < this.config.Persons.length; i++) {
-                let listButtonImagePath = this.config.Persons[i].ListButtonDevicePath;
-
-                let newSafeUrlObj = this.domSanitizer.bypassSecurityTrustResourceUrl(listButtonImagePath);
-                let newSafeUrl = this.domSanitizer.sanitize(SecurityContext.RESOURCE_URL, newSafeUrlObj);
-                let oldSafeUrl = '';
-                
-                if(this.config.Persons[i].ListButtonDevicePathIos != null) {
-                    oldSafeUrl = this.domSanitizer.sanitize(SecurityContext.RESOURCE_URL, this.config.Persons[i].ListButtonDevicePathIos);
-                }
-
-                //console.log("current path", oldSafeUrl);
-                
-                if(newSafeUrl != oldSafeUrl)
-                {
-                    this.config.Persons[i].ListButtonDevicePathIos = newSafeUrlObj;
-                    //console.log("new path", newSafeUrl);
+    reloadPathIos(forceReload: boolean = false){
+        try{
+        
+            if(this.platform.is('ios')){
+                console.log("reloading path ios");
+                for (var i = 0; i < this.config.Persons.length; i++) {
+                    if(this.config.Persons[i].ListButtonDevicePathIos == null || forceReload)
+                    {
+                        //console.log("reassigning safe urls");
+                        this.config.Persons[i].ListButtonDevicePathIos = this.domSanitizer.bypassSecurityTrustResourceUrl(this.config.Persons[i].ListButtonDevicePath);
+                        //console.log("new path ios", this.config.Persons[i].ListButtonDevicePathIos);
+                    }
                 }
             }
         }
+        catch(e)
+        {
+            console.log("something went wrong", e);
+        }
     }
 
-    loadConfigFromServer(loadingFinishCallback: any, loadingFailedCallback: any) {
+    async loadConfigFromServer(loadingFinishCallback: any, loadingFailedCallback: any) {
         if (this.network.type == 'none') {
-            this.alertManager.showNoInternetAlert(
-                () => {
-                    this.loadConfig();
+            await this.alertManager.showNoInternetAlert(
+                async () => {
+                    await this.loadConfig();
                 },
                 () => {
                     navigator['app'].exitApp();
@@ -233,9 +239,10 @@ export class ConfigManager {
             loadingFinishCallback();
         }
         else {
-            this.parliamentApi.getConfig()
-                .then(config => {
-                    this.dbContext.saveConfig(config);
+            await this.parliamentApi.getConfig()
+                .then(async config => {
+                    await this.dbContext.saveConfig(config);
+                    await this.downloadContent(config);
                     console.log("Loading from server shoud be finished. Calling callback.");
                     loadingFinishCallback();
                 })
@@ -300,11 +307,11 @@ export class ConfigManager {
         console.log("to delete", itemsToDelete);
 
         return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
-            .then(() => {
+            .then(async () => {
                 //lock all tracks because in copyConfig we will unlock needed ones.
                 this.lockAllTracksInServerConfig(serverConfig);
                 this.copyConfig(this.config, serverConfig);
-                this.dbContext.saveConfig(serverConfig);
+                await this.dbContext.saveConfig(serverConfig);
                 this.config = serverConfig;
             })
             .catch((error) => {
@@ -312,6 +319,7 @@ export class ConfigManager {
             });
     }
 
+    //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
         if(!this.config)
         {
@@ -345,16 +353,23 @@ export class ConfigManager {
         }
         console.log("device path has been reloaded");
 
-        this.reloadPathIos();
+        this.reloadPathIos(forceSystemCheck);
 
-        let self = this;
+        //let self = this;
 
         return new Promise(async (resolve, reject) => {
-            if (startPersonsCount != self.config.Persons.length) {
-                self.config.Md5Hash = self.config.Md5Hash + "need to be updated";
+            if (startPersonsCount != this.config.Persons.length) {
+                this.config.Md5Hash = this.config.Md5Hash + "need to be updated";
             }
 
-            await self.dbContext.saveConfig(self.config);
+            //console.log("saving db config----------------------");
+            //console.log("config before saving:", JSON.stringify(this.config));
+
+            await this.dbContext.saveConfig(this.config);
+
+
+            //console.log("db config saved-----------------------");
+            //console.log("config after saving:", JSON.stringify(this.config));
 
             resolve();
         });

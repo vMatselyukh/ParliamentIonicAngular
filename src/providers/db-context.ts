@@ -27,23 +27,29 @@ export class DbContext {
     }
 
     async saveConfig(config: Config): Promise<void> {
-        this.cachedConfig = config;
         this.updateBannerShouldBeShown(config);
 
         if(config)
         {
-            config.Persons = config.Persons.sort((a: Person, b: Person) => {
+            let configCopy = _.cloneDeep(config); 
+
+            configCopy.Persons = configCopy.Persons.sort((a: Person, b: Person) => {
                 return a.OrderNumber > b.OrderNumber ? 1 : -1;
             });
-        }
+            
+            configCopy.Persons.map(p => p.ListButtonDevicePathIos = null );
 
-        await this.storage.set(this.configKey, config);
+            this.cachedConfig = configCopy;
+            await this.storage.set(this.configKey, configCopy);
+        }
     }
 
     getConfig(): Promise<Config> {
         if (this.cachedConfig !== null) {
             this.updateBannerShouldBeShown(this.cachedConfig);
-            return Promise.resolve(this.cachedConfig);
+
+            let configCopy = _.cloneDeep(this.cachedConfig);
+            return Promise.resolve(configCopy);
         }
 
         return new Promise((resolve, reject) => {
