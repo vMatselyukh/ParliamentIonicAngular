@@ -16,15 +16,9 @@ body{
 }
 
 .centered-title {
-    position: absolute;
-    left: calc(50% - 40%);
     width: 80%;
-    top: calc(50% - 15%);
     text-align: center;
-
-    ion-title {
-        font-size: 1rem;
-    }
+    font-size: 1rem;
 }
 
 #MainImage {

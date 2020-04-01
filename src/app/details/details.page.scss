@@ -36,10 +36,9 @@ ion-item:not(:last-child) {
 }
 
 .centered-title {
-    position: absolute;
     left: 7%;
-    width: 86%;
-    top: calc(50% - 15%);
+    width: 90%;
     text-align: center;
     font-size: 0.9rem;
+    padding: 0;
 }
