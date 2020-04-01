@@ -3,16 +3,16 @@
         <div class="centered-title">
             <ion-title>{{translations && translations["list"]}}</ion-title>
         </div>
-        
+
         <ion-buttons slot="start">
             <ion-menu-button autoHide="false" color="medium"></ion-menu-button>
         </ion-buttons>
-        
+
     </ion-toolbar>
 </ion-header>
 
 <ion-content id="HomePageContent" scroll-y="false">
-    
+
     <img id="MainImage" />
     <div class="coins-container">
         <div class="coins-icon"></div>
@@ -20,9 +20,10 @@
     </div>
 
     <div id="MainList" #MainList>
-        <div scroll-x="true" class="scroll-area">
+        <!--<div scroll-x="true" class="scroll-area">-->
+        <ion-list class="scroll-area">
             <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of configManager.config?.Persons" (tap)="itemClick(person)"
-                (click)="itemClick(person)" >
+                 (click)="itemClick(person)">
 
                 <img *ngIf="!isIos" class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />
 
@@ -32,7 +33,7 @@
 
                 <div class="person-info">
                     <span class="person-name" [innerHTML]="person.Infos[languageManager.languageIndex]?.Name"></span>
-                    <br />
+                    <hr class="person-info-hr"/>
                     <span class="person-post" [innerHTML]="person.Infos[languageManager.languageIndex]?.Post"></span>
 
 
@@ -44,7 +45,7 @@
                     <ion-icon *ngIf="areUnlockedTracksAvailable(person)" name="eye" class="new-tracks-available" size="large"></ion-icon>
                 </div>
             </div>
-        </div>
+        </ion-list>
     </div>
 
     <div style="clear:both;"></div>

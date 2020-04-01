@@ -17,8 +17,8 @@ body{
 
 .centered-title {
     position: absolute;
-    left: calc(50% - 100px);
-    width: 200px;
+    left: calc(50% - 40%);
+    width: 80%;
     top: calc(50% - 10px);
     text-align: center;
 }
@@ -65,8 +65,8 @@ body{
         display: flex;
         height: 100%;
         white-space: nowrap;
-        overflow-x: auto;
         overflow-y: hidden;
+        padding: 0;
 
         .scroll-zoom-wrapper {
             display: flex;
@@ -95,7 +95,6 @@ body{
 
                 .person-name {
                     font-size: 0.8rem;
-                    border-bottom: 2px solid black;
                     margin-bottom: 0.3rem;
                     color: black;
                     white-space: normal;
@@ -106,6 +105,11 @@ body{
                     white-space: normal;
                 }
 
+                &-hr {
+                    margin: 0 10%;
+                    background-color: black;
+                }
+                    
                 .person-traks-count {
                     font-size: 0.8rem;
                     position: absolute;
