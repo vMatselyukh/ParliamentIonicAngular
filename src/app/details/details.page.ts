@@ -20,6 +20,7 @@ export class DetailsPage implements OnInit {
     player: Howl = null;
     activeTrackId = 0;
     isIos: boolean = false;
+    platformClass: string = '';
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -36,6 +37,11 @@ export class DetailsPage implements OnInit {
         this.platform.ready().then(() => {
             if (this.platform.is('ios')) {
                 this.isIos = true;
+                this.platformClass = "ios";
+
+            }
+            else {
+                this.platformClass = "android";
             }
 
             if (this.route.snapshot.data['special']) {

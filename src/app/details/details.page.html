@@ -1,14 +1,16 @@
 <ion-header>
-    <ion-toolbar>
-        <ion-buttons slot="start">
-            <!--<ion-back-button></ion-back-button>-->
+    <div [className]="platformClass">
+        <ion-toolbar>
+            <ion-buttons slot="start">
+                <!--<ion-back-button></ion-back-button>-->
 
-            <ion-button slot="start" (click)="goToHomePage()">
-                <ion-icon slot="icon-only" [name]="getBackButtonIcon()"></ion-icon>
-            </ion-button>
-        </ion-buttons>
-        <ion-title class="centered-title">{{this.person?.Infos[languageManager.languageIndex].Name}}</ion-title>
-    </ion-toolbar>
+                <ion-button slot="start" (click)="goToHomePage()">
+                    <ion-icon slot="icon-only" [name]="getBackButtonIcon()"></ion-icon>
+                </ion-button>
+            </ion-buttons>
+            <ion-title class="centered-title">{{this.person?.Infos[languageManager.languageIndex].Name}}</ion-title>
+        </ion-toolbar>
+    </div>
 </ion-header>
 
 

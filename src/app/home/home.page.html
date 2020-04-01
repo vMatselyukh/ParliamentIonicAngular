@@ -1,12 +1,14 @@
 <ion-header>
-    <ion-toolbar>
-        <ion-title class="centered-title">{{translations && translations["list"]}}</ion-title>
-     
-        <ion-buttons slot="start">
-            <ion-menu-button autoHide="false" color="medium"></ion-menu-button>
-        </ion-buttons>
+    <div [className]="platformClass">
+        <ion-toolbar>
+            <ion-title class="centered-title">{{translations && translations["list"]}}</ion-title>
 
-    </ion-toolbar>
+            <ion-buttons slot="start">
+                <ion-menu-button autoHide="false" color="medium"></ion-menu-button>
+            </ion-buttons>
+
+        </ion-toolbar>
+    </div>
 </ion-header>
 
 <ion-content id="HomePageContent" scroll-y="false">

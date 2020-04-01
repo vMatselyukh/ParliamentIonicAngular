@@ -61,11 +61,9 @@ export class AppComponent {
                         console.log("can't share via mobile");
                         this.canShareUsingModileApp = false;
                     }
-            );
+                );
 
             this.advProvider.loadAdv();
-
-           
         }).catch((error) => {
             console.log("platform ready error " + JSON.stringify(error));
         });

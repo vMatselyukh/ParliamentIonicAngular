@@ -26,6 +26,8 @@ export class HomePage {
 
     translations: any = null;
 
+    platformClass: string = '';
+
     @ViewChild('MainList', { static: false }) mainList: ElementRef;
 
     listItemWidth: number = 0;
@@ -69,6 +71,13 @@ export class HomePage {
             this.dbContext.getLanguageIndex().then(index => {
                 this.languageManager.languageIndex = index;
             });
+
+            if (this.platform.is('ios')) {
+                this.platformClass = "ios";
+            }
+            else {
+                this.platformClass = "android";
+            }
 
             // this.dbContext.getConfig().then(config => {
 
