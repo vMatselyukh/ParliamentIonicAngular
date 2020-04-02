@@ -7,7 +7,6 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { LanguagePage } from './language/language.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
-import { ShareService } from '@ngx-share/core';
 import { ToastController } from '@ionic/angular';
 
 import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
@@ -24,8 +23,11 @@ export class AppComponent {
 
     showExitButton: boolean = false;
 
+    linkToShare: string = '';
+
+    isIos: boolean = false;
+
     constructor(
-        public share: ShareService,
         private platform: Platform,
         private splashScreen: SplashScreen,
         private statusBar: StatusBar,
@@ -48,8 +50,12 @@ export class AppComponent {
             this.statusBar.styleDefault();
             this.splashScreen.hide();
 
-            if(this.platform.is("android")){
+            if (this.platform.is("android")) {
                 this.showExitButton = true;
+                this.isIos = false;
+            }
+            else {
+                this.isIos = true;
             }
 
             this.dbContext.getLanguage().then(lang => {
@@ -68,6 +74,15 @@ export class AppComponent {
                         this.canShareUsingModileApp = false;
                     }
                 );
+
+            let currentLanguage = await this.dbContext.getLanguage();
+
+            if (currentLanguage === "ru") {
+                this.linkToShare = "https://parliament.matseliukh.com?language=ru";
+            }
+            else {
+                this.linkToShare = "https://parliament.matseliukh.com";
+            }
 
             this.advProvider.loadAdv();
         }).catch((error) => {
@@ -99,7 +114,7 @@ export class AppComponent {
             if (data.data.submitted) {
                 this.presentThankYouToast();
             }
-            else if(data.data.error){
+            else if (data.data.error) {
                 this.presentErrorToast(data.data.error);
             }
 
@@ -135,27 +150,28 @@ export class AppComponent {
                 let currentLanguage = await this.dbContext.getLanguage();
 
                 if (currentLanguage === "ru") {
-                    await this.socialSharing.shareViaFacebook(shareText, null, "https://parliament.matseliukh.com?language=ru");
+                    await this.socialSharing.shareViaFacebook(shareText, null, this.linkToShare);
                 }
                 else {
-                    await this.socialSharing.shareViaFacebook(shareText, null, "https://parliament.matseliukh.com");
+                    await this.socialSharing.shareViaFacebook(shareText, null, this.linkToShare);
                 }
-                
+
             }).catch(
                 (e) => console.log("Error social sharing ", e)
             );
     }
 
-    shareInFbClickBrowser() {
-        let fbButton = document.querySelector("#FbHidden a") as HTMLElement;
-        console.log('clicking fb button');
-        fbButton.click();
+    async shareInFbClickBrowser() {
+        let fbShareLink = document.querySelector("#FbHidden") as HTMLElement;
 
-        let testButton = document.getElementById("TestButton") as HTMLElement;
-        testButton.click();
+        fbShareLink.click();
+
+        //window.navigator.share({ title: shareText, url: this.linkToShare });
+
+        //this.socialSharing.shareViaFacebook(shareText, null, this.linkToShare);
     }
 
-    Test(){
+    Test() {
         console.log("Test button clicked");
     }
 

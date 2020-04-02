@@ -7,9 +7,8 @@
     "\\src\\app\\home",
     "\\src\\app\\language",
     "\\src\\app\\propose-quote",
-    "\\src\\models",
-    "\\src\\providers"
+    "\\src\\assets"
   ],
-  "SelectedNode": "\\src\\providers\\language-manager.ts",
+  "SelectedNode": "\\src\\app\\details\\details.page.html",
   "PreviewInSolutionExplorer": false
 }
