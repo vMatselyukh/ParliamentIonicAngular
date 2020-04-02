@@ -22,6 +22,8 @@ export class AppComponent {
 
     translations: any = null;
 
+    showExitButton: boolean = false;
+
     constructor(
         public share: ShareService,
         private platform: Platform,
@@ -45,6 +47,10 @@ export class AppComponent {
         this.platform.ready().then(async () => {
             this.statusBar.styleDefault();
             this.splashScreen.hide();
+
+            if(this.platform.is("android")){
+                this.showExitButton = true;
+            }
 
             this.dbContext.getLanguage().then(lang => {
                 if (lang === null) {
@@ -140,6 +146,19 @@ export class AppComponent {
             );
     }
 
+    shareInFbClickBrowser() {
+        let fbButton = document.querySelector("#FbHidden a") as HTMLElement;
+        console.log('clicking fb button');
+        fbButton.click();
+
+        let testButton = document.getElementById("TestButton") as HTMLElement;
+        testButton.click();
+    }
+
+    Test(){
+        console.log("Test button clicked");
+    }
+
     async presentThankYouToast() {
         const toast = await this.toast.create({
             message: await this.languageManager.getTranslations("thank_you"),
@@ -168,10 +187,6 @@ export class AppComponent {
         this.alertManager.showGetCoinsAlert(() => {
             self.advProvider.showRewardedVideo();
         });
-    }
-
-    showExitButton() {
-        return this.platform.is("android");
     }
 
     exitApp() {

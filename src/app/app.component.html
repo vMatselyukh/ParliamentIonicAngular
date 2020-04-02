@@ -13,11 +13,21 @@
                 <ion-item (click)="presentChooseLanguageModal();"><ion-icon name="text"></ion-icon>{{translations && translations["chose_languge"]}}</ion-item>
                 <ion-item><ion-icon name="star-half"></ion-icon>{{translations && translations["put_mark_for_app"]}}</ion-item>
                 <ion-item *ngIf="canShareUsingModileApp" (click)="shareInFbClick();"><ion-icon name="logo-facebook"></ion-icon>{{translations && translations["share_in_fb"]}}</ion-item>
-                <ion-item *ngIf="!canShareUsingModileApp" shareButton="facebook" url="https://matseliukh.com/">
+                <ion-item *ngIf="!canShareUsingModileApp" (click)="shareInFbClickBrowser();">
                     <ion-icon name="logo-facebook"></ion-icon>{{translations && translations["share_in_fb"]}}
                 </ion-item>
                 <ion-item *ngIf="showExitButton" (click)="exitApp();"><ion-icon name="exit"></ion-icon>{{translations && translations["exit"]}}</ion-item>
             </ion-list>
+
+            <!-- <div class="fb-share-button" data-href="https://parliament.matseliukh.com/" data-layout="button_count"></div> -->
+
+            <div id="FbHidden" class="fb-share-button" data-href="https://parliament.matseliukh.com" data-layout="button" data-size="small">
+                <a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fparliament.matseliukh.com%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">
+                    Поширити
+                </a>
+            </div>
+            
+            <input id="TestButton" type="button" value="test" (click)="Test();"/>
         </ion-content>
     </ion-menu>
     <ion-router-outlet id="content1" main></ion-router-outlet>

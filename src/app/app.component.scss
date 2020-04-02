@@ -1,8 +1,12 @@
 @font-face {
-    font-family: 'Roboto Slab', serif;
-    src: url('/assets/fonts/RobotoSlab-VariableFont_wght.ttf');
-  }
-  
-  * {
-    font-family: 'Roboto Slab', serif;
-  }
+  font-family: 'Roboto Slab', serif;
+  src: url('/assets/fonts/RobotoSlab-VariableFont_wght.ttf');
+}
+
+* {
+  font-family: 'Roboto Slab', serif;
+}
+
+.hidden {
+  display: none;
+}

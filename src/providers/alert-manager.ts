@@ -1,13 +1,19 @@
 ﻿import { Injectable } from '@angular/core';
-import * as _ from 'lodash';
-import { AlertController } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular';
 import { LanguageManager } from '../providers/providers';
 
 @Injectable()
 export class AlertManager {
 
+    isIos: boolean = false;
+
     constructor(private alertController: AlertController,
-        private languageManager: LanguageManager) {
+        private languageManager: LanguageManager,
+        private platform: Platform) {
+            if(this.platform.is('ios')){
+                this.isIos = true;
+            }
+
     }
 
     async showNoCoinsAlert(confirmCallback: any) {
@@ -17,13 +23,14 @@ export class AlertManager {
             message: await this.languageManager.getTranslations("get_coins_by_watching_video"),
             buttons: [
                 {
+                    text: await this.languageManager.getTranslations("watch"),
+                    handler: confirmCallback
+                },
+                {
                     text: await this.languageManager.getTranslations("cancel"),
                     role: 'cancel',
                     cssClass: 'secondary'
-                }, {
-                    text: await this.languageManager.getTranslations("watch"),
-                    handler: confirmCallback
-                }
+                } 
             ]
         });
 
@@ -48,13 +55,14 @@ export class AlertManager {
             message: await this.languageManager.getTranslations("get_coins_by_wathing_video_menu"),
             buttons: [
                 {
+                    text: await this.languageManager.getTranslations("watch"),
+                    handler: confirmCallback
+                },
+                {
                     text: await this.languageManager.getTranslations("cancel"),
                     role: 'cancel',
                     cssClass: 'secondary'
-                }, {
-                    text: await this.languageManager.getTranslations("watch"),
-                    handler: confirmCallback
-                }
+                } 
             ]
         });
 
@@ -79,12 +87,13 @@ export class AlertManager {
             message: await this.languageManager.getTranslations("are_you_sure_you_want_to_quit"),
             buttons: [
                 {
+                    text: await this.languageManager.getTranslations("yes"),
+                    handler: confirmCallback
+                },
+                {
                     text: await this.languageManager.getTranslations("no"),
                     role: 'cancel',
                     cssClass: 'secondary'
-                }, {
-                    text: await this.languageManager.getTranslations("yes"),
-                    handler: confirmCallback
                 }
             ],
             backdropDismiss: true
@@ -98,18 +107,29 @@ export class AlertManager {
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
             message: await this.languageManager.getTranslations("internet_connection_needed_to_download_content"),
-            buttons: [
-                {
-                    text: await this.languageManager.getTranslations("exit_from_app"),
-                    handler: exitAppCallback
-                },
+            backdropDismiss: true
+        });
+
+        if(this.isIos) {
+            alert.buttons = [
                 {
                     text: await this.languageManager.getTranslations("ok"),
                     handler: confirmCallback
                 }
-            ],
-            backdropDismiss: true
-        });
+            ];
+        }
+        else {
+            alert.buttons = [
+                {
+                    text: await this.languageManager.getTranslations("ok"),
+                    handler: confirmCallback
+                },
+                {
+                    text: await this.languageManager.getTranslations("exit_from_app"),
+                    handler: exitAppCallback
+                }
+            ];
+        }
 
         await alert.present();
     }
@@ -138,12 +158,12 @@ export class AlertManager {
             message: await this.languageManager.getTranslations("new_content_is_ready_for_downloading"),
             buttons: [
                 {
-                    text: await this.languageManager.getTranslations("later"),
-                    handler: laterCallback
-                },
-                {
                     text: await this.languageManager.getTranslations("yes"),
                     handler: confirmCallback
+                },
+                {
+                    text: await this.languageManager.getTranslations("later"),
+                    handler: laterCallback
                 }
             ],
             backdropDismiss: true
@@ -159,12 +179,12 @@ export class AlertManager {
             message: await this.languageManager.getTranslations("check_for_updates_no_content"),
             buttons: [
                 {
-                    text: await this.languageManager.getTranslations("no"),
-                    role: 'cancel'
-                },
-                {
                     text: await this.languageManager.getTranslations("yes"),
                     handler: confirmCallback
+                },
+                {
+                    text: await this.languageManager.getTranslations("no"),
+                    role: 'cancel'
                 }
             ]
         });
@@ -177,18 +197,30 @@ export class AlertManager {
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
             message: await this.languageManager.getTranslations("no_config_first_time_loading"),
-            buttons: [
-                {
-                    text: await this.languageManager.getTranslations("exit_from_app"),
-                    handler: exitAppCallback
-                },
+            backdropDismiss: false
+        });
+
+        if(this.isIos)
+        {
+            alert.buttons = [
                 {
                     text: await this.languageManager.getTranslations("ok"),
                     handler: confirmCallback
                 }
-            ],
-            backdropDismiss: false
-        });
+            ];
+        }
+        else {
+            alert.buttons = [
+                {
+                    text: await this.languageManager.getTranslations("ok"),
+                    handler: confirmCallback
+                },
+                {
+                    text: await this.languageManager.getTranslations("exit_from_app"),
+                    handler: exitAppCallback
+                }
+            ];
+        }
 
         await alert.present();
     }
