@@ -25,6 +25,8 @@ export class AppComponent {
 
     linkToShare: string = '';
 
+    facebookAppName: string = '';
+
     isIos: boolean = false;
 
     constructor(
@@ -53,9 +55,11 @@ export class AppComponent {
             if (this.platform.is("android")) {
                 this.showExitButton = true;
                 this.isIos = false;
+                this.facebookAppName = 'com.facebook.katana';
             }
             else {
                 this.isIos = true;
+                this.facebookAppName = 'com.apple.social.facebook';
             }
 
             this.dbContext.getLanguage().then(lang => {
@@ -64,13 +68,13 @@ export class AppComponent {
                 }
             });
 
-            this.socialSharing.canShareVia("com.apple.social.facebook").then(
-                async () => {
+            this.socialSharing.canShareVia(this.facebookAppName).then(
+                async (result) => {
                     this.canShareUsingModileApp = true;
-                    console.log("can share via mobile");
+                    console.log("can share via mobile", result);
                 }).catch(
-                    () => {
-                        console.log("can't share via mobile");
+                    (error) => {
+                        console.log("can't share via mobile", error);
                         this.canShareUsingModileApp = false;
                     }
                 );
@@ -144,7 +148,7 @@ export class AppComponent {
     }
 
     async shareInFbClick() {
-        this.socialSharing.canShareVia("com.apple.social.facebook").then(
+        this.socialSharing.canShareVia(this.facebookAppName).then(
             async () => {
                 let shareText = await this.languageManager.getTranslations("share_text");
                 let currentLanguage = await this.dbContext.getLanguage();
