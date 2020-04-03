@@ -78,10 +78,10 @@ export class AppComponent {
             let currentLanguage = await this.dbContext.getLanguage();
 
             if (currentLanguage === "ru") {
-                this.linkToShare = "https://parliament.matseliukh.com?language=ru";
+                this.linkToShare = "https://parliament.matseliukh.com?available=true&language=ru";
             }
             else {
-                this.linkToShare = "https://parliament.matseliukh.com";
+                this.linkToShare = "https://parliament.matseliukh.com?available=true";
             }
 
             this.advProvider.loadAdv();
