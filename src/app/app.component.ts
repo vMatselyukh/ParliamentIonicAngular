@@ -62,9 +62,9 @@ export class AppComponent {
                 this.facebookAppName = 'com.apple.social.facebook';
             }
 
-            this.dbContext.getLanguage().then(lang => {
+            this.dbContext.getLanguage().then(async lang => {
                 if (lang === null) {
-                    this.dbContext.setLanguage("ua");
+                    await this.dbContext.setLanguage("ua");
                 }
             });
 

@@ -186,8 +186,8 @@ export class DbContext {
         return 0;
     }
 
-    setLanguage(language) {
-        this.storage.set(this.languageKey, language);
+    async setLanguage(language) {
+        await this.storage.set(this.languageKey, language);
         this.cachedLanguage = language;
     }
 

@@ -68,10 +68,6 @@ export class HomePage {
                 this.isIos = true;
             }
 
-            this.dbContext.getLanguageIndex().then(index => {
-                this.languageManager.languageIndex = index;
-            });
-
             if (this.platform.is('ios')) {
                 this.platformClass = "ios";
             }
@@ -124,6 +120,14 @@ export class HomePage {
             this.assignUserId();
             this.loadCoinsCount();
             console.log("platform.ready");
+
+            this.dbContext.getLanguage().then(async lang => {
+                if (lang === null) {
+                    await this.dbContext.setLanguage("ua");
+                }
+
+                this.languageManager.languageIndex = await this.dbContext.getLanguageIndex();
+            });
 
             if (!this.platformResumeSubscribed) {
 
