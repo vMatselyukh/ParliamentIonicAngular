@@ -30,7 +30,7 @@ export class DetailsPage implements OnInit {
         private fileManager: FileManager,
         public languageManager: LanguageManager,
         private platform: Platform,
-        private domSanitizer: DomSanitizer) {
+        public domSanitizer: DomSanitizer) {
     }
 
     ngOnInit() {

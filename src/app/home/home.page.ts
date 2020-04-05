@@ -32,13 +32,13 @@ export class HomePage {
 
     listItemWidth: number = 0;
 
-    constructor(private dbContext: DbContext,
+    constructor(public dbContext: DbContext,
         private router: Router,
         private dataService: DataService,
         private platform: Platform,
         private events: Events,
-        private configManager: ConfigManager,
-        private languageManager: LanguageManager,
+        public configManager: ConfigManager,
+        public languageManager: LanguageManager,
         private alertManager: AlertManager,
         private advProvider: AdvProvider,
         private fileManager: FileManager) {

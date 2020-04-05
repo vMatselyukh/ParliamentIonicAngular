@@ -12,9 +12,11 @@ export class AdvProvider {
 
     rewardedAndroid: string = "ca-app-pub-3291616985383560/7058759376";
     bannerAndroid: string = "ca-app-pub-3291616985383560/2201604199";
-    testBannerAndroid: string = "ca-app-pub-3940256099942544/6300978111";
 
     rewardedIos: string = "ca-app-pub-3291616985383560/9452138367";
+    bannerIos: string = "ca-app-pub-3291616985383560/4118758850";
+
+    testBanner: string = "ca-app-pub-3940256099942544/6300978111";
 
 
     requireAdvClicked: boolean = false;
@@ -43,16 +45,24 @@ export class AdvProvider {
         if (self.platform.is('cordova')) {
 
             console.log("init add");
+
+            let rewardedAddId = this.rewardedAndroid;
+            let bannerAddId = this.bannerAndroid;
+
+            if (this.platform.is('ios')) {
+                rewardedAddId = this.rewardedIos;
+                bannerAddId = this.bannerIos;
+            }
+
             self.admob.rewardVideo.config({
-                //id: 'ca-app-pub-3291616985383560/7058759376', //my adv
-                id: 'ca-app-pub-3940256099942544/5224354917', //test adv
-                isTesting: true,
+                id: rewardedAddId,
+                isTesting: false,
                 autoShow: false
             });
 
             self.admob.banner.config({
-                id: this.testBannerAndroid,
-                isTesting: true,
+                id: bannerAddId,
+                isTesting: false,
                 autoShow: false
             });
 
@@ -68,21 +78,6 @@ export class AdvProvider {
             self.admob.rewardVideo.prepare().then(() => {
                 console.log("rewarded video prepared");
             });
-
-            //document.addEventListener('admob.reward_video.complete', () => {
-            //    console.log("add more coins here");
-            //});
-
-            //document.addEventListener('admob.rewardvideo.events.OPEN', function (data) { console.log('admob.banner.reward_video.OPEN', data); });
-
-            //if (!self.rewardedVideoStartedEventListenerAdded) {
-            //    document.addEventListener('admob.rewardvideo.events.START', function (data) {
-            //        self.alertManager.closeAlerts();
-            //        console.log('admob.reward_video.events.START', data);
-            //    });
-
-            //    self.rewardedVideoStartedEventListenerAdded = true;
-            //}
 
             if (!self.rewardedVideoLoadedEventListenerAdded) {
                 document.addEventListener('admob.rewardvideo.events.LOAD', function (data) {

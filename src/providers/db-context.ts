@@ -13,9 +13,8 @@ export class DbContext {
     private readonly nextTimeForUpdatesKey: string = "TimeToDownloadUpdates";
     private readonly androidSelectedStorageKey: string = "AndroidSelectedStorage"; // local, external
     private readonly userGuidKey: string = "UserGuid";
-    private readonly coinsCountForWatchingAdv: number = 1;
-    //readonly postponeHours: number = 24;
-    private readonly postponeSeconds: number = 30;
+    private readonly coinsCountForWatchingAdv: number = 10;
+    readonly postponeHours: number = 24;
     private readonly initialCoinsCount = 10;
 
     cachedConfig: Config = null;
@@ -201,10 +200,9 @@ export class DbContext {
     }
 
     async postponeUpdateTime(currentDateTime: Date) {
-        //let newDate = currentDateTime.setHours(currentDateTime.getHours() + this.postponeHours);
         this.storage.remove(this.nextTimeForUpdatesKey);
 
-        let newDate = currentDateTime.setSeconds(currentDateTime.getSeconds() + this.postponeSeconds);
+        let newDate = currentDateTime.setSeconds(currentDateTime.getHours() + this.postponeHours);
         await this.storage.set(this.nextTimeForUpdatesKey, newDate);
     }
 
