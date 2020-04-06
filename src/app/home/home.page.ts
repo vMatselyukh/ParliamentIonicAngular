@@ -74,12 +74,6 @@ export class HomePage {
             else {
                 this.platformClass = "android";
             }
-
-            // this.dbContext.getConfig().then(config => {
-
-            //     console.log("config from constructor", config);
-            //     this.config = config;
-            // });
         });
 
         (async () => {
@@ -107,10 +101,12 @@ export class HomePage {
         //user taps update config from menu
         if (!this.configUpdateSubscribed) {
             this.events.subscribe("config:update", () => {
-                console.log("config:update");
-                self.configManager.loadConfig(true).then((result: any) => {
-                    this.loadConfigProcessResult(result);
-                });
+                if (!this.configManager.isDefaultConfigUsed()) {
+                    console.log("config:update");
+                    self.configManager.loadConfig(true).then((result: any) => {
+                        this.loadConfigProcessResult(result);
+                    });
+                }
             });
 
             this.configUpdateSubscribed = true;
@@ -134,10 +130,12 @@ export class HomePage {
                 await this.fileManager.getDownloadPath().then(() => {
                     //user gets back into the app
                     this.platform.resume.subscribe(() => {
-                        console.log("resume");
-                        this.configManager.loadConfig().then((result: any) => {
-                            this.loadConfigProcessResult(result);
-                        });
+                        if (!this.configManager.isDefaultConfigUsed()) {
+                            console.log("resume");
+                            this.configManager.loadConfig().then((result: any) => {
+                                this.loadConfigProcessResult(result);
+                            });
+                        }
                     });
                 });
 

@@ -25,7 +25,7 @@
             <img *ngIf="!isIos" class="politician-small-image" slot="start" src="{{person.SmallButtonDevicePath}}" />
 
             <img *ngIf="isIos" class="politician-small-image" slot="start" [src]="domSanitizer.bypassSecurityTrustUrl(person.SmallButtonDevicePath)" />
-            <span>{{track.Name}}</span>
+            <span class="track-name">{{track.Name}}</span>
             <ion-button class="track-play-button" shape="round" slot="end" color="medium">
                 <ion-icon [name]="getTrackIcon(track)" size="small"></ion-icon>
             </ion-button>

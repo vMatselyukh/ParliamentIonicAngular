@@ -82,15 +82,19 @@ export class ConfigManager {
             this.dbContext.getConfig().then(async dbConfig => {
 
                 if (dbConfig == null) {
+                    let loadingElement = null;
+
                     this.alertManager.showNoConfigAlert(
                         async _ => {
-                            await this.loadingManager.showConfigLoadingMessage();
+                            loadingElement = await this.loadingManager.showConfigLoadingMessage();
                             await this.loadConfigFromServer(async () => {
                                     await this.loadImagesDevicePath(true);
                                     this.loadingManager.closeLoading();
                                     resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
                                 },
                                 async () => {
+                                    console.log("dismilling loading message");
+                                    loadingElement.dismiss();
                                     resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
                                 }
                             );
@@ -98,7 +102,7 @@ export class ConfigManager {
                         async () => {
                             navigator['app'].exitApp();
                             resolve({ "message": await this.languageManager.getTranslations("exit_from_app"), "showMessage": true });
-                        })
+                        });
                 }
                 else {
                     console.log("db config isn't null.");
@@ -253,6 +257,10 @@ export class ConfigManager {
         }
     }
 
+    isDefaultConfigUsed(): boolean {
+        return this.config.Persons.length == 5 && this.config.Persons[0].Infos[0].Name == 'Incognito';
+    }
+
     private async downloadContent(serverConfig: Config = null): Promise<any> {
         console.log("downloadContent started");
         //update process started
@@ -262,7 +270,7 @@ export class ConfigManager {
 
         let localConfig = this.config;
 
-        if(this.config.Persons.length == 5 && this.config.Persons[0].Infos[0].Name == 'Incognito')
+        if (this.isDefaultConfigUsed())
         {
             localConfig = new Config();
         }
