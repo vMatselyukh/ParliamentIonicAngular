@@ -8,7 +8,7 @@ import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { LanguagePage } from './language/language.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ToastController } from '@ionic/angular';
-
+import { Market } from '@ionic-native/market/ngx';
 import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
 
 @Component({
@@ -29,6 +29,9 @@ export class AppComponent {
 
     isIos: boolean = false;
 
+    appStoreName = "1506544870";
+    googlePlayName = "";
+
     constructor(
         private platform: Platform,
         private splashScreen: SplashScreen,
@@ -40,7 +43,8 @@ export class AppComponent {
         private alertManager: AlertManager,
         private events: Events,
         private dbContext: DbContext,
-        private languageManager: LanguageManager
+        private languageManager: LanguageManager,
+        private market: Market
     ) {
         this.initializeApp();
 
@@ -126,6 +130,23 @@ export class AppComponent {
         });
 
         return await modal.present();
+    }
+
+    rateApp() {
+        if (this.isIos) {
+            this.market.open(this.appStoreName).then(() => {
+                console.log("successfully open app store page");
+            }).catch(() => {
+                console.log("error opening app store page");
+            });
+        }
+        else {
+            this.market.open(this.googlePlayName).then(() => {
+                console.log("successfully open app store page");
+            }).catch(() => {
+                console.log("error opening app store page");
+            });
+        }
     }
 
     async presentChooseLanguageModal() {

@@ -11,7 +11,7 @@
                 <ion-item (click)="updateConfig();"><ion-icon name="refresh"></ion-icon>{{translations && translations["check_for_updates"]}}</ion-item>
                 <ion-item (click)="showGetCoinsAlert();"><ion-icon name="radio-button-off"></ion-icon>{{translations && translations["get_coins"]}}</ion-item>
                 <ion-item (click)="presentChooseLanguageModal();"><ion-icon name="text"></ion-icon>{{translations && translations["chose_languge"]}}</ion-item>
-                <ion-item><ion-icon name="star-half"></ion-icon>{{translations && translations["put_mark_for_app"]}}</ion-item>
+                <ion-item (click)="rateApp();"><ion-icon name="star-half"></ion-icon>{{translations && translations["put_mark_for_app"]}}</ion-item>
                 <ion-item *ngIf="canShareUsingModileApp" (click)="shareInFbClick();"><ion-icon name="logo-facebook"></ion-icon>{{translations && translations["share_in_fb"]}}</ion-item>
 
                 <!--https://github.com/MurhafSousli/ngx-sharebuttons/wiki/Share-Button-Directive-->
