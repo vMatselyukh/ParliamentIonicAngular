@@ -29,6 +29,7 @@
     "@ionic-native/file-transfer": "^5.18.0",
     "@ionic-native/http": "^5.17.1",
     "@ionic-native/ionic-webview": "^5.18.0",
+    "@ionic-native/market": "^5.23.0",
     "@ionic-native/network": "^5.18.0",
     "@ionic-native/social-sharing": "^5.17.1",
     "@ionic-native/splash-screen": "^5.17.1",
@@ -37,6 +38,7 @@
     "@ionic/storage": "^2.2.0",
     "@ngx-share/button": "^7.1.4",
     "@ngx-share/core": "^7.1.4",
+    "cordova": "^9.0.0",
     "cordova-admob-sdk": "^0.24.1",
     "cordova-android": "^8.1.0",
     "cordova-ios": "5.1.1",
@@ -45,6 +47,7 @@
     "cordova-plugin-enable-multidex": "^0.2.0",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-transfer": "^1.7.1",
+    "cordova-plugin-market": "git+https://github.com/xmartlabs/cordova-plugin-market.git",
     "cordova-plugin-network-information": "^2.0.2",
     "cordova-plugin-x-socialsharing": "^5.6.2",
     "cordova-promise-polyfill": "0.0.2",
@@ -112,7 +115,8 @@
       "cordova-plugin-file": {},
       "cordova-plugin-file-transfer": {},
       "cordova-plugin-android-permissions": {},
-      "cordova.plugins.diagnostic": {}
+      "cordova.plugins.diagnostic": {},
+      "cordova-plugin-market": {}
     },
     "platforms": [
       "android",

@@ -134,6 +134,23 @@ export class AlertManager {
         await alert.present();
     }
 
+    async showPlainNoInternetMessage() {
+        const alert = await this.alertController.create({
+            header: await this.languageManager.getTranslations("attention"),
+            subHeader: '',
+            message: await this.languageManager.getTranslations("no_internet"),
+            buttons: [
+                {
+                    text: await this.languageManager.getTranslations("ok"),
+                    role: 'cancel'
+                }
+            ],
+            backdropDismiss: true,
+        });
+
+        await alert.present();
+    }
+
     async showInternetNeededForPostingQuotesAlert(confirmCallback: any) {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),

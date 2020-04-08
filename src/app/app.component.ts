@@ -10,6 +10,7 @@ import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ToastController } from '@ionic/angular';
 import { Market } from '@ionic-native/market/ngx';
 import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
+import { Network } from '@ionic-native/network/ngx';
 
 @Component({
     selector: 'app-root',
@@ -44,7 +45,8 @@ export class AppComponent {
         private events: Events,
         private dbContext: DbContext,
         private languageManager: LanguageManager,
-        private market: Market
+        private market: Market,
+        private network: Network
     ) {
         this.initializeApp();
 
@@ -132,7 +134,13 @@ export class AppComponent {
         return await modal.present();
     }
 
-    rateApp() {
+    async rateApp() {
+        if (this.network.type == 'none') {
+            await this.alertManager.showPlainNoInternetMessage();
+
+            return;
+        }
+
         if (this.isIos) {
             this.market.open(this.appStoreName).then(() => {
                 console.log("successfully open app store page");
@@ -169,6 +177,12 @@ export class AppComponent {
     }
 
     async shareInFbClick() {
+        if (this.network.type == 'none') {
+            await this.alertManager.showPlainNoInternetMessage();
+
+            return;
+        }
+
         this.socialSharing.canShareVia(this.facebookAppName).then(
             async () => {
                 let shareText = await this.languageManager.getTranslations("share_text");
@@ -187,17 +201,14 @@ export class AppComponent {
     }
 
     async shareInFbClickBrowser() {
+        if (this.network.type == 'none') {
+            await this.alertManager.showPlainNoInternetMessage();
+
+            return;
+        }
+
         let fbShareLink = document.querySelector("#FbHidden") as HTMLElement;
-
         fbShareLink.click();
-
-        //window.navigator.share({ title: shareText, url: this.linkToShare });
-
-        //this.socialSharing.shareViaFacebook(shareText, null, this.linkToShare);
-    }
-
-    Test() {
-        console.log("Test button clicked");
     }
 
     async presentThankYouToast() {

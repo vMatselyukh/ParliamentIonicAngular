@@ -51,7 +51,7 @@ export class LanguageManager {
             "config_updated": "Конфігурацію оновлено",
             "postponed": "Відкладено",
             "nothing_to_update": "Немає контенту для оновлення",
-            "no_internet": "Немає інтернету",
+            "no_internet": "Немає підключення до інтернету",
             "config_loading_wait_please": "Завантажується конфігурація. Будь ласка зачекайте. Завантаження може тривати до 3 хвилин."
         },
         "ru": {
@@ -96,7 +96,7 @@ export class LanguageManager {
             "config_updated": "Конфигурацию обновлено",
             "postponed": "Отложено",
             "nothing_to_update": "Нет контента для обновления",
-            "no_internet": "Нет интернета",
+            "no_internet": "Нет подключения к интернету",
             "config_loading_wait_please": "Загружается конфигурация. Пожалуйста подождите. Загрузка может длиться до 3 минут."
         }
     }
