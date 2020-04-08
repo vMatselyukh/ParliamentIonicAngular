@@ -114,7 +114,7 @@
 		15350FD17433475081DD76F4 /* CDVWKProcessPoolFactory.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVWKProcessPoolFactory.h; path = "cordova-plugin-ionic-webview/CDVWKProcessPoolFactory.h"; sourceTree = "<group>"; };
 		1D3623240D0F684500981E51 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		1D3623250D0F684500981E51 /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		1D6058910D05DD3D006BFB54 /* Parliament UA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Parliament UA.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1D6058910D05DD3D006BFB54 /* Парламент UA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Парламент UA.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1F7039B1655145B598C612C2 /* Social.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = Social.framework; path = System/Library/Frameworks/Social.framework; sourceTree = SDKROOT; };
 		250013D87897CEB5F538CABC /* libPods-Parliament UA.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Parliament UA.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		26304477D3994CFC9448C77D /* CDVWKWebViewEngine.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = CDVWKWebViewEngine.h; path = "cordova-plugin-ionic-webview/CDVWKWebViewEngine.h"; sourceTree = "<group>"; };
@@ -270,7 +270,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1D6058910D05DD3D006BFB54 /* Parliament UA.app */,
+				1D6058910D05DD3D006BFB54 /* Парламент UA.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -478,7 +478,7 @@
 			);
 			name = "Parliament UA";
 			productName = "Parliament UA";
-			productReference = 1D6058910D05DD3D006BFB54 /* Parliament UA.app */;
+			productReference = 1D6058910D05DD3D006BFB54 /* Парламент UA.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -488,12 +488,6 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 510;
-				TargetAttributes = {
-					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = C24X85AWHD;
-						ProvisioningStyle = Automatic;
-					};
-				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Parliament UA" */;
 			compatibilityVersion = "Xcode 11.0";
@@ -652,6 +646,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
 				DEVELOPMENT_TEAM = C24X85AWHD;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -668,7 +663,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.eagerdev.parliament.ua;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Парламент UA";
+				PROVISIONING_PROFILE_SPECIFIER = "Development provisioning profile";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -682,7 +678,10 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = YES;
+				DEVELOPMENT_TEAM = C24X85AWHD;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"Parliament UA/Plugins/cordova-admob-sdk\"",
@@ -695,7 +694,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.eagerdev.parliament.ua;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "Парламент UA";
+				PROVISIONING_PROFILE_SPECIFIER = "Development provisioning profile";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
