@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="com.eagerdev.parliament.ua" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Parliament UA</name>
-    <description>An awesome Ionic/Cordova app.</description>
-    <author email="hi@ionicframework.com" href="http://ionicframework.com/">Ionic Framework Team</author>
+    <name>Парламент UA</name>
+    <description>Збірник крилатих фраз українських політиків.</description>
+    <author email="volodymyr.matselyukh@gmail.com" href="https://matseliukh/com">Volodymyr Matseliukh</author>
     <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />

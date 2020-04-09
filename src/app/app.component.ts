@@ -8,7 +8,7 @@ import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { LanguagePage } from './language/language.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ToastController } from '@ionic/angular';
-import { Market } from '@ionic-native/market/ngx';
+//import { Market } from '@ionic-native/market/ngx';
 import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
 import { Network } from '@ionic-native/network/ngx';
 
@@ -30,8 +30,8 @@ export class AppComponent {
 
     isIos: boolean = false;
 
-    appStoreName = "1506544870";
-    googlePlayName = "";
+    appStoreName = "id1144185381";//"1506544870";
+    googlePlayName = "com.infinite.shooting.galaxy.attack";
 
     constructor(
         private platform: Platform,
@@ -45,7 +45,7 @@ export class AppComponent {
         private events: Events,
         private dbContext: DbContext,
         private languageManager: LanguageManager,
-        private market: Market,
+        //private market: Market,
         private network: Network
     ) {
         this.initializeApp();
@@ -142,18 +142,21 @@ export class AppComponent {
         }
 
         if (this.isIos) {
-            this.market.open(this.appStoreName).then(() => {
-                console.log("successfully open app store page");
-            }).catch(() => {
-                console.log("error opening app store page");
-            });
+            window.open(`itms-apps://itunes.apple.com/app/${this.appStoreName}`, '_self');
+            //this.market.open(this.appStoreName).then(() => {
+            //    console.log("successfully open app store page");
+            //}).catch(() => {
+            //    console.log("error opening app store page");
+            //});
         }
         else {
-            this.market.open(this.googlePlayName).then(() => {
-                console.log("successfully open app store page");
-            }).catch(() => {
-                console.log("error opening app store page");
-            });
+
+            window.open(`market://details?id=${this.googlePlayName}`);
+            //this.market.open(this.googlePlayName).then(() => {
+            //    console.log("successfully open app store page");
+            //}).catch(() => {
+            //    console.log("error opening app store page");
+            //});
         }
     }
 
