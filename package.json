@@ -23,13 +23,12 @@
     "@babel/compat-data": "^7.8.0",
     "@ionic-native/admob-free": "^5.17.1",
     "@ionic-native/android-permissions": "^5.18.0",
-    "@ionic-native/core": "^5.17.1",
+    "@ionic-native/core": "^5.23.0",
     "@ionic-native/diagnostic": "^5.21.5",
     "@ionic-native/file": "^5.18.0",
     "@ionic-native/file-transfer": "^5.18.0",
     "@ionic-native/http": "^5.17.1",
     "@ionic-native/ionic-webview": "^5.18.0",
-    "@ionic-native/market": "^5.23.0",
     "@ionic-native/network": "^5.18.0",
     "@ionic-native/social-sharing": "^5.17.1",
     "@ionic-native/splash-screen": "^5.17.1",
@@ -47,7 +46,6 @@
     "cordova-plugin-enable-multidex": "^0.2.0",
     "cordova-plugin-file": "^6.0.2",
     "cordova-plugin-file-transfer": "^1.7.1",
-    "cordova-plugin-market": "git+https://github.com/xmartlabs/cordova-plugin-market.git",
     "cordova-plugin-network-information": "^2.0.2",
     "cordova-plugin-x-socialsharing": "^5.6.2",
     "cordova-promise-polyfill": "0.0.2",
@@ -115,8 +113,7 @@
       "cordova-plugin-file": {},
       "cordova-plugin-file-transfer": {},
       "cordova-plugin-android-permissions": {},
-      "cordova.plugins.diagnostic": {},
-      "cordova-plugin-market": {}
+      "cordova.plugins.diagnostic": {}
     },
     "platforms": [
       "android",
