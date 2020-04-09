@@ -26,14 +26,7 @@ npm-debug.log*
 /coverage
 /dist
 /node_modules
-/platforms/ios/build
-/platforms/ios/cordova
-/platforms/ios/cordovalib
-/platforms/ios/platform_www
-/platforms/ios/pods
-/platforms/ios/www
+/platforms/ios
 /platforms/android
-/platforms/ios/Parliament UA/*/
-/platforms/ios/Parliament UA.xcarchive
 /plugins
 /www
