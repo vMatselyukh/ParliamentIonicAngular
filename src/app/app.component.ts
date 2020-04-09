@@ -30,8 +30,8 @@ export class AppComponent {
 
     isIos: boolean = false;
 
-    appStoreName = "id1144185381";//"1506544870";
-    googlePlayName = "com.infinite.shooting.galaxy.attack";
+    appStoreName = "1506544870";
+    googlePlayName = ""; //"com.infinite.shooting.galaxy.attack";
 
     constructor(
         private platform: Platform,
