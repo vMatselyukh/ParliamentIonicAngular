@@ -17,10 +17,6 @@
     padding: 10px 0;
 }
 
-.politician-post{
-    font-size: 1rem;
-}
-
 .politician-small-image{
     width: 20%;
     height: auto;
@@ -32,7 +28,7 @@
 }
 
 .track-name {
-    font-size: 0.9rem;
+    font-size: 14px;
 }
 
 ion-item:not(:last-child) {
@@ -41,10 +37,21 @@ ion-item:not(:last-child) {
 
 .centered-title {
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 16px;
     padding: 0;
 }
 
 .android .centered-title {
     width: 90%;
+}
+
+
+@media screen and (min-width: 390px) {
+    .centered-title {
+        font-size: 18px;
+    }
+
+    .track-name {
+        font-size: 16px;
+    }
 }

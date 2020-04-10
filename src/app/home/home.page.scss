@@ -17,7 +17,7 @@ body{
 
 .centered-title {
     text-align: center;
-    font-size: 1rem;
+    font-size: 16px;
     padding: 0;
 }
 
@@ -96,13 +96,13 @@ body{
                 text-align: center;
 
                 .person-name {
-                    font-size: 0.8rem;
-                    margin-bottom: 0.3rem;
+                    font-size: 16px;
                     color: black;
                     white-space: normal;
                 }
 
                 .person-post {
+                    font-size: 14px;
                     color: darkgray;
                     white-space: normal;
                 }
@@ -113,16 +113,16 @@ body{
                 }
                     
                 .person-traks-count {
-                    font-size: 0.8rem;
+                    font-size: 14px;
                     position: absolute;
-                    bottom: 4px;
+                    bottom: 8%;
                     left: calc(50% - 25px);
                     width: 50px;
                 }
 
                 .new-tracks-available {
                     position: absolute;
-                    bottom: 4px;
+                    bottom: 8%;
                     right: 2%;
                 }
 
@@ -140,25 +140,25 @@ body{
     }
 }
 
-@media screen and (min-height: 700px) {
+@media screen and (min-width: 390px) {
+    .centered-title {
+        font-size: 18px;
+    }
+    
     #MainList {
         .scroll-area {
             .item {
                 .person-info {
                     .person-name {
-                        font-size: 1.1rem;
+                        font-size: 16px;
                     }
 
                     .person-post {
-                        font-size: 0.9rem;
+                        font-size: 12px;
                     }
 
                     .person-traks-count {
-                        font-size: 1.2rem;
-                    }
-
-                    span {
-                        font-size: 0.7rem;
+                        font-size: 16px;
                     }
                 }
             }
