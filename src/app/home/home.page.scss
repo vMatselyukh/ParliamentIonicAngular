@@ -115,14 +115,14 @@ body{
                 .person-traks-count {
                     font-size: 14px;
                     position: absolute;
-                    bottom: 8%;
-                    left: calc(50% - 25px);
-                    width: 50px;
+                    bottom: 10%;
+                    left: 37.5%;
+                    width: 25%;
                 }
 
                 .new-tracks-available {
                     position: absolute;
-                    bottom: 8%;
+                    bottom: 10%;
                     right: 2%;
                 }
 
@@ -159,6 +159,58 @@ body{
 
                     .person-traks-count {
                         font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 410px) {
+    .centered-title {
+        font-size: 20px;
+    }
+    
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 18px;
+                    }
+
+                    .person-post {
+                        font-size: 14px;
+                    }
+
+                    .person-traks-count {
+                        font-size: 18px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media screen and (min-width: 800px) {
+    .centered-title {
+        font-size: 22px;
+    }
+    
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 20px;
+                    }
+
+                    .person-post {
+                        font-size: 16px;
+                    }
+
+                    .person-traks-count {
+                        font-size: 20px;
                     }
                 }
             }

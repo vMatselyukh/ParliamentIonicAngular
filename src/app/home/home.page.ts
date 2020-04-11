@@ -117,6 +117,9 @@ export class HomePage {
             this.loadCoinsCount();
             console.log("platform.ready");
 
+            console.log("display width:", window.innerWidth);
+            console.log("display height:", window.innerHeight);
+
             this.dbContext.getLanguage().then(async lang => {
                 if (lang === null) {
                     await this.dbContext.setLanguage("ua");

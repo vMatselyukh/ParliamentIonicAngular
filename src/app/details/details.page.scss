@@ -55,3 +55,23 @@ ion-item:not(:last-child) {
         font-size: 16px;
     }
 }
+
+@media screen and (min-width: 410px) {
+    .centered-title {
+        font-size: 20px;
+    }
+
+    .track-name {
+        font-size: 18px;
+    }
+}
+
+@media screen and (min-width: 800px) {
+    .centered-title {
+        font-size: 22px;
+    }
+
+    .track-name {
+        font-size: 20px;
+    }
+}
