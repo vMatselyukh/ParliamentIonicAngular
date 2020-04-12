@@ -25,6 +25,27 @@
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
 
+@media screen and (max-width: 350px) {
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .new-tracks-available {
+                        height: 20px;
+                    }
+
+                    .person-traks-count{
+                        height: 20px;
+                        width: 35% !important;
+                        left: 32.5% !important;
+                        font-size: 14px !important;
+                    }
+                }
+            }
+        }
+    }
+}
+
 @media screen and (min-width: 390px) {
     .centered-title {
         font-size: 18px !important;
