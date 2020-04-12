@@ -28,13 +28,13 @@ ion-title{
     }
 }
 
-@media screen and (min-width: 800px) {
+@media screen and (min-width: 600px) {
     ion-title {
         font-size: 22px;
     }
 
     .language-item {
-        width:25%;
+        width:35%;
         height: auto;
         margin: 5% auto 0;
     
