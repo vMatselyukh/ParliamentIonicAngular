@@ -24,3 +24,130 @@
 @import "~@ionic/angular/css/text-alignment.css";
 @import "~@ionic/angular/css/text-transformation.css";
 @import "~@ionic/angular/css/flex-utils.css";
+
+@media screen and (min-width: 390px) {
+    .centered-title {
+        font-size: 18px !important;
+    }
+
+    ion-toolbar {
+        font-size: 18px !important;
+
+        ion-title {
+            font-size: 1em;
+        }
+    }
+
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 16px;
+                    }
+
+                    span.person-post {
+                        font-size: 12px;
+                    }
+
+                    .person-traks-count {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+
+    .track-name {
+        font-size: 14px !important;
+    }
+}
+
+@media screen and (min-width: 410px) {
+    .centered-title {
+        font-size: 20px !important;
+    }
+
+    ion-toolbar {
+        font-size: 20px !important;
+
+        ion-title {
+            font-size: 1em !important;
+        }
+
+        ion-button {
+            font-size: 1em !important;
+        }
+    }
+
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 16px;
+                    }
+
+                    span.person-post {
+                        font-size: 12px;
+                    }
+
+                    .person-traks-count {
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+
+    .track-name {
+        font-size: 16px !important;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    ion-toolbar {
+        font-size: 22px !important;
+    }
+
+    .language-item {
+        width: 35%;
+        height: auto;
+        margin: 5% auto 0;
+
+        img {
+            width: 100%;
+            height: auto;
+        }
+    }
+}
+
+@media screen and (min-width: 800px) {
+    .centered-title {
+        font-size: 22px !important;
+    }
+
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 20px;
+                    }
+
+                    span.person-post {
+                        font-size: 16px;
+                    }
+
+                    .person-traks-count {
+                        font-size: 20px;
+                    }
+                }
+            }
+        }
+    }
+
+    .track-name {
+        font-size: 20px !important;
+    }
+}

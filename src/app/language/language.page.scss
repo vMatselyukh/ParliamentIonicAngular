@@ -15,32 +15,3 @@ ion-title{
     padding-inline-end: 0;
     text-align: left;
 }
-
-@media screen and (min-width: 390px) {
-    ion-title {
-        font-size: 18px;
-    }
-}
-
-@media screen and (min-width: 410px) {
-    ion-title {
-        font-size: 20px;
-    }
-}
-
-@media screen and (min-width: 600px) {
-    ion-title {
-        font-size: 22px;
-    }
-
-    .language-item {
-        width:35%;
-        height: auto;
-        margin: 5% auto 0;
-    
-        img{
-            width:100%;
-            height: auto;
-        }
-    }
-}
