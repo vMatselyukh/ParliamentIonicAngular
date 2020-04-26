@@ -5,5 +5,6 @@
 		<domain includeSubdomains="true">45.58.142.28</domain>
 		<domain includeSubdomains="true">matseliukh.com</domain>
 		<domain includeSubdomains="true">parliament.matseliukh.com</domain>
+		<domain includeSubdomains="true">cordova.apache.org</domain>
     </domain-config>
 </network-security-config>

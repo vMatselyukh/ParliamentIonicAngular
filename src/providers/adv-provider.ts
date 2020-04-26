@@ -17,7 +17,7 @@ export class AdvProvider {
     bannerIos: string = "ca-app-pub-3291616985383560/4118758850";
 
     testBanner: string = "ca-app-pub-3940256099942544/6300978111";
-
+    testRewarded: string = "ca-app-pub-3940256099942544/5224354917";
 
     requireAdvClicked: boolean = false;
     advLoadingFailed: boolean = false;
@@ -55,14 +55,14 @@ export class AdvProvider {
             }
 
             self.admob.rewardVideo.config({
-                id: rewardedAddId,
-                isTesting: false,
+                id: this.testRewarded,//rewardedAddId,
+                isTesting: true,//false,
                 autoShow: false
             });
 
             self.admob.banner.config({
-                id: bannerAddId,
-                isTesting: false,
+                id: this.testBanner,//bannerAddId,
+                isTesting: true,//false,
                 autoShow: false
             });
 

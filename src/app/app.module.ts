@@ -32,6 +32,7 @@ import { LanguagePageModule } from './language/language.module';
 import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
+import { Zip } from '@ionic-native/zip/ngx';
 import { ShareModule } from '@ngx-share/core';
 
 @NgModule({
@@ -61,7 +62,8 @@ import { ShareModule } from '@ngx-share/core';
         AndroidPermissions,
         FileManager,
         LanguageManager,
-        Diagnostic
+        Diagnostic,
+        Zip
     ],
     bootstrap: [AppComponent]
 })

@@ -259,6 +259,23 @@ export class AlertManager {
         await alert.present();
     }
 
+    async showSomeFilesWereNotDownloadedAlert() {
+        const alert = await this.alertController.create({
+            header: await this.languageManager.getTranslations("attention"),
+            subHeader: '',
+            message: await this.languageManager.getTranslations("some_files_were_not_downloaded_alert"),
+            buttons: [
+                {
+                    text: await this.languageManager.getTranslations("ok"),
+                    role: 'cancel'
+                }
+            ],
+            backdropDismiss: true
+        });
+
+        await alert.present();
+    }
+
     closeAlerts() {
         this.alertController.dismiss();
     }

@@ -69,6 +69,7 @@ export class ConfigManager {
     }
 
     copyConfig(localConfig: Config, serverConfig: Config) {
+        this.copyOrder(localConfig, serverConfig);
         this.copyUnlockedTracks(localConfig, serverConfig);
     }
 
@@ -245,6 +246,7 @@ export class ConfigManager {
         else {
             await this.parliamentApi.getConfig()
                 .then(async config => {
+                    this.lockAllTracksInServerConfig(config);
                     await this.dbContext.saveConfig(config);
                     await this.downloadContent(config);
                     console.log("Loading from server shoud be finished. Calling callback.");
@@ -314,22 +316,24 @@ export class ConfigManager {
         console.log("all items to download", allItemsToDownload);
         console.log("to delete", itemsToDelete);
 
-        return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
-            .then(async () => {
-                //lock all tracks because in copyConfig we will unlock needed ones.
-                this.lockAllTracksInServerConfig(serverConfig);
+        //return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
+        return Promise.all([this.fileManager.getUdatesZip(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
+            .then(() => {
+                console.log("updates downloaded and unpacked");
+            })
+            .catch((error) => {
+                this.alertManager.showSomeFilesWereNotDownloadedAlert();
+                console.log("error happened. Some of the files were not downloaded", error);
+            }).finally(async () => {
                 this.copyConfig(this.config, serverConfig);
                 await this.dbContext.saveConfig(serverConfig);
                 this.config = serverConfig;
-            })
-            .catch((error) => {
-                console.log("error happened", error);
             });
     }
 
     //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
-        if(!this.config)
+        if (!this.config || this.isDefaultConfigUsed())
         {
             return;
         }
@@ -435,6 +439,18 @@ export class ConfigManager {
         });
     }
 
+    private copyOrder(localConfig: Config, serverConfig: Config) {
+        localConfig.Persons.map(person => {
+            let serverPerson = serverConfig.Persons.find(serverPerson => serverPerson.Id == person.Id);
+
+            if (serverPerson != null) {
+                person.OrderNumber = serverPerson.OrderNumber;
+            }
+
+            return person;
+        });
+    }
+
     private getImagesToDelete(dbConfig: Config, serverConfig: Config): string[] {
         let imagesList = [];
 
@@ -445,7 +461,7 @@ export class ConfigManager {
                 return personFromServer.Id === dbPerson.Id;
             })
 
-            if (serverPerson == null) {
+            if (serverPerson == null && !this.isDefaultConfigUsed()) {
                 imagesList.push(dbPerson.ListButtonPicPath.ImagePath);
                 imagesList.push(dbPerson.MainPicPath.ImagePath);
                 imagesList.push(dbPerson.SmallButtonPicPath.ImagePath);

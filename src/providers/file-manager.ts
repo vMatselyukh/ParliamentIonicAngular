@@ -2,12 +2,12 @@
 import * as _ from 'lodash';
 import { File, DirectoryEntry, FileEntry } from '@ionic-native/file/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
-import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { Platform } from '@ionic/angular';
 import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
-import { WebServerLinkProvider, DbContext } from "./providers";
+import { WebServerLinkProvider, DbContext, ParliamentApi } from "./providers";
 import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Person, Track } from '../models/models';
+import { Zip } from '@ionic-native/zip/ngx';
 
 @Injectable()
 export class FileManager {
@@ -15,23 +15,25 @@ export class FileManager {
     readonly addPathBeginning = "resources";
     readonly topFolderName = "parliament";
     readonly fileDelimiter = "\\";
+    readonly tempDirectory = "temp";
 
     win: any = window;
 
     private requestOptions = {
         headers: {
             'AuthorizeHeader': '1569b7bd-94d2-428c-962b-858e3f46b8a2'
-        },
+        }
     };
 
     constructor(private file: File,
         private platform: Platform,
         private fileTransfer: FileTransfer,
         private webServerLinkProvider: WebServerLinkProvider,
-        private androidPermissions: AndroidPermissions,
         private dbContext: DbContext,
         private webview: WebView,
-        private diagnostic: Diagnostic) {
+        private diagnostic: Diagnostic,
+        private zip: Zip,
+        private parliamentApi: ParliamentApi) {
     }
 
     normalizeFilePath(filePath): string {
@@ -49,18 +51,6 @@ export class FileManager {
 
         return "";
     }
-
-    //async getBaseDirectory(): Promise<string> {
-    //    let baseDirectory = this.file.dataDirectory;
-
-    //    let directoryName = await this.dbContext.getAndroidSelectedStorage();
-
-    //    if (this.platform.is('android') && directoryName == 'external') {
-    //        baseDirectory = this.file.externalRootDirectory;
-    //    }
-
-    //    return baseDirectory;
-    //}
 
     async getMissingFiles(filesToCheck: string[]): Promise<string[]> {
         let baseDirectory = await this.getDownloadPath();
@@ -146,6 +136,60 @@ export class FileManager {
         });
     }
 
+    async getUdatesZip(urls: string[]): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (urls.length == 0) {
+                    resolve();
+                }
+
+                let zipFile = await this.parliamentApi.getZipFile(urls);
+                let zipFileName = "updates.zip";
+
+                let baseDirectory = await this.getDownloadPath();
+                let tempLocation = `${this.topFolderName}/${this.tempDirectory}`;
+
+
+                await this.saveFileToLocation(tempLocation, zipFile, zipFileName);
+
+                this.zip.unzip(`${baseDirectory}${tempLocation}/${zipFileName}`, `${baseDirectory}${this.topFolderName}`);
+                resolve();
+            }
+            catch (error) {
+                console.log("error happened during getting updates: ", error);
+                reject(error);
+            }
+        });
+    }
+
+    async saveFileToLocation(newLocation: string, blob: ArrayBuffer, fileName: string): Promise<any> {
+        let baseDirectory = await this.getDownloadPath();
+
+        let pathParts = newLocation.split('/');
+
+        await this.file.checkDir(`${baseDirectory}`, newLocation)
+            .then(result => { console.log("directory exists: ", result); })
+            .catch(err => {
+                console.log("directory error: ", err);
+
+                console.log("creating a dir");
+
+                let baseDir = `${baseDirectory}${pathParts.slice(0, pathParts.length - 1).join('/')}`;
+                console.log("base dir: ", baseDir);
+
+                let folderName = pathParts[pathParts.length - 1];
+                console.log("folder name: ", folderName);
+
+                this.file.createDir(baseDir, folderName, true)
+                    .then(result => { console.log("directory created: ", result); })
+                    .catch(err => { console.log("directory creation error: ", err); });
+            });
+
+        console.log("new file path: ", newLocation);
+
+        return this.file.writeFile(`${baseDirectory}`, `${newLocation}/${fileName}`, blob, { replace: true });
+    }
+
     //get path for downloads on device
     async getDownloadPath(): Promise<string> {
         if (this.platform.is('ios')) {
@@ -197,15 +241,32 @@ export class FileManager {
 
     async getFileUrl(filePath: string): Promise<string> {
         return new Promise((resolve, reject) => {
+            console.log("getting file url: ", filePath);
             this.getFile(filePath)
                 .then((fileEntry: FileEntry) => {
                     resolve(fileEntry.nativeURL);
                 })
                 .catch(fileEntryError => {
-                    console.log("error", fileEntryError);
+                    console.log("error getFileUrl: ", fileEntryError, filePath);
                     resolve("");
                 });
         });
+    }
+
+    async getHomeImagePath() {
+        let downloadPath = await this.getDownloadPath();
+        let newFilePath = `/test/image.jpg`;
+
+        let path = await this.getFileUrl(newFilePath);
+
+        if (this.platform.is('ios')) {
+            path = this.win.Ionic.WebView.convertFileSrc(path);
+        }
+        else {
+            path = this.webview.convertFileSrc(path);
+        }
+
+        return path;
     }
 
     async getListButtonImagePath(person: Person): Promise<string> {
