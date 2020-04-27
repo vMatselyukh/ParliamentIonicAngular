@@ -8,9 +8,11 @@ export class ParliamentApi {
     private baseUrl = this.linkProvider.webServerBaseUrl;
     private countryName = "ukraine";
 
+    private authorizeHeader = '1569b7bd-94d2-428c-962b-858e3f46b8a2';
+
     private requestOptions = {
         headers: new HttpHeaders({
-            'AuthorizeHeader': '1569b7bd-94d2-428c-962b-858e3f46b8a2'
+            'AuthorizeHeader': this.authorizeHeader
         }),
     };
 
@@ -87,7 +89,7 @@ export class ParliamentApi {
         });
     }
 
-    async getZipFile(urls: string[]): Promise<ArrayBuffer> {
+    async getZipFile(urls: string[], progressCallback = null): Promise<ArrayBuffer> {
         return new Promise((resolve, reject) => {
             if (urls.length == 0) {
                 reject("nothing to download");
@@ -98,10 +100,14 @@ export class ParliamentApi {
             // Make sure you add the domain name to the Content-Security-Policy <meta> element.
 
             oReq.open("POST", `${this.linkProvider.webServerBaseUrl}getfiles`, true);
-            oReq.setRequestHeader('AuthorizeHeader', '1569b7bd-94d2-428c-962b-858e3f46b8a2');
+            oReq.setRequestHeader('AuthorizeHeader', this.authorizeHeader);
             oReq.setRequestHeader('Content-Type', 'application/json');
             // Define how you want the XHR data to come back
             oReq.responseType = "blob";
+            if (progressCallback) {
+                oReq.onprogress = progressCallback;
+            }
+            
             oReq.onload = function (oEvent) {
                 console.log("onload fired");
                 var blob = oReq.response; // Note: not oReq.responseText
@@ -110,6 +116,9 @@ export class ParliamentApi {
                     if (blob.size == 0) {
                         reject("blob size is 0");
                         return;
+                    }
+                    else {
+                        console.log("blob size is: ", (blob.size / 1024 / 1024).toFixed(2));
                     }
 
                     var reader = new FileReader();

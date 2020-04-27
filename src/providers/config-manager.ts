@@ -1,6 +1,6 @@
 ﻿import { DomSanitizer } from '@angular/platform-browser';
 import { Platform } from '@ionic/angular';
-import { Injectable, SecurityContext } from '@angular/core';
+import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { Person, Config, Track } from '../models/models';
 import {
@@ -88,9 +88,9 @@ export class ConfigManager {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
                             loadingElement = await this.loadingManager.showConfigLoadingMessage();
-                            await this.loadConfigFromServer(async () => {
+                            await this.loadConfigFromServer(loadingElement, async () => {
                                     await this.loadImagesDevicePath(true);
-                                    this.loadingManager.closeLoading();
+                                    loadingElement.dismiss();
                                     resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
                                 },
                                 async () => {
@@ -148,17 +148,17 @@ export class ConfigManager {
                                         console.log("hashes are different, showing message about config update");
                                         this.alertManager.showUpdateConfigAlert(
                                             async () => {
-                                                await this.loadingManager.showConfigLoadingMessage();
+                                                let loadingElement = await this.loadingManager.showConfigLoadingMessage();
 
-                                                await this.downloadContent()
+                                                await this.downloadContent(loadingElement)
                                                     .then(async () => {
                                                         await this.loadImagesDevicePath(true);
-                                                        await this.loadingManager.closeLoading();
+                                                        loadingElement.dismiss();
                                                         resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
                                                     })
                                                     .catch(async (error) => {
                                                         console.log("load content error", error);
-                                                        await this.loadingManager.closeLoading();
+                                                        loadingElement.dismiss();
                                                         reject(error);
                                                     });
                                             },
@@ -171,9 +171,9 @@ export class ConfigManager {
                                     else if (forceLoading) {
                                         this.alertManager.showRenewMissedFilesAlert(
                                             async () => {
-                                                await this.loadingManager.showConfigLoadingMessage();
+                                                let loadingElement = await this.loadingManager.showConfigLoadingMessage();
 
-                                                await this.downloadContent()
+                                                await this.downloadContent(loadingElement)
                                                     .then(async () => {
                                                         await this.loadImagesDevicePath(true);
                                                         await this.loadingManager.closeLoading();
@@ -232,7 +232,7 @@ export class ConfigManager {
         }
     }
 
-    async loadConfigFromServer(loadingFinishCallback: any, loadingFailedCallback: any) {
+    async loadConfigFromServer(loadingElement: HTMLIonLoadingElement, loadingFinishCallback: any, loadingFailedCallback: any) {
         if (this.network.type == 'none') {
             await this.alertManager.showNoInternetAlert(
                 async () => {
@@ -248,7 +248,7 @@ export class ConfigManager {
                 .then(async config => {
                     this.lockAllTracksInServerConfig(config);
                     await this.dbContext.saveConfig(config);
-                    await this.downloadContent(config);
+                    await this.downloadContent(loadingElement, config);
                     console.log("Loading from server shoud be finished. Calling callback.");
                     loadingFinishCallback();
                 })
@@ -263,7 +263,22 @@ export class ConfigManager {
         return this.config.Persons.length == 5 && this.config.Persons[0].Infos[0].Name == 'Incognito';
     }
 
-    private async downloadContent(serverConfig: Config = null): Promise<any> {
+    updateProgress(oEvent, loadingElement: HTMLIonLoadingElement) {
+        if (oEvent.lengthComputable) {
+            let percentComplete = oEvent.loaded / oEvent.total * 100;
+            this.updateProgressInLoadingMessage(loadingElement, percentComplete);
+            console.log("loading progress: ", percentComplete.toFixed(2));
+            
+        } else {
+            console.log("unable to track the progress");
+        }
+    }
+
+    async updateProgressInLoadingMessage(loading: HTMLIonLoadingElement, percentage: number) {
+        await this.loadingManager.updateLoadingProgress(loading, percentage);
+    }
+
+    private async downloadContent(loadingElement: HTMLIonLoadingElement, serverConfig: Config = null): Promise<any> {
         console.log("downloadContent started");
         //update process started
         if(serverConfig == null) {
@@ -316,19 +331,20 @@ export class ConfigManager {
         console.log("all items to download", allItemsToDownload);
         console.log("to delete", itemsToDelete);
 
-        //return Promise.all([this.downloadFiles(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
-        return Promise.all([this.fileManager.getUdatesZip(allItemsToDownload), this.fileManager.deleteItems(itemsToDelete)])
-            .then(() => {
-                console.log("updates downloaded and unpacked");
-            })
-            .catch((error) => {
-                this.alertManager.showSomeFilesWereNotDownloadedAlert();
-                console.log("error happened. Some of the files were not downloaded", error);
-            }).finally(async () => {
-                this.copyConfig(this.config, serverConfig);
-                await this.dbContext.saveConfig(serverConfig);
-                this.config = serverConfig;
-            });
+        return Promise.all([this.fileManager.getUdatesZip(allItemsToDownload, oEvent => this.updateProgress(oEvent, loadingElement))
+            .then(() => this.loadingManager.updateLoadingConfigurationIsBeingApplied(loadingElement)),
+            this.fileManager.deleteItems(itemsToDelete)])
+                .then(async () => {
+                    console.log("updates downloaded and unpacked");
+                    this.copyConfig(this.config, serverConfig);
+                    await this.dbContext.saveConfig(serverConfig);
+                    this.config = serverConfig;
+                })
+                .catch((error) => {
+                    this.alertManager.showSomeFilesWereNotDownloadedAlert();
+                    console.log("Error happened. Some of the files were not downloaded", error);
+                }).finally(async () => {
+                });
     }
 
     //forceSystemCheck when download new content.

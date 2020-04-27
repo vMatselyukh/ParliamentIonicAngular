@@ -52,7 +52,8 @@ export class LanguageManager {
             "postponed": "Відкладено",
             "nothing_to_update": "Немає контенту для оновлення",
             "no_internet": "Немає підключення до інтернету",
-            "config_loading_wait_please": "Завантажується конфігурація. Будь ласка зачекайте. Завантаження може тривати до 3 хвилин.",
+            "config_loading_wait_please": "Завантажується конфігурація. Будь ласка зачекайте. Завантажено {0}%",
+            "config_applying_wait_please": "Застосовується конфігурація. Будь ласка зачекайте.",
             "some_files_were_not_downloaded_alert": "Деякі файли не підвантажились. Щоб виправити ситуацію зайдіть у меню та виберіть пункт 'Завантажити оновлення'"
         },
         "ru": {
@@ -98,7 +99,8 @@ export class LanguageManager {
             "postponed": "Отложено",
             "nothing_to_update": "Нет контента для обновления",
             "no_internet": "Нет подключения к интернету",
-            "config_loading_wait_please": "Загружается конфигурация. Пожалуйста подождите. Загрузка может длиться до 3 минут.",
+            "config_loading_wait_please": "Загружается конфигурация. Пожалуйста подождите. Загружено {0}%",
+            "config_applying_wait_please": "Применяется конфигурация. Пожалуйста подождите.",
             "some_files_were_not_downloaded_alert": "Некоторые файлы не подгрузились. Чтобы исправить ситуацию зайдите в меню и выберите пункт 'Загрузить обновление'"
         }
     }
@@ -111,5 +113,17 @@ export class LanguageManager {
         let currentLanguage = await this.dbContext.getLanguage();
 
         return this.translations[currentLanguage][key];
+    }
+
+    async formatTranslations(key: string, ...args) {
+        let currentLanguage = await this.dbContext.getLanguage();
+
+        let translationString: string = this.translations[currentLanguage][key];
+
+        for (let i = 0; i < args.length; i++) {
+            translationString = translationString.replace("{" + i + "}", args[i]);
+        }
+
+        return translationString;
     }
 }

@@ -136,21 +136,22 @@ export class FileManager {
         });
     }
 
-    async getUdatesZip(urls: string[]): Promise<void> {
+    async getUdatesZip(urls: string[], progressCallback = null): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
                 if (urls.length == 0) {
                     resolve();
                 }
 
-                let zipFile = await this.parliamentApi.getZipFile(urls);
+                let zipFile = await this.parliamentApi.getZipFile(urls, progressCallback);
                 let zipFileName = "updates.zip";
 
                 let baseDirectory = await this.getDownloadPath();
                 let tempLocation = `${this.topFolderName}/${this.tempDirectory}`;
 
-
                 await this.saveFileToLocation(tempLocation, zipFile, zipFileName);
+
+                console.log("zip saved");
 
                 this.zip.unzip(`${baseDirectory}${tempLocation}/${zipFileName}`, `${baseDirectory}${this.topFolderName}`);
                 resolve();

@@ -156,12 +156,6 @@ export class HomePage {
 
         console.log("view did enter");
         console.log("main list height", this.mainList.nativeElement.clientHeight);
-
-        //this.fileManager.getZipFile(["ololo"]).then(async () => {
-        //    this.homeImageUrl = await this.fileManager.getHomeImagePath();
-
-        //    console.log("homeImageUrl: ", this.homeImageUrl);
-        //});
     }
 
     compare(person1: Person, person2: Person) {
