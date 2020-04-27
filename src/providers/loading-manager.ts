@@ -30,4 +30,8 @@ export class LoadingManager {
     async updateLoadingConfigurationIsBeingApplied(loadingElement: HTMLIonLoadingElement) {
         loadingElement.message = await this.languageManager.getTranslations("config_applying_wait_please");
     }
+
+    async updateLoadingCopyingFiles(loadingElement: HTMLIonLoadingElement) {
+        loadingElement.message = await this.languageManager.getTranslations("config_copying_files");
+    }
 }

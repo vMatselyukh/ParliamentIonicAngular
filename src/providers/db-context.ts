@@ -210,7 +210,7 @@ export class DbContext {
         return await this.storage.get(this.androidSelectedStorageKey);
     }
 
-    async setAndroidSelectedStorage(value): Promise<void> {
+    async setAndroidSelectedStorage(value: string): Promise<void> {
         return await this.storage.set(this.androidSelectedStorageKey, value);
     }
 

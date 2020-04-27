@@ -3,7 +3,7 @@
     <name>Парламент UA</name>
     <description>Збірник крилатих фраз українських політиків.</description>
     <author email="volodymyr.matselyukh@gmail.com" href="https://matseliukh/com">Volodymyr Matseliukh</author>
-    <content src="index.html" />
+    <content original-src="index.html" src="http://localhost:8100" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
@@ -22,7 +22,7 @@
     <preference name="orientation" value="portrait" />
     <platform name="android">
         <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application" xmlns:android="http://schemas.android.com/apk/res/android">
-            <application android:networkSecurityConfig="@xml/network_security_config" />
+            <application android:allowBackup="false" android:networkSecurityConfig="@xml/network_security_config" />
         </edit-config>
         <resource-file src="resources/android/xml/network_security_config.xml" target="app/src/main/res/xml/network_security_config.xml" />
         <allow-intent href="market:*" />

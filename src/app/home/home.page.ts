@@ -87,10 +87,6 @@ export class HomePage {
     ionViewDidEnter() {
         let self = this;
 
-        this.advProvider.hideBanner().then(() => {
-            this.recalcListImagesWidthHeight();
-        });
-
         if (!this.rewardReceivedSubscribed) {
             this.events.subscribe("reward:received", () => {
                 self.loadCoinsCount();
@@ -150,6 +146,10 @@ export class HomePage {
             this.configManager.loadConfig().then((result: any) => {
                 this.loadConfigProcessResult(result);
             });
+
+            this.advProvider.hideBanner().then(() => {
+                this.recalcListImagesWidthHeight();
+            });
         });
 
         this.recalcListImagesWidthHeight();
@@ -201,8 +201,14 @@ export class HomePage {
 
     itemClick(person: Person) {
         console.log('click');
-        this.dataService.setData(person.Id, person);
-        this.router.navigateByUrl(`/details/${person.Id}`);
+
+        if (!this.configManager.isDefaultConfigUsed()) {
+            this.dataService.setData(person.Id, person);
+            this.router.navigateByUrl(`/details/${person.Id}`);
+        }
+        else {
+            console.log("default configuration is used. No navigation to details is happening.");
+        }
     }
 
     getTracksCount(person: Person): number {

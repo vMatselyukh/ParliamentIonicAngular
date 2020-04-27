@@ -65,7 +65,7 @@ export class FileManager {
             let fileName = fileParts[fileParts.length - 1];
             fileParts = fileParts.slice(0, fileParts.length - 1);
 
-            let dirPath = `${baseDirectory}/${this.topFolderName}/${fileParts.join('/')}/`;
+            let dirPath = `${baseDirectory}${this.topFolderName}/${fileParts.join('/')}/`;
 
             allPromises.push(this.file.checkFile(dirPath, fileName).catch(e => {
                 nonExistingFiles.push(processedFileName);
@@ -136,7 +136,7 @@ export class FileManager {
         });
     }
 
-    async getUdatesZip(urls: string[], progressCallback = null): Promise<void> {
+    async getUdatesZip(urls: string[], progressCallback = null, zipDownloadedCallback = null): Promise<void> {
         return new Promise(async (resolve, reject) => {
             try {
                 if (urls.length == 0) {
@@ -144,16 +144,28 @@ export class FileManager {
                 }
 
                 let zipFile = await this.parliamentApi.getZipFile(urls, progressCallback);
+
+                zipDownloadedCallback();
+
                 let zipFileName = "updates.zip";
 
                 let baseDirectory = await this.getDownloadPath();
                 let tempLocation = `${this.topFolderName}/${this.tempDirectory}`;
 
+                console.log("zip ready to be saved");
+
                 await this.saveFileToLocation(tempLocation, zipFile, zipFileName);
 
                 console.log("zip saved");
 
-                this.zip.unzip(`${baseDirectory}${tempLocation}/${zipFileName}`, `${baseDirectory}${this.topFolderName}`);
+                await this.zip.unzip(`${baseDirectory}${tempLocation}/${zipFileName}`, `${baseDirectory}${this.topFolderName}`)
+                    .then((count) => {
+                        console.log("unzipping: ", count);
+                    })
+                    .catch((error) => {
+                        console.log("unzipping error: ", error);
+                    });
+
                 resolve();
             }
             catch (error) {
@@ -168,26 +180,29 @@ export class FileManager {
 
         let pathParts = newLocation.split('/');
 
-        await this.file.checkDir(`${baseDirectory}`, newLocation)
-            .then(result => { console.log("directory exists: ", result); })
-            .catch(err => {
-                console.log("directory error: ", err);
+        for (let i = 0; i < pathParts.length; i++) {
+            await this.file.checkDir(`${baseDirectory}`, pathParts.slice(0, i + 1).join('/'))
+                .then(result => { console.log("directory exists: ", result); })
+                .catch(async err => {
+                    console.log("directory error: ", err);
 
-                console.log("creating a dir");
+                    console.log("creating a dir");
 
-                let baseDir = `${baseDirectory}${pathParts.slice(0, pathParts.length - 1).join('/')}`;
-                console.log("base dir: ", baseDir);
+                    let ending = i === 0 ? "" : "/";
 
-                let folderName = pathParts[pathParts.length - 1];
-                console.log("folder name: ", folderName);
+                    let baseDir = `${baseDirectory}${pathParts.slice(0, i).join('/')}${ending}`;
+                    console.log("base dir: ", baseDir);
 
-                this.file.createDir(baseDir, folderName, true)
-                    .then(result => { console.log("directory created: ", result); })
-                    .catch(err => { console.log("directory creation error: ", err); });
-            });
+                    let folderName = pathParts[i];
+                    console.log("folder name: ", folderName);
 
-        console.log("new file path: ", newLocation);
+                    await this.file.createDir(baseDir, folderName, true)
+                        .then(result => { console.log("directory created: ", result); })
+                        .catch(err => { console.log("directory creation error: ", err); });
+                });
+        }
 
+        
         return this.file.writeFile(`${baseDirectory}`, `${newLocation}/${fileName}`, blob, { replace: true });
     }
 
@@ -323,9 +338,14 @@ export class FileManager {
                 await this.diagnostic.getExternalSdCardDetails().then(details => {
                     details.forEach(function (detail) {
                         //157286400 = 100Mb
-                        if (detail.canWrite && detail.freeSpace > 157286400 && externalStoragePath === "") {
+                        if (detail.canWrite && externalStoragePath === "" && detail.type === "application") {
                             console.log("diagnostic external file path", detail.filePath);
-                            externalStoragePath = detail.filePath;
+
+                            if (detail.freeSpace < 157286400) {
+                                throw new Error("not enough free space");
+                            }
+
+                            externalStoragePath = detail.filePath + "/";
                         }
                     });
                 }, error => {

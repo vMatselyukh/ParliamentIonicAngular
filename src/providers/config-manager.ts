@@ -247,7 +247,7 @@ export class ConfigManager {
             await this.parliamentApi.getConfig()
                 .then(async config => {
                     this.lockAllTracksInServerConfig(config);
-                    await this.dbContext.saveConfig(config);
+                    //await this.dbContext.saveConfig(config);
                     await this.downloadContent(loadingElement, config);
                     console.log("Loading from server shoud be finished. Calling callback.");
                     loadingFinishCallback();
@@ -331,7 +331,8 @@ export class ConfigManager {
         console.log("all items to download", allItemsToDownload);
         console.log("to delete", itemsToDelete);
 
-        return Promise.all([this.fileManager.getUdatesZip(allItemsToDownload, oEvent => this.updateProgress(oEvent, loadingElement))
+        return Promise.all([this.fileManager.getUdatesZip(allItemsToDownload, oEvent => this.updateProgress(oEvent, loadingElement),
+            () => this.loadingManager.updateLoadingCopyingFiles(loadingElement))
             .then(() => this.loadingManager.updateLoadingConfigurationIsBeingApplied(loadingElement)),
             this.fileManager.deleteItems(itemsToDelete)])
                 .then(async () => {
