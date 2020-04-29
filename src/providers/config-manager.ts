@@ -83,22 +83,22 @@ export class ConfigManager {
             this.dbContext.getConfig().then(async dbConfig => {
 
                 if (dbConfig == null) {
-                    let loadingElement = null;
-
                     this.alertManager.showNoConfigAlert(
                         async _ => {
-                            loadingElement = await this.loadingManager.showConfigLoadingMessage();
-                            await this.loadConfigFromServer(loadingElement, async () => {
-                                    await this.loadImagesDevicePath(true);
-                                    loadingElement.dismiss();
-                                    resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
-                                },
-                                async () => {
-                                    console.log("dismilling loading message");
-                                    loadingElement.dismiss();
-                                    resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
-                                }
-                            );
+
+                            await this.loadConfigFromServerNoConfig();
+                            //loadingElement = await this.loadingManager.showConfigLoadingMessage();
+                            //await this.loadConfigFromServer(loadingElement, async () => {
+                            //        await this.loadImagesDevicePath(true);
+                            //        loadingElement.dismiss();
+                            //        resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
+                            //    },
+                            //    async () => {
+                            //        console.log("dismilling loading message");
+                            //        loadingElement.dismiss();
+                            //        resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
+                            //    }
+                            //);
                         },
                         async () => {
                             navigator['app'].exitApp();
@@ -148,19 +148,19 @@ export class ConfigManager {
                                         console.log("hashes are different, showing message about config update");
                                         this.alertManager.showUpdateConfigAlert(
                                             async () => {
-                                                let loadingElement = await this.loadingManager.showConfigLoadingMessage();
+                                                await this.loadConfigFromServerNewContentAvailable();
 
-                                                await this.downloadContent(loadingElement)
-                                                    .then(async () => {
-                                                        await this.loadImagesDevicePath(true);
-                                                        loadingElement.dismiss();
-                                                        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
-                                                    })
-                                                    .catch(async (error) => {
-                                                        console.log("load content error", error);
-                                                        loadingElement.dismiss();
-                                                        reject(error);
-                                                    });
+                                                //await this.downloadContent(loadingElement)
+                                                //    .then(async () => {
+                                                //        await this.loadImagesDevicePath(true);
+                                                //        loadingElement.dismiss();
+                                                //        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
+                                                //    })
+                                                //    .catch(async (error) => {
+                                                //        console.log("load content error", error);
+                                                //        loadingElement.dismiss();
+                                                //        reject(error);
+                                                //    });
                                             },
                                             async () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
@@ -171,19 +171,19 @@ export class ConfigManager {
                                     else if (forceLoading) {
                                         this.alertManager.showRenewMissedFilesAlert(
                                             async () => {
-                                                let loadingElement = await this.loadingManager.showConfigLoadingMessage();
+                                                await this.loadConfigFromServerNewContentAvailable();
 
-                                                await this.downloadContent(loadingElement)
-                                                    .then(async () => {
-                                                        await this.loadImagesDevicePath(true);
-                                                        await this.loadingManager.closeLoading();
-                                                        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
-                                                    })
-                                                    .catch(async (error) => {
-                                                        console.log("load content error", error);
-                                                        await this.loadingManager.closeLoading();
-                                                        reject(error);
-                                                    });
+                                                //await this.downloadContent(loadingElement)
+                                                //    .then(async () => {
+                                                //        await this.loadImagesDevicePath(true);
+                                                //        await this.loadingManager.closeLoading();
+                                                //        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
+                                                //    })
+                                                //    .catch(async (error) => {
+                                                //        console.log("load content error", error);
+                                                //        await this.loadingManager.closeLoading();
+                                                //        reject(error);
+                                                //    });
                                             });
                                     }
                                     else {
@@ -257,6 +257,42 @@ export class ConfigManager {
                     loadingFailedCallback();
                 });
         }
+    }
+
+    async loadConfigFromServerNewContentAvailable() {
+        let loadingElement = await this.loadingManager.showConfigLoadingMessage();
+
+        return new Promise(async (resolve, reject) => {
+            await this.loadConfigFromServer(loadingElement, async () => {
+                    await this.loadImagesDevicePath(true);
+                    loadingElement.dismiss();
+                    resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
+                },
+                async () => {
+                    console.log("dismilling loading message");
+                    loadingElement.dismiss();
+                    reject({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
+                }
+            );
+        });
+    }
+
+    async loadConfigFromServerNoConfig() {
+        let loadingElement = await this.loadingManager.showConfigLoadingMessage();
+
+        return new Promise(async (resolve, reject) => {
+            await this.loadConfigFromServer(loadingElement, async () => {
+                await this.loadImagesDevicePath(true);
+                loadingElement.dismiss();
+                resolve({ "message": "config downloaded", "showMessage": false });
+            },
+                async () => {
+                    console.log("dismilling loading message");
+                    loadingElement.dismiss();
+                    resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
+                }
+            );
+        });
     }
 
     isDefaultConfigUsed(): boolean {
@@ -597,7 +633,7 @@ export class ConfigManager {
 
             if (dbTrack != null) {
                 if (dbTrack.Md5Hash !== webServiceTrack.Md5Hash) {
-                    tracksToUpdate.push(dbTrack.Path);
+                    tracksToUpdate.push(webServiceTrack.Path);
                 }
             }
             else {

@@ -138,6 +138,11 @@ export class FileManager {
 
     async getUdatesZip(urls: string[], progressCallback = null, zipDownloadedCallback = null): Promise<void> {
         return new Promise(async (resolve, reject) => {
+            let zipFileName = "updates.zip";
+
+            let baseDirectory = await this.getDownloadPath();
+            let tempLocation = `${this.topFolderName}/${this.tempDirectory}`;
+
             try {
                 if (urls.length == 0) {
                     resolve();
@@ -147,11 +152,6 @@ export class FileManager {
 
                 zipDownloadedCallback();
 
-                let zipFileName = "updates.zip";
-
-                let baseDirectory = await this.getDownloadPath();
-                let tempLocation = `${this.topFolderName}/${this.tempDirectory}`;
-
                 console.log("zip ready to be saved");
 
                 await this.saveFileToLocation(tempLocation, zipFile, zipFileName);
@@ -159,8 +159,15 @@ export class FileManager {
                 console.log("zip saved");
 
                 await this.zip.unzip(`${baseDirectory}${tempLocation}/${zipFileName}`, `${baseDirectory}${this.topFolderName}`)
-                    .then((count) => {
-                        console.log("unzipping: ", count);
+                    .then(async (count) => {
+                        if (count == 0) {
+                            console.log("unzipped successfully");
+                        }
+                        else {
+                            console.log("unzipped error happened");
+                        }
+
+                        await this.deleteZip(`${baseDirectory}${tempLocation}`, zipFileName);
                     })
                     .catch((error) => {
                         console.log("unzipping error: ", error);
@@ -170,8 +177,26 @@ export class FileManager {
             }
             catch (error) {
                 console.log("error happened during getting updates: ", error);
+
+                await this.deleteZip(`${baseDirectory}${tempLocation}`, zipFileName);
+
                 reject(error);
             }
+        });
+    }
+
+    async deleteZip(dirPath: string, zipFileName: string) {
+        if (!zipFileName) {
+            console.log("can't delete an empty file name");
+            return;
+        }
+
+        console.log("deleting zip file");
+        await this.file.removeFile(dirPath, zipFileName).then(_ => {
+            console.log("zip deleted");
+        })
+        .catch(error => {
+            console.log("error happened during deleting zip file: ", error);
         });
     }
 
@@ -202,7 +227,7 @@ export class FileManager {
                 });
         }
 
-        
+
         return this.file.writeFile(`${baseDirectory}`, `${newLocation}/${fileName}`, blob, { replace: true });
     }
 
@@ -235,7 +260,7 @@ export class FileManager {
             await this.dbContext.setAndroidSelectedStorage('external');
             return externalSdCardPath;
         }
-        
+
         await this.dbContext.setAndroidSelectedStorage('local');
         return this.file.dataDirectory;
     }
@@ -264,16 +289,29 @@ export class FileManager {
                 })
                 .catch(fileEntryError => {
                     console.log("error getFileUrl: ", fileEntryError, filePath);
-                    resolve("");
+                    reject("error getFileUrl");
                 });
         });
     }
 
-    async getHomeImagePath() {
-        let downloadPath = await this.getDownloadPath();
-        let newFilePath = `/test/image.jpg`;
+    //async getHomeImagePath() {
+    //    let downloadPath = await this.getDownloadPath();
+    //    let newFilePath = `/test/image.jpg`;
 
-        let path = await this.getFileUrl(newFilePath);
+    //    let path = await this.getFileUrl(newFilePath);
+
+    //    if (this.platform.is('ios')) {
+    //        path = this.win.Ionic.WebView.convertFileSrc(path);
+    //    }
+    //    else {
+    //        path = this.webview.convertFileSrc(path);
+    //    }
+
+    //    return path;
+    //}
+
+    async getListButtonImagePath(person: Person): Promise<string> {
+        let path = await this.getFileUrl(person.ListButtonPicPath.ImagePath);
 
         if (this.platform.is('ios')) {
             path = this.win.Ionic.WebView.convertFileSrc(path);
@@ -285,26 +323,13 @@ export class FileManager {
         return path;
     }
 
-    async getListButtonImagePath(person: Person): Promise<string> {
-        let path = await this.getFileUrl(person.ListButtonPicPath.ImagePath);
-
-        if (this.platform.is('ios')) {
-            path = this.win.Ionic.WebView.convertFileSrc(path);
-        }
-        else{
-            path = this.webview.convertFileSrc(path);
-        }
-        
-        return path;
-    }
-
     async getSmallButtonImagePath(person: Person): Promise<string> {
         let path = await this.getFileUrl(person.SmallButtonPicPath.ImagePath);
-        
+
         if (this.platform.is('ios')) {
             path = this.win.Ionic.WebView.convertFileSrc(path);
         }
-        else{
+        else {
             path = this.webview.convertFileSrc(path);
         }
 
@@ -313,11 +338,11 @@ export class FileManager {
 
     async getMainPicImagePath(person: Person): Promise<string> {
         let path = await this.getFileUrl(person.MainPicPath.ImagePath);
-        
+
         if (this.platform.is('ios')) {
             path = this.win.Ionic.WebView.convertFileSrc(path);
         }
-        else{
+        else {
             path = this.webview.convertFileSrc(path);
         }
 
