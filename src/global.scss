@@ -30,12 +30,20 @@
         .scroll-area {
             .item {
                 .person-info {
+                    .person-name {
+                        font-size: 12px;
+                    }
+
+                    span.person-post {
+                        font-size: 10px;
+                    }
+
                     .new-tracks-available {
-                        height: 20px;
+                        height: 20px !important;
                     }
 
                     .person-traks-count{
-                        height: 20px;
+                        height: 20px !important;
                         width: 35% !important;
                         left: 32.5% !important;
                         font-size: 14px !important;
@@ -43,6 +51,51 @@
                 }
             }
         }
+    }
+
+    .track-name {
+        font-size: 10px !important;
+    }
+}
+
+@media screen and (min-width: 351px) {
+    .centered-title {
+        font-size: 18px !important;
+    }
+
+    ion-toolbar {
+        font-size: 18px !important;
+
+        ion-title {
+            font-size: 1em;
+        }
+    }
+
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 16px;
+                    }
+
+                    span.person-post {
+                        font-size: 14px;
+                    }
+
+                    .person-traks-count{
+                        height: 25px;
+                        width: 35% !important;
+                        left: 32.5% !important;
+                        font-size: 16px !important;
+                    }
+                }
+            }
+        }
+    }
+
+    .track-name {
+        font-size: 14px !important;
     }
 }
 
@@ -71,7 +124,7 @@
                         font-size: 12px;
                     }
 
-                    .person-traks-count {
+                    .person-traks-count{
                         font-size: 16px;
                     }
                 }
@@ -93,11 +146,11 @@
         font-size: 20px !important;
 
         ion-title {
-            font-size: 1em !important;
+            font-size: 20px !important;
         }
 
         ion-button {
-            font-size: 1em !important;
+            font-size: 20px !important;
         }
     }
 
@@ -106,14 +159,14 @@
             .item {
                 .person-info {
                     .person-name {
-                        font-size: 16px;
+                        font-size: 18px;
                     }
 
                     span.person-post {
-                        font-size: 12px;
+                        font-size: 16px;
                     }
 
-                    .person-traks-count {
+                    .person-traks-count{
                         font-size: 16px;
                     }
 
@@ -136,14 +189,43 @@
         font-size: 22px !important;
     }
 
-    .language-item {
-        width: 35%;
-        height: auto;
-        margin: 5% auto 0;
+    #MainList {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 22px;
+                    }
 
-        img {
-            width: 100%;
+                    span.person-post {
+                        font-size: 18px;
+                    }
+
+                    .person-traks-count{
+                        height: 25px;
+                        width: 28% !important;
+                        left: 36% !important;
+                        font-size: 20px;
+                    }
+                }
+            }
+        }
+    }
+
+    .track-name {
+        font-size: 20px !important;
+    }
+
+    ion-content {
+        .language-item {
+            width: 35% !important;
             height: auto;
+            margin: 5% auto 0;
+
+            img {
+                width: 100%;
+                height: auto;
+            }
         }
     }
 }
@@ -158,14 +240,17 @@
             .item {
                 .person-info {
                     .person-name {
-                        font-size: 20px;
+                        font-size: 24px;
                     }
 
                     span.person-post {
-                        font-size: 16px;
+                        font-size: 20px;
                     }
 
-                    .person-traks-count {
+                    .person-traks-count{
+                        height: 25px;
+                        width: 28% !important;
+                        left: 36% !important;
                         font-size: 20px;
                     }
                 }

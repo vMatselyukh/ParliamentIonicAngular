@@ -116,6 +116,12 @@
               "xml": "<feature name=\"Diagnostic_Motion\"><param name=\"ios-package\" value=\"Diagnostic_Motion\" /><param name=\"onload\" value=\"true\" /></feature>",
               "count": 1
             }
+          ],
+          "/widget": [
+            {
+              "xml": "<feature name=\"Zip\"><param name=\"ios-package\" value=\"ZipPlugin\" /></feature>",
+              "count": 1
+            }
           ]
         }
       },
@@ -255,6 +261,9 @@
       "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
     },
     "cordova.plugins.diagnostic": {
+      "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
+    },
+    "cordova-plugin-zip": {
       "PACKAGE_NAME": "$(PRODUCT_BUNDLE_IDENTIFIER)"
     }
   },
@@ -652,6 +661,14 @@
       "merges": [
         "cordova.plugins.diagnostic.motion"
       ]
+    },
+    {
+      "id": "cordova-plugin-zip.Zip",
+      "file": "plugins/cordova-plugin-zip/zip.js",
+      "pluginId": "cordova-plugin-zip",
+      "clobbers": [
+        "zip"
+      ]
     }
   ],
   "plugin_metadata": {
@@ -671,6 +688,7 @@
     "es6-promise-plugin": "4.2.2",
     "cordova-plugin-x-socialsharing": "5.6.2",
     "cordova-sqlite-storage": "3.4.1",
-    "cordova.plugins.diagnostic": "5.0.1"
+    "cordova.plugins.diagnostic": "5.0.1",
+    "cordova-plugin-zip": "3.1.0"
   }
 }
