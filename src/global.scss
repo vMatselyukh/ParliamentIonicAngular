@@ -139,18 +139,18 @@
 
 @media screen and (min-width: 410px) {
     .centered-title {
-        font-size: 20px !important;
+        font-size: 18px !important;
     }
 
     ion-toolbar {
-        font-size: 20px !important;
+        font-size: 18px !important;
 
         ion-title {
-            font-size: 20px !important;
+            font-size: 18px !important;
         }
 
         ion-button {
-            font-size: 20px !important;
+            font-size: 18px !important;
         }
     }
 
@@ -159,20 +159,20 @@
             .item {
                 .person-info {
                     .person-name {
-                        font-size: 18px;
+                        font-size: 16px;
                     }
 
                     span.person-post {
-                        font-size: 16px;
+                        font-size: 14px;
                     }
 
                     .person-traks-count{
-                        font-size: 16px;
+                        font-size: 14px;
                     }
 
                     .new-tracks-available {
-                        height: 32px;
-                        width: 32px;
+                        height: 27px;
+                        width: 27px;
                     }
                 }
             }
@@ -180,7 +180,7 @@
     }
 
     .track-name {
-        font-size: 16px !important;
+        font-size: 14px !important;
     }
 }
 
