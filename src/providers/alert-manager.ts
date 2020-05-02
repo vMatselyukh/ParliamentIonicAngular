@@ -107,7 +107,7 @@ export class AlertManager {
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
             message: await this.languageManager.getTranslations("internet_connection_needed_to_download_content"),
-            backdropDismiss: true
+            backdropDismiss: false
         });
 
         if(this.isIos) {

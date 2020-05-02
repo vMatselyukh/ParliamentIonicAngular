@@ -16,6 +16,7 @@ export class FileManager {
     readonly topFolderName = "parliament";
     readonly fileDelimiter = "\\";
     readonly tempDirectory = "temp";
+    readonly chunkSizeInBytes = 0.5 * 1024 * 1024;
 
     win: any = window;
 
@@ -227,8 +228,60 @@ export class FileManager {
                 });
         }
 
+        return new Promise(async (resolve, reject) => {
 
-        return this.file.writeFile(`${baseDirectory}`, `${newLocation}/${fileName}`, blob, { replace: true });
+            let isError = false;
+
+            let totalBytes = blob.byteLength;
+            console.log("total bytes: ", totalBytes);
+
+            let chunksCount = blob.byteLength / this.chunkSizeInBytes;
+            console.log("chunks count: ", chunksCount);
+
+            await this.file.createFile(`${baseDirectory}`, `${newLocation}/${fileName}`, true)
+                .then(() => {
+                    console.log("file created: ", fileName);
+                })
+                .catch((error) => {
+                    console.log("file creation error: ", error);
+                });
+
+            if (chunksCount > 0) {
+                chunksCount++;
+
+                for (let i = 0; i < chunksCount; i++) {
+                    await this.file.writeFile(`${baseDirectory}`, `${newLocation}/${fileName}`,
+                        blob.slice(i * this.chunkSizeInBytes, (i + 1) * this.chunkSizeInBytes), { append: true })
+                        .then((value) => { 
+                            console.log(`file chunk saved to directory. start ${i * this.chunkSizeInBytes}, end ${(i + 1) * this.chunkSizeInBytes}`, value); 
+                        })
+                        .catch((error) => {
+                            console.log(`error writing chunk. start ${i * this.chunkSizeInBytes}, end ${(i + 1) * this.chunkSizeInBytes}`, JSON.stringify(error));
+                            isError = true;
+                        });
+                }
+            }
+            else {
+                await this.file.writeFile(`${baseDirectory}`, `${newLocation}/${fileName}`, blob)
+                    .then((value) => 
+                    { 
+                        console.log("file saved to directory: ", value); 
+                    })
+                    .catch((error) => {
+                        console.log("error writing file: ", error);
+                        isError = true;
+                    });
+            }
+
+            if(isError)
+            {
+                reject();
+            }
+            else
+            {
+                resolve();
+            }
+        });
     }
 
     //get path for downloads on device
