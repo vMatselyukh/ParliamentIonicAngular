@@ -19,7 +19,7 @@
         <span class="coins-count">{{this.dbContext.cachedCoinsCount}}</span>
     </div>
 
-    <div id="MainList" #MainList>
+    <div id="MainList" [className]="platformClass" #MainList>
         <!--<div scroll-x="true" class="scroll-area">-->
 
         <ion-content scroll-x="true" scroll-y="false">

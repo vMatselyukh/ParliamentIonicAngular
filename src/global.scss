@@ -26,7 +26,7 @@
 @import "~@ionic/angular/css/flex-utils.css";
 
 @media screen and (max-width: 350px) {
-    #MainList {
+    #MainList.android {
         .scroll-area {
             .item {
                 .person-info {
@@ -53,7 +53,38 @@
         }
     }
 
-    .track-name {
+    #MainList.ios {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 14px;
+                    }
+
+                    span.person-post {
+                        font-size: 12px;
+                    }
+
+                    .new-tracks-available {
+                        height: 20px !important;
+                    }
+
+                    .person-traks-count {
+                        height: 20px !important;
+                        width: 35% !important;
+                        left: 32.5% !important;
+                        font-size: 14px !important;
+                    }
+                }
+            }
+        }
+    }
+
+    .ios .track-name {
+        font-size: 12px !important;
+    }
+
+    .android .track-name {
         font-size: 10px !important;
     }
 }

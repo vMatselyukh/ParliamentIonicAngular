@@ -20,15 +20,17 @@
     <img *ngIf="isIos" class="politician-main-image" [src]="domSanitizer.bypassSecurityTrustUrl(person?.MainPicDevicePath)" />
 </div>
 <ion-content>
-    <ion-list>
-        <ion-item *ngFor="let track of this.person?.Tracks" key="track.Id" (tap)="playStopUnlockTrack(track)" (click)="playStopUnlockTrack(track)">
-            <img *ngIf="!isIos" class="politician-small-image" slot="start" src="{{person.SmallButtonDevicePath}}" />
+    <div [className]="platformClass">
+        <ion-list>
+            <ion-item *ngFor="let track of this.person?.Tracks" key="track.Id" (tap)="playStopUnlockTrack(track)" (click)="playStopUnlockTrack(track)">
+                <img *ngIf="!isIos" class="politician-small-image" slot="start" src="{{person.SmallButtonDevicePath}}" />
 
-            <img *ngIf="isIos" class="politician-small-image" slot="start" [src]="domSanitizer.bypassSecurityTrustUrl(person.SmallButtonDevicePath)" />
-            <span class="track-name">{{track.Name}}</span>
-            <ion-button class="track-play-button" shape="round" slot="end" color="medium">
-                <ion-icon [name]="getTrackIcon(track)" size="small"></ion-icon>
-            </ion-button>
-        </ion-item>
-    </ion-list>
+                <img *ngIf="isIos" class="politician-small-image" slot="start" [src]="domSanitizer.bypassSecurityTrustUrl(person.SmallButtonDevicePath)" />
+                <span class="track-name">{{track.Name}}</span>
+                <ion-button class="track-play-button" shape="round" slot="end" color="medium">
+                    <ion-icon [name]="getTrackIcon(track)" size="small"></ion-icon>
+                </ion-button>
+            </ion-item>
+        </ion-list>
+    </div>
 </ion-content>
