@@ -143,7 +143,7 @@
         }
     }
 
-    #MainList {
+    #MainList.android {
         .scroll-area {
             .item {
                 .person-info {
@@ -163,8 +163,32 @@
         }
     }
 
-    .track-name {
+    .android .track-name {
         font-size: 14px !important;
+    }
+
+    #MainList.ios {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 16px;
+                    }
+
+                    span.person-post {
+                        font-size: 14px;
+                    }
+
+                    .person-traks-count{
+                        font-size: 16px;
+                    }
+                }
+            }
+        }
+    }
+
+    .ios .track-name {
+        font-size: 16px !important;
     }
 }
 
@@ -185,7 +209,7 @@
         }
     }
 
-    #MainList {
+    #MainList.android {
         .scroll-area {
             .item {
                 .person-info {
@@ -210,8 +234,37 @@
         }
     }
 
-    .track-name {
+    .android .track-name {
         font-size: 14px !important;
+    }
+
+    #MainList.ios {
+        .scroll-area {
+            .item {
+                .person-info {
+                    .person-name {
+                        font-size: 18px;
+                    }
+
+                    span.person-post {
+                        font-size: 16px;
+                    }
+
+                    .person-traks-count{
+                        font-size: 16px;
+                    }
+
+                    .new-tracks-available {
+                        height: 35px;
+                        width: 35px;
+                    }
+                }
+            }
+        }
+    }
+
+    .ios .track-name {
+        font-size: 16px !important;
     }
 }
 

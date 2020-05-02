@@ -11,7 +11,7 @@ export class LoadingManager {
 
     async showConfigLoadingMessage(): Promise<HTMLIonLoadingElement> {
         let loading = await this.loadingController.create({
-            message: await this.languageManager.formatTranslations("config_loading_wait_please", 0)
+            message: await this.languageManager.getTranslations("config_files_being_prepared")
         });
 
         loading.present();

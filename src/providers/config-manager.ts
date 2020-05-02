@@ -149,18 +149,6 @@ export class ConfigManager {
                                         this.alertManager.showUpdateConfigAlert(
                                             async () => {
                                                 await this.loadConfigFromServerNewContentAvailable();
-
-                                                //await this.downloadContent(loadingElement)
-                                                //    .then(async () => {
-                                                //        await this.loadImagesDevicePath(true);
-                                                //        loadingElement.dismiss();
-                                                //        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
-                                                //    })
-                                                //    .catch(async (error) => {
-                                                //        console.log("load content error", error);
-                                                //        loadingElement.dismiss();
-                                                //        reject(error);
-                                                //    });
                                             },
                                             async () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
@@ -172,18 +160,6 @@ export class ConfigManager {
                                         this.alertManager.showRenewMissedFilesAlert(
                                             async () => {
                                                 await this.loadConfigFromServerNewContentAvailable();
-
-                                                //await this.downloadContent(loadingElement)
-                                                //    .then(async () => {
-                                                //        await this.loadImagesDevicePath(true);
-                                                //        await this.loadingManager.closeLoading();
-                                                //        resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
-                                                //    })
-                                                //    .catch(async (error) => {
-                                                //        console.log("load content error", error);
-                                                //        await this.loadingManager.closeLoading();
-                                                //        reject(error);
-                                                //    });
                                             });
                                     }
                                     else {
@@ -316,6 +292,7 @@ export class ConfigManager {
 
     private async downloadContent(loadingElement: HTMLIonLoadingElement, serverConfig: Config = null): Promise<any> {
         console.log("downloadContent started");
+
         //update process started
         if(serverConfig == null) {
             serverConfig = await this.parliamentApi.getConfig();
