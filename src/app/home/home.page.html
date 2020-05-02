@@ -24,7 +24,7 @@
 
         <ion-content scroll-x="true" scroll-y="false">
             <ion-list class="scroll-area">
-                <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of configManager.config?.Persons.sort(compare)" (tap)="itemClick(person)"
+                <div class="item" [style.width.px]="listItemWidth" [style.min-width.px]="listItemWidth" *ngFor="let person of configManager.config?.Persons" (tap)="itemClick(person)"
                      (click)="itemClick(person)">
 
                     <img *ngIf="!isIos" class="size-helper" src="{{person.ListButtonDevicePath}}" width="129" height="183" />

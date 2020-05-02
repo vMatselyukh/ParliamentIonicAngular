@@ -87,18 +87,6 @@ export class ConfigManager {
                         async _ => {
 
                             await this.loadConfigFromServerNoConfig();
-                            //loadingElement = await this.loadingManager.showConfigLoadingMessage();
-                            //await this.loadConfigFromServer(loadingElement, async () => {
-                            //        await this.loadImagesDevicePath(true);
-                            //        loadingElement.dismiss();
-                            //        resolve({ "message": "config downloaded", "showMessage": false }); //config downloaded
-                            //    },
-                            //    async () => {
-                            //        console.log("dismilling loading message");
-                            //        loadingElement.dismiss();
-                            //        resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
-                            //    }
-                            //);
                         },
                         async () => {
                             navigator['app'].exitApp();
@@ -118,7 +106,8 @@ export class ConfigManager {
                         console.log("changing config to db config");
                         this.config = dbConfig;
                     }
-                    
+
+                    console.log("config", this.config);
                     //console.log("config", JSON.stringify(this.config));
 
                     await this.loadImagesDevicePath(false);
@@ -339,7 +328,7 @@ export class ConfigManager {
         // the user to download that file.
         let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems);
 
-        let allItemsToDownload = missingItems.concat(itemsToDownload).sort();
+        let allItemsToDownload = missingItems.concat(itemsToDownload);
 
         console.log("all items to download", allItemsToDownload);
         console.log("to delete", itemsToDelete);
@@ -393,6 +382,9 @@ export class ConfigManager {
                 continue;
             }
         }
+
+        this.config.Persons = this.config.Persons.sort(this.comparer);
+
         console.log("device path has been reloaded");
 
         this.reloadPathIos(forceSystemCheck);
@@ -415,6 +407,16 @@ export class ConfigManager {
 
             resolve();
         });
+    }
+
+    private comparer(person1: Person, person2: Person) {
+        let comparison = 0;
+        if (person1.OrderNumber > person2.OrderNumber) {
+            comparison = 1;
+        } else if (person1.OrderNumber < person2.OrderNumber) {
+            comparison = -1;
+        }
+        return comparison;
     }
 
     private lockAllTracksInServerConfig(serverConfig: Config) {

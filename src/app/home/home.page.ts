@@ -158,16 +158,6 @@ export class HomePage {
         console.log("main list height", this.mainList.nativeElement.clientHeight);
     }
 
-    compare(person1: Person, person2: Person) {
-        let comparison = 0;
-        if (person1.OrderNumber > person2.OrderNumber) {
-            comparison = 1;
-        } else if (person1.OrderNumber < person2.OrderNumber) {
-            comparison = -1;
-        }
-        return comparison;
-    }
-
     loadConfigProcessResult(result: any) {
         if (result.showMessage) {
             this.presentConfigStatusMessageAlert(result.message);
