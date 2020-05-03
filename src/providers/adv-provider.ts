@@ -55,14 +55,14 @@ export class AdvProvider {
             }
 
             self.admob.rewardVideo.config({
-                id: this.testRewarded,//rewardedAddId,
-                isTesting: true,//false,
+                id: rewardedAddId,
+                isTesting: false,
                 autoShow: false
             });
 
             self.admob.banner.config({
-                id: this.testBanner,//bannerAddId,
-                isTesting: true,//false,
+                id: bannerAddId,
+                isTesting: false,
                 autoShow: false
             });
 
