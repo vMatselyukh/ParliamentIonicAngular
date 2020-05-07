@@ -322,6 +322,8 @@ export class FileManager {
         let processedFileName = this.normalizeFilePath(filePath);
         let baseDirectory = await this.getDownloadPath();
 
+        console.log("base directory: ", baseDirectory);
+
         return new Promise((resolve, reject) => {
             this.file.resolveDirectoryUrl(baseDirectory)
                 .then((result: DirectoryEntry) => {

@@ -135,6 +135,12 @@ export class ParliamentApi {
                     reject();
                 }
             };
+
+            oReq.onerror = function(error){
+                console.log("error happened during xhr: ", JSON.stringify(error));
+                reject(error);
+            }
+
             oReq.send(JSON.stringify(urls));
         });
     }

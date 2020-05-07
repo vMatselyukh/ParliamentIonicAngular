@@ -98,12 +98,10 @@ export class HomePage {
         //user taps update config from menu
         if (!this.configUpdateSubscribed) {
             this.events.subscribe("config:update", () => {
-                if (!this.configManager.isDefaultConfigUsed()) {
-                    console.log("config:update");
-                    self.configManager.loadConfig(true).then((result: any) => {
-                        this.loadConfigProcessResult(result);
-                    });
-                }
+                console.log("config:update");
+                self.configManager.loadConfig(true).then((result: any) => {
+                    this.loadConfigProcessResult(result);
+                });
             });
 
             this.configUpdateSubscribed = true;

@@ -85,7 +85,6 @@ export class ConfigManager {
                 if (dbConfig == null) {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
-
                             await this.loadConfigFromServerNoConfig();
                         },
                         async () => {
@@ -107,10 +106,11 @@ export class ConfigManager {
                         this.config = dbConfig;
                     }
 
-                    console.log("config", this.config);
+                    //console.log("config", this.config);
                     //console.log("config", JSON.stringify(this.config));
 
-                    await this.loadImagesDevicePath(false);
+                    let forceReloadImages = this.forcePathReload(this.config);
+                    await this.loadImagesDevicePath(forceReloadImages);
 
                     //console.log("config equals:", JSON.stringify(this.config));
 
@@ -350,6 +350,17 @@ export class ConfigManager {
                 });
     }
 
+    private async forcePathReload(config: Config){
+        if(config.Persons.length > 0)
+        {
+            let testPath = await this.fileManager.getListButtonImagePath(config.Persons[0]);
+            let dbPath = config.Persons[0].ListButtonDevicePath;
+
+            return testPath === dbPath;
+        }
+
+        return true;
+    }
     //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
         if (!this.config || this.isDefaultConfigUsed())
