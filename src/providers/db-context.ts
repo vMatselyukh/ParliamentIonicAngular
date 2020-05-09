@@ -1,6 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { Person, ImageInfo, Config } from '../models/models';
 import { Storage } from '@ionic/storage';
+import { LoggingProvider } from './providers'
 import * as _ from 'lodash';
 
 @Injectable({
@@ -13,6 +14,8 @@ export class DbContext {
     private readonly nextTimeForUpdatesKey: string = "TimeToDownloadUpdates";
     private readonly androidSelectedStorageKey: string = "AndroidSelectedStorage"; // local, external
     private readonly userGuidKey: string = "UserGuid";
+    private readonly defaultConfigIsUsedKey: string = "DefaultConfig";
+
     private readonly coinsCountForWatchingAdv: number = 10;
     readonly postponeHours: number = 24;
     private readonly initialCoinsCount = 10;
@@ -21,8 +24,10 @@ export class DbContext {
     cachedLanguage: string = "";
     shouldBannerBeShown = false;
     cachedCoinsCount: number = -1;
+    cachedDefaultConfig: number = 0;
 
-    constructor(public storage: Storage) {
+    constructor(public storage: Storage,
+        private logger: LoggingProvider) {
     }
 
     async saveConfig(config: Config): Promise<void> {
@@ -200,6 +205,8 @@ export class DbContext {
     }
 
     async postponeUpdateTime(currentDateTime: Date) {
+        this.logger.log("postponing. postpone date: ", currentDateTime);
+
         this.storage.remove(this.nextTimeForUpdatesKey);
 
         let newDate = currentDateTime.setSeconds(currentDateTime.getHours() + this.postponeHours);
@@ -212,6 +219,37 @@ export class DbContext {
 
     async setAndroidSelectedStorage(value: string): Promise<void> {
         return await this.storage.set(this.androidSelectedStorageKey, value);
+    }
+
+    //1 - is used. -1 - is not used
+    async getDefaultConfigIsUsed(): Promise<boolean> {
+        if (this.cachedDefaultConfig == 1) {
+            return true;
+        }
+        else if (this.cachedDefaultConfig == -1) {
+            return false;
+        }
+
+        let value = await this.storage.get(this.defaultConfigIsUsedKey);
+
+        if (value == "1") {
+            this.cachedDefaultConfig = 1;
+            return true;
+        }
+        else if (value == "-1") {
+            this.cachedDefaultConfig = -1;
+            return false;
+        }
+
+        if (value == null) {
+            this.cachedDefaultConfig = 1;
+            await this.setDefaultConfigIsUsed(1);
+            return true;
+        }
+    }
+
+    async setDefaultConfigIsUsed(value: number): Promise<void> {
+        return await this.storage.set(this.defaultConfigIsUsedKey, value);
     }
 
     uuidv4() {

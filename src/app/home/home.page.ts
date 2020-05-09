@@ -2,12 +2,14 @@ import { Component, ViewChild, ElementRef } from '@angular/core';
 import {
     DbContext, ConfigManager,
     LanguageManager, AlertManager,
-    AdvProvider, FileManager
+    AdvProvider, FileManager,
+    LoggingProvider
 } from '../../providers/providers';
-import { Config, Person, PersonInfo, Track } from '../../models/models';
+import { Config, Person, Track, ImageInfo } from '../../models/models';
 import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
+import { INITIAL_CONFIG } from './initialConfig';
 import * as _ from 'lodash';
 
 @Component({
@@ -42,28 +44,9 @@ export class HomePage {
         public languageManager: LanguageManager,
         private alertManager: AlertManager,
         private advProvider: AdvProvider,
-        private fileManager: FileManager) {
+        private fileManager: FileManager,
+        private logger: LoggingProvider) {
     
-        this.configManager.config = new Config();
-
-        let fakePersons = [];
-
-        for (let i = 0; i < 5; i++) {
-            let fakePerson = new Person();
-
-            fakePerson.ListButtonDevicePath = "assets/images/incognito.png";            
-
-            let personInfo = new PersonInfo();
-            personInfo.Name = "Incognito";
-            personInfo.Post = "-//-";
-
-            fakePerson.Infos = [personInfo];
-
-            fakePersons.push(fakePerson);
-        }
-
-        this.configManager.config.Persons = fakePersons;
-
         this.platform.ready().then(() => {
             if (this.platform.is('ios')) {
                 this.isIos = true;
@@ -76,6 +59,17 @@ export class HomePage {
                 this.platformClass = "android";
             }
         });
+
+        (async () => {
+            let isDefaultConfigUsed = await this.configManager.isDefaultConfigUsed();
+
+            if (isDefaultConfigUsed) {
+                this.configManager.config = new Config();
+                let fakePersons = this.loadFakePersons();
+
+                this.configManager.config.Persons = fakePersons;
+            }
+        })();
 
         (async () => {
             this.translations = {
@@ -127,8 +121,8 @@ export class HomePage {
 
                 await this.fileManager.getDownloadPath().then(() => {
                     //user gets back into the app
-                    this.platform.resume.subscribe(() => {
-                        if (!this.configManager.isDefaultConfigUsed()) {
+                    this.platform.resume.subscribe(async () => {
+                        if (!await this.configManager.isDefaultConfigUsed()) {
                             console.log("resume");
                             this.configManager.loadConfig().then((result: any) => {
                                 this.loadConfigProcessResult(result);
@@ -160,6 +154,10 @@ export class HomePage {
         if (result.showMessage) {
             this.presentConfigStatusMessageAlert(result.message);
         }
+
+        if (result.configLoaded == true) {
+            this.dbContext.setDefaultConfigIsUsed(-1);
+        }
     }
 
     ionViewWillLeave() {
@@ -186,17 +184,11 @@ export class HomePage {
         });
     }
 
+    async itemClick(person: Person) {
+        this.logger.log('click');
 
-    itemClick(person: Person) {
-        console.log('click');
-
-        if (!this.configManager.isDefaultConfigUsed()) {
-            this.dataService.setData(person.Id, person);
-            this.router.navigateByUrl(`/details/${person.Id}`);
-        }
-        else {
-            console.log("default configuration is used. No navigation to details is happening.");
-        }
+        this.dataService.setData(person.Id, person);
+        this.router.navigateByUrl(`/details/${person.Id}`);
     }
 
     getTracksCount(person: Person): number {
@@ -234,5 +226,54 @@ export class HomePage {
             let itemImageHeight = (mainListHeight - 2) * 0.7;
             this.listItemWidth = Math.floor(itemImageHeight * 129 / 183);
         }, 1);
+    }
+
+    loadFakePersons(): Person[] {
+        let fakePersons = [];
+
+        for (let i = 0; i < INITIAL_CONFIG.Persons.length; i++) {
+            let fakePerson = new Person();
+            let personFromJson = INITIAL_CONFIG.Persons[i];
+
+            fakePerson.Id = personFromJson.Id;
+            fakePerson.Name = personFromJson.Name;
+            fakePerson.OrderNumber = personFromJson.OrderNumber;
+
+            fakePerson.MainPicPath = new ImageInfo();
+            fakePerson.MainPicPath.ImagePath = personFromJson.MainPicPath.ImagePath;
+
+            fakePerson.SmallButtonPicPath = new ImageInfo();
+            fakePerson.SmallButtonPicPath.ImagePath = personFromJson.SmallButtonPicPath.ImagePath;
+
+            fakePerson.ListButtonPicPath = new ImageInfo();
+            fakePerson.ListButtonPicPath.ImagePath = personFromJson.ListButtonPicPath.ImagePath;
+
+            fakePerson.ListButtonDevicePath = personFromJson.ListButtonPicPath.ImagePath;
+            fakePerson.ListButtonDevicePathIos = personFromJson.ListButtonPicPath.ImagePath;
+
+            fakePerson.Infos = [];
+
+            for (let j = 0; j < personFromJson.Infos.length; j++) {
+                let fakeInfo = personFromJson.Infos[j];
+
+                fakePerson.Infos.push(fakeInfo);
+            }
+
+            fakePerson.Tracks = [];
+
+            for (let t = 0; t < personFromJson.Tracks.length; t++) {
+                let fakeTrack = new Track();
+                fakeTrack.Path = personFromJson.Tracks[t].Path;
+                fakeTrack.Id = personFromJson.Tracks[t].Id;
+                fakeTrack.Name = personFromJson.Tracks[t].Name;
+                fakeTrack.Date = new Date(personFromJson.Tracks[t].Date);
+
+                fakePerson.Tracks.push(fakeTrack);
+            }
+
+            fakePersons.push(fakePerson);
+        }
+
+        return fakePersons;
     }
 }

@@ -7,3 +7,4 @@ export * from './alert-manager';
 export * from './adv-provider';
 export * from './loading-manager';
 export * from './language-manager';
+export * from './logging-provider';

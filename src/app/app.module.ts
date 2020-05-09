@@ -16,7 +16,8 @@ import {
     DbContext, ParliamentApi, ConfigManager,
     WebServerLinkProvider, AlertManager,
     AdvProvider, LoadingManager,
-    FileManager, LanguageManager
+    FileManager, LanguageManager,
+    LoggingProvider
 } from '../providers/providers';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
 import { Network } from '@ionic-native/network/ngx';
@@ -62,6 +63,7 @@ import { ShareModule } from '@ngx-share/core';
         AndroidPermissions,
         FileManager,
         LanguageManager,
+        LoggingProvider,
         Diagnostic,
         Zip
     ],

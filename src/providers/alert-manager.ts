@@ -209,7 +209,7 @@ export class AlertManager {
         await alert.present();
     }
 
-    async showNoConfigAlert(confirmCallback: any, exitAppCallback: any) {
+    async showNoConfigAlert(confirmCallback: any, postponeCallback: any) {
         const alert = await this.alertController.create({
             header: await this.languageManager.getTranslations("attention"),
             subHeader: '',
@@ -217,28 +217,17 @@ export class AlertManager {
             backdropDismiss: false
         });
 
-        if(this.isIos)
-        {
-            alert.buttons = [
-                {
-                    text: await this.languageManager.getTranslations("ok"),
-                    handler: confirmCallback
-                }
-            ];
-        }
-        else {
-            alert.buttons = [
-                {
-                    text: await this.languageManager.getTranslations("ok"),
-                    handler: confirmCallback
-                },
-                {
-                    text: await this.languageManager.getTranslations("exit_from_app"),
-                    handler: exitAppCallback
-                }
-            ];
-        }
-
+        alert.buttons = [
+            {
+                text: await this.languageManager.getTranslations("ok"),
+                handler: confirmCallback
+            },
+            {
+                text: await this.languageManager.getTranslations("later"),
+                handler: postponeCallback
+            }
+        ];
+        
         await alert.present();
     }
 

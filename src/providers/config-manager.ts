@@ -85,11 +85,14 @@ export class ConfigManager {
                 if (dbConfig == null) {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
-                            await this.loadConfigFromServerNoConfig();
+                            let loadResult = await this.loadConfigFromServerNoConfig();
+                            resolve(loadResult);
                         },
                         async () => {
-                            navigator['app'].exitApp();
-                            resolve({ "message": await this.languageManager.getTranslations("exit_from_app"), "showMessage": true });
+                            await this.dbContext.saveConfig(this.config);
+                            await this.dbContext.setDefaultConfigIsUsed(-1);
+                            await this.dbContext.postponeUpdateTime(new Date());
+                            resolve({ "message": await this.languageManager.getTranslations("postponed"), "showMessage": true });
                         });
                 }
                 else {
@@ -137,7 +140,8 @@ export class ConfigManager {
                                         console.log("hashes are different, showing message about config update");
                                         this.alertManager.showUpdateConfigAlert(
                                             async () => {
-                                                await this.loadConfigFromServerNewContentAvailable();
+                                                let loadResult = await this.loadConfigFromServerNewContentAvailable();
+                                                resolve(loadResult);
                                             },
                                             async () => {
                                                 this.dbContext.postponeUpdateTime(new Date(currentTime));
@@ -148,7 +152,8 @@ export class ConfigManager {
                                     else if (forceLoading) {
                                         this.alertManager.showRenewMissedFilesAlert(
                                             async () => {
-                                                await this.loadConfigFromServerNewContentAvailable();
+                                                let loadResult = await this.loadConfigFromServerNewContentAvailable();
+                                                resolve(loadResult);
                                             });
                                     }
                                     else {
@@ -224,14 +229,14 @@ export class ConfigManager {
         }
     }
 
-    async loadConfigFromServerNewContentAvailable() {
+    async loadConfigFromServerNewContentAvailable(): Promise<any> {
         let loadingElement = await this.loadingManager.showConfigLoadingMessage();
 
         return new Promise(async (resolve, reject) => {
             await this.loadConfigFromServer(loadingElement, async () => {
                     await this.loadImagesDevicePath(true);
                     loadingElement.dismiss();
-                    resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true });
+                    resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true, "configLoaded": true });
                 },
                 async () => {
                     console.log("dismilling loading message");
@@ -242,14 +247,14 @@ export class ConfigManager {
         });
     }
 
-    async loadConfigFromServerNoConfig() {
+    async loadConfigFromServerNoConfig(): Promise<any> {
         let loadingElement = await this.loadingManager.showConfigLoadingMessage();
 
         return new Promise(async (resolve, reject) => {
             await this.loadConfigFromServer(loadingElement, async () => {
                 await this.loadImagesDevicePath(true);
                 loadingElement.dismiss();
-                resolve({ "message": "config downloaded", "showMessage": false });
+                resolve({ "message": "config downloaded", "showMessage": false, "configLoaded": true });
             },
                 async () => {
                     console.log("dismilling loading message");
@@ -260,8 +265,8 @@ export class ConfigManager {
         });
     }
 
-    isDefaultConfigUsed(): boolean {
-        return this.config.Persons.length == 5 && this.config.Persons[0].Infos[0].Name == 'Incognito';
+    async isDefaultConfigUsed(): Promise<boolean> {
+        return await this.dbContext.getDefaultConfigIsUsed();
     }
 
     updateProgress(oEvent, loadingElement: HTMLIonLoadingElement) {
@@ -289,7 +294,7 @@ export class ConfigManager {
 
         let localConfig = this.config;
 
-        if (this.isDefaultConfigUsed())
+        if (await this.isDefaultConfigUsed())
         {
             localConfig = new Config();
         }
@@ -363,7 +368,7 @@ export class ConfigManager {
     }
     //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
-        if (!this.config || this.isDefaultConfigUsed())
+        if (!this.config || await this.isDefaultConfigUsed())
         {
             return;
         }
@@ -498,13 +503,15 @@ export class ConfigManager {
         let imagesList = [];
 
         //go through each person of db config
-        _.forEach(dbConfig.Persons, (dbPerson: Person) => {
+        _.forEach(dbConfig.Persons, async (dbPerson: Person) => {
             //find appropriate person in server config
             let serverPerson = _.find(serverConfig.Persons, (personFromServer: Person) => {
                 return personFromServer.Id === dbPerson.Id;
             })
 
-            if (serverPerson == null && !this.isDefaultConfigUsed()) {
+            let isDefaultConfigUsed = await this.isDefaultConfigUsed();
+
+            if (serverPerson == null && !isDefaultConfigUsed) {
                 imagesList.push(dbPerson.ListButtonPicPath.ImagePath);
                 imagesList.push(dbPerson.MainPicPath.ImagePath);
                 imagesList.push(dbPerson.SmallButtonPicPath.ImagePath);
