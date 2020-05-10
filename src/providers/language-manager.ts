@@ -30,7 +30,7 @@ export class LanguageManager {
             "new_content_is_ready_for_downloading": "Новий контент доступний для завантаження. Бажаєте розпочати завантаження?",
             "later": "Не зараз",
             "propose_quotes": "Додати вислів",
-            "check_for_updates": "Завантажити оновлення",
+            "check_for_updates": "Пошук оновлень",
             "get_coins": "Отримати монетки",
             "chose_languge": "Вибір мови",
             "put_mark_for_app": "Оцінити додаток",
@@ -49,14 +49,15 @@ export class LanguageManager {
             "thank_you": "Дякую!",
             "list": "Список",
             "config_updated": "Конфігурацію оновлено",
-            "postponed": "Відкладено",
+            "postponed": "Відкладено на 24 години",
             "nothing_to_update": "Немає контенту для оновлення",
             "no_internet": "Немає підключення до інтернету",
             "config_loading_wait_please": "Завантажується конфігурація. Будь ласка, зачекайте. Завантажено {0}%",
             "config_applying_wait_please": "Застосовується конфігурація. Будь ласка, зачекайте.",
             "config_copying_files": "Копіюються файли. Будь ласка, зачекайте.",
             "config_files_being_prepared": "Формується архів для завантаження. Будь ласка, зачекайте.",
-            "some_files_were_not_downloaded_alert": "Деякі файли не підвантажились. Щоб виправити ситуацію зайдіть у меню та виберіть пункт 'Завантажити оновлення'"
+            "some_files_were_not_downloaded_alert": "Деякі файли не підвантажились. Щоб виправити ситуацію зайдіть у меню та виберіть пункт 'Завантажити оновлення'",
+            "searching_updates": "Відбувається пошук оновлень. Будь ласка, зачекайте."
         },
         "ru": {
             "check_for_updates_no_content": "Новый контент не найден. Для проверки конфигурации или восстановления файлов нажмите Да.",
@@ -79,7 +80,7 @@ export class LanguageManager {
             "new_content_is_ready_for_downloading": "Новый контент доступен для загрузки. Хотите начать загрузку?",
             "later": "Не сейчас",
             "propose_quotes": "Добавить фразу",
-            "check_for_updates": "Скачать обновление",
+            "check_for_updates": "Поиск обновлений",
             "get_coins": "Получить монетки",
             "chose_languge": "Выбор языка",
             "put_mark_for_app": "Оценить приложение",
@@ -98,14 +99,15 @@ export class LanguageManager {
             "thank_you": "Спасибо!",
             "list": "Список",
             "config_updated": "Конфигурацию обновлено",
-            "postponed": "Отложено",
+            "postponed": "Отложено на 24 часа",
             "nothing_to_update": "Нет контента для обновления",
             "no_internet": "Нет подключения к интернету",
             "config_loading_wait_please": "Загружается конфигурация. Пожалуйста, подождите. Загружено {0}%",
             "config_applying_wait_please": "Применяется конфигурация. Пожалуйста, подождите.",
             "config_copying_files": "Копируются файлы.Пожалуйста подождите.",
             "config_files_being_prepared": "Формируется архив для загрузки. Пожалуйста, подождите.",
-            "some_files_were_not_downloaded_alert": "Некоторые файлы не подгрузились. Чтобы исправить ситуацию зайдите в меню и выберите пункт 'Загрузить обновление'"
+            "some_files_were_not_downloaded_alert": "Некоторые файлы не подгрузились. Чтобы исправить ситуацию зайдите в меню и выберите пункт 'Загрузить обновление'",
+            "searching_updates": "Происходит поиск обновлений. Пожалуйста, подождите."
         }
     }
 

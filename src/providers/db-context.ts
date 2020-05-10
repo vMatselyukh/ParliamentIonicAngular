@@ -15,6 +15,7 @@ export class DbContext {
     private readonly androidSelectedStorageKey: string = "AndroidSelectedStorage"; // local, external
     private readonly userGuidKey: string = "UserGuid";
     private readonly defaultConfigIsUsedKey: string = "DefaultConfig";
+    private readonly firstTimeLoadKey: string = "FirstTimeLoad";
 
     private readonly coinsCountForWatchingAdv: number = 10;
     readonly postponeHours: number = 24;
@@ -75,12 +76,14 @@ export class DbContext {
         let totalTrackCount = 0;
         let totalUnlockedTracks = 0;
 
-        for (let i = 0; i < config.Persons.length; i++) {
-            totalTrackCount += config.Persons[i].Tracks.length;
+        if (config) {
+            for (let i = 0; i < config.Persons.length; i++) {
+                totalTrackCount += config.Persons[i].Tracks.length;
 
-            for (let j = 0; j < config.Persons[i].Tracks.length; j++) {
-                if (!config.Persons[i].Tracks[j].IsLocked) {
-                    totalUnlockedTracks++;
+                for (let j = 0; j < config.Persons[i].Tracks.length; j++) {
+                    if (!config.Persons[i].Tracks[j].IsLocked) {
+                        totalUnlockedTracks++;
+                    }
                 }
             }
         }
@@ -209,7 +212,7 @@ export class DbContext {
 
         this.storage.remove(this.nextTimeForUpdatesKey);
 
-        let newDate = currentDateTime.setSeconds(currentDateTime.getHours() + this.postponeHours);
+        let newDate = currentDateTime.setHours(currentDateTime.getHours() + this.postponeHours);
         await this.storage.set(this.nextTimeForUpdatesKey, newDate);
     }
 
@@ -223,6 +226,8 @@ export class DbContext {
 
     //1 - is used. -1 - is not used
     async getDefaultConfigIsUsed(): Promise<boolean> {
+        this.logger.log("get default config cached value: ", this.cachedDefaultConfig);
+
         if (this.cachedDefaultConfig == 1) {
             return true;
         }
@@ -232,11 +237,13 @@ export class DbContext {
 
         let value = await this.storage.get(this.defaultConfigIsUsedKey);
 
-        if (value == "1") {
+        this.logger.log("get default config db value: ", value);
+
+        if (value == 1) {
             this.cachedDefaultConfig = 1;
             return true;
         }
-        else if (value == "-1") {
+        else if (value == -1) {
             this.cachedDefaultConfig = -1;
             return false;
         }
@@ -249,7 +256,24 @@ export class DbContext {
     }
 
     async setDefaultConfigIsUsed(value: number): Promise<void> {
+        this.cachedDefaultConfig = value;
         return await this.storage.set(this.defaultConfigIsUsedKey, value);
+    }
+
+    async getFirstTimeLoad(): Promise<boolean> {
+        let value = await this.storage.get(this.firstTimeLoadKey);
+
+        this.logger.log("first time load db context: ", value);
+
+        if (value != null) {
+            return value;
+        }
+
+        return true;
+    }
+
+    async setFirstTimeLoad(isFirstTime: boolean): Promise<boolean> {
+        return await this.storage.set(this.firstTimeLoadKey, isFirstTime);
     }
 
     uuidv4() {

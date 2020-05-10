@@ -19,8 +19,21 @@ export class LoadingManager {
         return loading;
     }
 
+    async showUpdatesSearchMessage(): Promise<HTMLIonLoadingElement> {
+        let loading = await this.loadingController.create({
+            message: await this.languageManager.getTranslations("searching_updates")
+        });
+
+        await loading.present();
+
+        return loading;
+    }
+
     async closeLoading() {
-        await this.loadingController.dismiss(); 
+        let topOverlay = await this.loadingController.getTop();
+        if (topOverlay) {
+            await this.loadingController.dismiss();
+        }
     }
 
     async updateLoadingProgress(loadingElement: HTMLIonLoadingElement, percentage: number) {

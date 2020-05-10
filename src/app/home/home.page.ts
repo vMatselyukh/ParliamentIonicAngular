@@ -61,13 +61,16 @@ export class HomePage {
         });
 
         (async () => {
-            let isDefaultConfigUsed = await this.configManager.isDefaultConfigUsed();
+            let isFirstTimeLoad = await this.dbContext.getFirstTimeLoad();
 
-            if (isDefaultConfigUsed) {
+            this.logger.log("first time load: ", isFirstTimeLoad);
+
+            if (isFirstTimeLoad) {
                 this.configManager.config = new Config();
                 let fakePersons = this.loadFakePersons();
-
                 this.configManager.config.Persons = fakePersons;
+
+                await this.dbContext.setFirstTimeLoad(false);
             }
         })();
 
@@ -91,10 +94,10 @@ export class HomePage {
 
         //user taps update config from menu
         if (!this.configUpdateSubscribed) {
-            this.events.subscribe("config:update", () => {
+            this.events.subscribe("config:update", async () => {
                 console.log("config:update");
-                self.configManager.loadConfig(true).then((result: any) => {
-                    this.loadConfigProcessResult(result);
+                await self.configManager.loadConfig(true).then(async (result: any) => {
+                    await this.loadConfigProcessResult(result);
                 });
             });
 
@@ -104,10 +107,10 @@ export class HomePage {
         this.platform.ready().then(async () => {
             this.assignUserId();
             this.loadCoinsCount();
-            console.log("platform.ready");
+            this.logger.log("platform.ready");
 
-            console.log("display width:", window.innerWidth);
-            console.log("display height:", window.innerHeight);
+            this.logger.log("display width:", window.innerWidth);
+            this.logger.log("display height:", window.innerHeight);
 
             this.dbContext.getLanguage().then(async lang => {
                 if (lang === null) {
@@ -123,9 +126,9 @@ export class HomePage {
                     //user gets back into the app
                     this.platform.resume.subscribe(async () => {
                         if (!await this.configManager.isDefaultConfigUsed()) {
-                            console.log("resume");
-                            this.configManager.loadConfig().then((result: any) => {
-                                this.loadConfigProcessResult(result);
+                            this.logger.log("resume");
+                            await this.configManager.loadConfig().then(async (result: any) => {
+                                await this.loadConfigProcessResult(result);
                             });
                         }
                     });
@@ -135,8 +138,8 @@ export class HomePage {
             }
 
             //happens on the initial page loading
-            this.configManager.loadConfig().then((result: any) => {
-                this.loadConfigProcessResult(result);
+            await this.configManager.loadConfig().then(async (result: any) => {
+                await this.loadConfigProcessResult(result);
             });
 
             this.advProvider.hideBanner().then(() => {
@@ -146,30 +149,20 @@ export class HomePage {
 
         this.recalcListImagesWidthHeight();
 
-        console.log("view did enter");
-        console.log("main list height", this.mainList.nativeElement.clientHeight);
+        this.logger.log("view did enter");
+        this.logger.log("main list height", this.mainList.nativeElement.clientHeight);
     }
 
-    loadConfigProcessResult(result: any) {
+    async loadConfigProcessResult(result: any) {
+        this.logger.log("load config process result: ", result);
+
         if (result.showMessage) {
             this.presentConfigStatusMessageAlert(result.message);
         }
 
-        if (result.configLoaded == true) {
-            this.dbContext.setDefaultConfigIsUsed(-1);
+        if (result.configLoaded) {
+            await this.dbContext.setDefaultConfigIsUsed(-1);
         }
-    }
-
-    ionViewWillLeave() {
-        console.log("view will leave");
-    }
-
-    ionViewDidLeave() {
-        console.log("view did leave");
-    }
-
-    onPageWillLeave() {
-        console.log("page will leave");
     }
 
     assignUserId() {
@@ -177,8 +170,6 @@ export class HomePage {
     }
 
     loadCoinsCount() {
-
-        //this.dbContext.saveCoins(0);
         this.dbContext.getCoinsCount().then((count?: number) => {
             this.coinsCount = count;    
         });
@@ -251,6 +242,10 @@ export class HomePage {
             fakePerson.ListButtonDevicePath = personFromJson.ListButtonPicPath.ImagePath;
             fakePerson.ListButtonDevicePathIos = personFromJson.ListButtonPicPath.ImagePath;
 
+            fakePerson.MainPicDevicePath = personFromJson.MainPicPath.ImagePath;
+
+            fakePerson.SmallButtonDevicePath = personFromJson.SmallButtonPicPath.ImagePath;
+
             fakePerson.Infos = [];
 
             for (let j = 0; j < personFromJson.Infos.length; j++) {
@@ -267,6 +262,7 @@ export class HomePage {
                 fakeTrack.Id = personFromJson.Tracks[t].Id;
                 fakeTrack.Name = personFromJson.Tracks[t].Name;
                 fakeTrack.Date = new Date(personFromJson.Tracks[t].Date);
+                fakeTrack.IsLocked = true;
 
                 fakePerson.Tracks.push(fakeTrack);
             }

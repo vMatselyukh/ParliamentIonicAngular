@@ -15,24 +15,21 @@ export class LoggingProvider {
         }
     }
 
-    log(text, argument = null) {
+    log(text, ...args) {
         if (!this.enableLogging) {
             return;
         }
 
         if (this.platform.is('ios')) {
-            if (argument) {
-                console.log(text, JSON.stringify(argument));
+            if (args.length > 0) {
+                console.log(text, JSON.stringify(args));
             }
             else {
                 console.log(text);
             }
         }
         else {
-
-        }
-        if (argument) {
-            console.log(text, argument);
+            console.log(text, ...args);
         }
     }
 }

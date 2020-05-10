@@ -100,8 +100,6 @@ export class DetailsPage implements OnInit {
                 this.dbContext.getCoinsCount().then(count => {
                     if (count == 0) {
 
-                        //this.advProvider.loadAdv();
-
                         this.alertManager.showNoCoinsAlert(() => {
                             console.log("let's watch a video");
 

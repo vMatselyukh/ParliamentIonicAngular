@@ -5,7 +5,8 @@ import * as _ from 'lodash';
 import { Person, Config, Track } from '../models/models';
 import {
     DbContext, ParliamentApi, AlertManager,
-    LoadingManager, FileManager, LanguageManager
+    LoadingManager, FileManager, LanguageManager,
+    LoggingProvider
 } from './providers';
 import { Network } from '@ionic-native/network/ngx';
 
@@ -22,7 +23,8 @@ export class ConfigManager {
         private fileManager: FileManager,
         private languageManager: LanguageManager,
         private platform: Platform,
-        private domSanitizer: DomSanitizer) {
+        private domSanitizer: DomSanitizer,
+        private logger: LoggingProvider) {
     }
 
     getResourcesToDownload(dbConfig: Config, serverConfig: Config): string[] {
@@ -77,11 +79,10 @@ export class ConfigManager {
         let showNoInternetMessage = forceLoading;
         let showNoContentToDownloadMessage = forceLoading;
 
-        return new Promise((resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             let promiseExecutionFlag = "not set";
 
             this.dbContext.getConfig().then(async dbConfig => {
-
                 if (dbConfig == null) {
                     this.alertManager.showNoConfigAlert(
                         async _ => {
@@ -90,29 +91,22 @@ export class ConfigManager {
                         },
                         async () => {
                             await this.dbContext.saveConfig(this.config);
-                            await this.dbContext.setDefaultConfigIsUsed(-1);
                             await this.dbContext.postponeUpdateTime(new Date());
                             resolve({ "message": await this.languageManager.getTranslations("postponed"), "showMessage": true });
                         });
                 }
                 else {
-                    console.log("db config isn't null.");
-
-                    //console.log("config before manipulations:", JSON.stringify(this.config));
+                    this.logger.log("db config isn't null.");
 
                     if(!this.config || this.config.Md5Hash != dbConfig.Md5Hash)
                     {
-                        console.log("config md5", this.config.Md5Hash);
-                        console.log("dbConfig md5", dbConfig.Md5Hash);
-
-                        console.log("changing config to db config");
+                        this.logger.log("changing config to db config");
                         this.config = dbConfig;
                     }
 
-                    //console.log("config", this.config);
-                    //console.log("config", JSON.stringify(this.config));
+                    //this.logger.log("config before manipulations:", this.config);
 
-                    let forceReloadImages = this.forcePathReload(this.config);
+                    let forceReloadImages = await this.forcePathReload(this.config);
                     await this.loadImagesDevicePath(forceReloadImages);
 
                     //console.log("config equals:", JSON.stringify(this.config));
@@ -132,9 +126,15 @@ export class ConfigManager {
                             return resolve({ "message": await this.languageManager.getTranslations("error_happened_sorry"), "showMessage": true });
                         }
 
+                        this.logger.log("force reloading: ", forceLoading);
+                        this.logger.log("nextTime: ", nextTime);
+                        this.logger.log("currentTime: ", currentTime);
+
                         if (forceLoading || nextTime == null || nextTime < currentTime) {
                             this.parliamentApi.getConfigHash()
                                 .then(async hash => {
+                                    await this.loadingManager.closeLoading();
+
                                     if (hash != this.config.Md5Hash) {
 
                                         console.log("hashes are different, showing message about config update");
@@ -217,7 +217,7 @@ export class ConfigManager {
             await this.parliamentApi.getConfig()
                 .then(async config => {
                     this.lockAllTracksInServerConfig(config);
-                    //await this.dbContext.saveConfig(config);
+
                     await this.downloadContent(loadingElement, config);
                     console.log("Loading from server shoud be finished. Calling callback.");
                     loadingFinishCallback();
@@ -299,6 +299,8 @@ export class ConfigManager {
             localConfig = new Config();
         }
 
+        this.logger.log("download content. local config: ", localConfig);
+
         //get items that exist in serverConfig but don't exist in local config
         let itemsToDownload = this.getResourcesToDownload(localConfig, serverConfig).map(filePath => {
             return this.fileManager.normalizeFilePath(filePath);
@@ -352,26 +354,35 @@ export class ConfigManager {
                     this.alertManager.showSomeFilesWereNotDownloadedAlert();
                     console.log("Error happened. Some of the files were not downloaded", error);
                 }).finally(async () => {
-                });
+            });
     }
 
-    private async forcePathReload(config: Config){
+    private async forcePathReload(config: Config) {
+        if (await this.dbContext.getDefaultConfigIsUsed()) {
+            return false;
+        }
+
         if(config.Persons.length > 0)
         {
             let testPath = await this.fileManager.getListButtonImagePath(config.Persons[0]);
             let dbPath = config.Persons[0].ListButtonDevicePath;
 
-            return testPath === dbPath;
+            this.logger.log("check system path reload. test path: ", testPath);
+            this.logger.log("check system path reload. db path: ", dbPath);
+
+            return testPath !== dbPath;
         }
 
         return true;
     }
     //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
-        if (!this.config || await this.isDefaultConfigUsed())
+        if (!this.config || await this.isDefaultConfigUsed() && !forceSystemCheck)
         {
             return;
         }
+
+        this.logger.log('get image device path. force system check: ', forceSystemCheck);
 
         let startPersonsCount = this.config.Persons.length;
         for (var i = 0; i < this.config.Persons.length; i++) {
@@ -380,6 +391,8 @@ export class ConfigManager {
             let mainPicImagePath = this.config.Persons[i].MainPicDevicePath;
 
             if (forceSystemCheck || !listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
+                this.logger.log('performing get image path for person: ', this.config.Persons[i].Name);
+
                 listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
                 smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
                 mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
@@ -401,9 +414,11 @@ export class ConfigManager {
 
         this.config.Persons = this.config.Persons.sort(this.comparer);
 
-        console.log("device path has been reloaded");
+        this.logger.log("device path has been reloaded. force reload: ", forceSystemCheck);
 
-        this.reloadPathIos(forceSystemCheck);
+        if (this.platform.is('ios')) {
+            this.reloadPathIos(forceSystemCheck);
+        }
 
         //let self = this;
 

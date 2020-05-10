@@ -4,7 +4,10 @@ import { File, DirectoryEntry, FileEntry } from '@ionic-native/file/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { Platform } from '@ionic/angular';
 import { FileTransfer, FileTransferObject } from '@ionic-native/file-transfer/ngx';
-import { WebServerLinkProvider, DbContext, ParliamentApi } from "./providers";
+import {
+    WebServerLinkProvider, DbContext,
+    ParliamentApi, LoggingProvider
+} from "./providers";
 import { WebView } from '@ionic-native/ionic-webview/ngx';
 import { Person, Track } from '../models/models';
 import { Zip } from '@ionic-native/zip/ngx';
@@ -34,7 +37,8 @@ export class FileManager {
         private webview: WebView,
         private diagnostic: Diagnostic,
         private zip: Zip,
-        private parliamentApi: ParliamentApi) {
+        private parliamentApi: ParliamentApi,
+        private logger: LoggingProvider) {
     }
 
     normalizeFilePath(filePath): string {
@@ -322,7 +326,7 @@ export class FileManager {
         let processedFileName = this.normalizeFilePath(filePath);
         let baseDirectory = await this.getDownloadPath();
 
-        console.log("base directory: ", baseDirectory);
+        this.logger.log("base directory: ", baseDirectory);
 
         return new Promise((resolve, reject) => {
             this.file.resolveDirectoryUrl(baseDirectory)
@@ -337,33 +341,17 @@ export class FileManager {
 
     async getFileUrl(filePath: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            console.log("getting file url: ", filePath);
+            this.logger.log("getting file url: ", filePath);
             this.getFile(filePath)
                 .then((fileEntry: FileEntry) => {
                     resolve(fileEntry.nativeURL);
                 })
                 .catch(fileEntryError => {
-                    console.log("error getFileUrl: ", fileEntryError, filePath);
+                    this.logger.log("error getFileUrl: ", fileEntryError, filePath);
                     reject("error getFileUrl");
                 });
         });
     }
-
-    //async getHomeImagePath() {
-    //    let downloadPath = await this.getDownloadPath();
-    //    let newFilePath = `/test/image.jpg`;
-
-    //    let path = await this.getFileUrl(newFilePath);
-
-    //    if (this.platform.is('ios')) {
-    //        path = this.win.Ionic.WebView.convertFileSrc(path);
-    //    }
-    //    else {
-    //        path = this.webview.convertFileSrc(path);
-    //    }
-
-    //    return path;
-    //}
 
     async getListButtonImagePath(person: Person): Promise<string> {
         let path = await this.getFileUrl(person.ListButtonPicPath.ImagePath);
@@ -405,6 +393,14 @@ export class FileManager {
     }
 
     async getTrackDevicePath(track: Track): Promise<string> {
+        let defaultConfigIsUsed = await this.dbContext.getDefaultConfigIsUsed();
+
+        if (defaultConfigIsUsed) {
+            this.logger.log('get track device path. default config is used: true');
+
+            return track.Path;
+        }
+
         let path = await this.getFileUrl(track.Path);
         path = this.webview.convertFileSrc(path);
         return path;
@@ -413,13 +409,15 @@ export class FileManager {
     async getSdCardStoragePath(): Promise<string> {
         let externalStoragePath = "";
 
+        let self = this;
+
         await this.getStorageWritePermission().then(async status => {
             if (status === this.diagnostic.permissionStatus.GRANTED) {
                 await this.diagnostic.getExternalSdCardDetails().then(details => {
                     details.forEach(function (detail) {
                         //157286400 = 100Mb
                         if (detail.canWrite && externalStoragePath === "" && detail.type === "application") {
-                            console.log("diagnostic external file path", detail.filePath);
+                            self.logger.log("diagnostic external file path: ", detail.filePath);
 
                             if (detail.freeSpace < 157286400) {
                                 throw new Error("not enough free space");
@@ -429,7 +427,7 @@ export class FileManager {
                         }
                     });
                 }, error => {
-                    console.error("diagnostic external file path", error);
+                    self.logger.log("diagnostic external file path error: ", error);
                 });
             }
         });

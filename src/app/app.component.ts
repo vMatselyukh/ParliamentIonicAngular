@@ -8,8 +8,11 @@ import { ProposeQuotePage } from './propose-quote/propose-quote.page';
 import { LanguagePage } from './language/language.page';
 import { SocialSharing } from '@ionic-native/social-sharing/ngx';
 import { ToastController } from '@ionic/angular';
-//import { Market } from '@ionic-native/market/ngx';
-import { AdvProvider, AlertManager, DbContext, LanguageManager } from '../providers/providers';
+import {
+    AdvProvider, AlertManager,
+    DbContext, LanguageManager,
+    LoadingManager
+} from '../providers/providers';
 import { Network } from '@ionic-native/network/ngx';
 
 @Component({
@@ -31,7 +34,7 @@ export class AppComponent {
     isIos: boolean = false;
 
     appStoreName = "1506544870";
-    googlePlayName = ""; //"com.infinite.shooting.galaxy.attack";
+    googlePlayName = "";
 
     constructor(
         private platform: Platform,
@@ -44,9 +47,9 @@ export class AppComponent {
         private alertManager: AlertManager,
         private events: Events,
         private dbContext: DbContext,
-        private languageManager: LanguageManager,
-        //private market: Market,
-        private network: Network
+        private languageManager: LanguageManager,        
+        private network: Network,
+        private loading: LoadingManager
     ) {
         this.initializeApp();
 
@@ -160,6 +163,10 @@ export class AppComponent {
         }
     }
 
+    async showCheckingUpdatesLoading() {
+        await this.loading.showUpdatesSearchMessage();
+    }
+
     async presentChooseLanguageModal() {
         const modal = await this.modalController.create({
             component: LanguagePage
@@ -232,8 +239,9 @@ export class AppComponent {
         toast.present();
     }
 
-    updateConfig() {
+    async updateConfig() {
         this.events.publish("config:update");
+        await this.showCheckingUpdatesLoading();
     }
 
     showGetCoinsAlert() {
