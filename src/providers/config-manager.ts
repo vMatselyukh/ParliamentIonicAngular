@@ -84,6 +84,7 @@ export class ConfigManager {
 
             this.dbContext.getConfig().then(async dbConfig => {
                 if (dbConfig == null) {
+                    await this.loadingManager.closeLoading();
                     this.alertManager.showNoConfigAlert(
                         async _ => {
                             let loadResult = await this.loadConfigFromServerNoConfig();
@@ -98,8 +99,7 @@ export class ConfigManager {
                 else {
                     this.logger.log("db config isn't null.");
 
-                    if(!this.config || this.config.Md5Hash != dbConfig.Md5Hash)
-                    {
+                    if (!this.config || this.config.Md5Hash != dbConfig.Md5Hash) {
                         this.logger.log("changing config to db config");
                         this.config = dbConfig;
                     }
@@ -181,14 +181,13 @@ export class ConfigManager {
         });
     }
 
-    reloadPathIos(forceReload: boolean = false){
-        try{
-        
-            if(this.platform.is('ios')){
+    reloadPathIos(forceReload: boolean = false) {
+        try {
+
+            if (this.platform.is('ios')) {
                 console.log("reloading path ios");
                 for (var i = 0; i < this.config.Persons.length; i++) {
-                    if(this.config.Persons[i].ListButtonDevicePathIos == null || forceReload)
-                    {
+                    if (this.config.Persons[i].ListButtonDevicePathIos == null || forceReload) {
                         //console.log("reassigning safe urls");
                         this.config.Persons[i].ListButtonDevicePathIos = this.domSanitizer.bypassSecurityTrustResourceUrl(this.config.Persons[i].ListButtonDevicePath);
                         //console.log("new path ios", this.config.Persons[i].ListButtonDevicePathIos);
@@ -196,14 +195,14 @@ export class ConfigManager {
                 }
             }
         }
-        catch(e)
-        {
+        catch (e) {
             console.log("something went wrong", e);
         }
     }
 
     async loadConfigFromServer(loadingElement: HTMLIonLoadingElement, loadingFinishCallback: any, loadingFailedCallback: any) {
         if (this.network.type == 'none') {
+            await loadingFinishCallback(true);
             await this.alertManager.showNoInternetAlert(
                 async () => {
                     await this.loadConfig();
@@ -211,16 +210,20 @@ export class ConfigManager {
                 () => {
                     navigator['app'].exitApp();
                 });
-            loadingFinishCallback();
         }
         else {
             await this.parliamentApi.getConfig()
                 .then(async config => {
                     this.lockAllTracksInServerConfig(config);
 
-                    await this.downloadContent(loadingElement, config);
-                    console.log("Loading from server shoud be finished. Calling callback.");
-                    loadingFinishCallback();
+                    await this.downloadContent(loadingElement, config).then(() => {
+                        console.log("Loading from server shoud be finished. Calling callback.");
+                        loadingFinishCallback();
+                    })
+                    .catch(error => {
+                        this.logger.log("load config from server error: ", error);
+                        loadingFailedCallback();
+                    });
                 })
                 .catch(e => {
                     console.log("getConfigError", e);
@@ -233,11 +236,14 @@ export class ConfigManager {
         let loadingElement = await this.loadingManager.showConfigLoadingMessage();
 
         return new Promise(async (resolve, reject) => {
-            await this.loadConfigFromServer(loadingElement, async () => {
+            await this.loadConfigFromServer(loadingElement, async (noInternet: boolean = false) => {
+                if (!noInternet) {
                     await this.loadImagesDevicePath(true);
-                    loadingElement.dismiss();
                     resolve({ "message": await this.languageManager.getTranslations("config_updated"), "showMessage": true, "configLoaded": true });
-                },
+                }
+
+                loadingElement.dismiss();
+            },
                 async () => {
                     console.log("dismilling loading message");
                     loadingElement.dismiss();
@@ -251,10 +257,12 @@ export class ConfigManager {
         let loadingElement = await this.loadingManager.showConfigLoadingMessage();
 
         return new Promise(async (resolve, reject) => {
-            await this.loadConfigFromServer(loadingElement, async () => {
-                await this.loadImagesDevicePath(true);
-                loadingElement.dismiss();
-                resolve({ "message": "config downloaded", "showMessage": false, "configLoaded": true });
+            await this.loadConfigFromServer(loadingElement, async (noInternet: boolean = false) => {
+                if (!noInternet) {
+                    await this.loadImagesDevicePath(true);
+                    resolve({ "message": "config downloaded", "showMessage": false, "configLoaded": true });
+                }
+                await loadingElement.dismiss();
             },
                 async () => {
                     console.log("dismilling loading message");
@@ -274,7 +282,7 @@ export class ConfigManager {
             let percentComplete = oEvent.loaded / oEvent.total * 100;
             this.updateProgressInLoadingMessage(loadingElement, percentComplete);
             console.log("loading progress: ", percentComplete.toFixed(2));
-            
+
         } else {
             console.log("unable to track the progress");
         }
@@ -288,14 +296,13 @@ export class ConfigManager {
         console.log("downloadContent started");
 
         //update process started
-        if(serverConfig == null) {
+        if (serverConfig == null) {
             serverConfig = await this.parliamentApi.getConfig();
         }
 
         let localConfig = this.config;
 
-        if (await this.isDefaultConfigUsed())
-        {
+        if (await this.isDefaultConfigUsed()) {
             localConfig = new Config();
         }
 
@@ -340,21 +347,24 @@ export class ConfigManager {
         console.log("all items to download", allItemsToDownload);
         console.log("to delete", itemsToDelete);
 
-        return Promise.all([this.fileManager.getUdatesZip(allItemsToDownload, oEvent => this.updateProgress(oEvent, loadingElement),
-            () => this.loadingManager.updateLoadingCopyingFiles(loadingElement))
-            .then(() => this.loadingManager.updateLoadingConfigurationIsBeingApplied(loadingElement)),
+        return new Promise((resolve, reject) => {
+            Promise.all([this.fileManager.getUdatesZip(allItemsToDownload, oEvent => this.updateProgress(oEvent, loadingElement),
+                () => this.loadingManager.updateLoadingCopyingFiles(loadingElement))
+                .then(() => this.loadingManager.updateLoadingConfigurationIsBeingApplied(loadingElement)),
             this.fileManager.deleteItems(itemsToDelete)])
                 .then(async () => {
                     console.log("updates downloaded and unpacked");
                     this.copyConfig(this.config, serverConfig);
                     await this.dbContext.saveConfig(serverConfig);
                     this.config = serverConfig;
+                    resolve();
                 })
                 .catch((error) => {
                     this.alertManager.showSomeFilesWereNotDownloadedAlert();
                     console.log("Error happened. Some of the files were not downloaded", error);
-                }).finally(async () => {
-            });
+                    reject();
+                });
+        });
     }
 
     private async forcePathReload(config: Config) {
@@ -362,8 +372,7 @@ export class ConfigManager {
             return false;
         }
 
-        if(config.Persons.length > 0)
-        {
+        if (config.Persons.length > 0) {
             let testPath = await this.fileManager.getListButtonImagePath(config.Persons[0]);
             let dbPath = config.Persons[0].ListButtonDevicePath;
 
@@ -377,8 +386,7 @@ export class ConfigManager {
     }
     //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
-        if (!this.config || await this.isDefaultConfigUsed() && !forceSystemCheck)
-        {
+        if (!this.config || await this.isDefaultConfigUsed() && !forceSystemCheck) {
             return;
         }
 
@@ -461,8 +469,7 @@ export class ConfigManager {
     }
 
     private copyUnlockedTracks(localConfig: Config, serverConfig: Config) {
-        if(localConfig == null)
-        {
+        if (localConfig == null) {
             return;
         }
 

@@ -34,7 +34,7 @@ export class AppComponent {
     isIos: boolean = false;
 
     appStoreName = "1506544870";
-    googlePlayName = "";
+    googlePlayName = "com.eagerdev.parliament.ua";
 
     constructor(
         private platform: Platform,
@@ -240,8 +240,15 @@ export class AppComponent {
     }
 
     async updateConfig() {
-        this.events.publish("config:update");
-        await this.showCheckingUpdatesLoading();
+        if (this.network.type == 'none') {
+            await this.alertManager.showPlainNoInternetMessage();
+
+            return;
+        }
+        else {
+            this.events.publish("config:update");
+            await this.showCheckingUpdatesLoading();
+        }
     }
 
     showGetCoinsAlert() {
