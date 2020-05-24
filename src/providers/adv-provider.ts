@@ -10,6 +10,8 @@ import { Platform } from '@ionic/angular';
 })
 export class AdvProvider {
 
+    isInTesting: boolean = true;
+
     rewardedAndroid: string = "ca-app-pub-3291616985383560/7058759376";
     bannerAndroid: string = "ca-app-pub-3291616985383560/2201604199";
 
@@ -55,14 +57,14 @@ export class AdvProvider {
             }
 
             self.admob.rewardVideo.config({
-                id: rewardedAddId,
-                isTesting: false,
+                id: this.isInTesting ? this.testRewarded : rewardedAddId,
+                isTesting: this.isInTesting,
                 autoShow: false
             });
 
             self.admob.banner.config({
-                id: bannerAddId,
-                isTesting: false,
+                id: this.isInTesting ? this.testBanner : bannerAddId,
+                isTesting: this.isInTesting,
                 autoShow: false
             });
 

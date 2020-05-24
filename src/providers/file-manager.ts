@@ -393,15 +393,18 @@ export class FileManager {
     }
 
     async getTrackDevicePath(track: Track): Promise<string> {
-        let defaultConfigIsUsed = await this.dbContext.getDefaultConfigIsUsed();
+        //let defaultConfigIsUsed = await this.dbContext.getDefaultConfigIsUsed();
 
-        if (defaultConfigIsUsed) {
-            this.logger.log('get track device path. default config is used: true');
+        let path = "";
 
-            return track.Path;
+        if (track.Path.indexOf("assets/tracks/") > -1) {
+            this.logger.log('get track device path. using path from assets');
+
+            path = track.Path;
         }
-
-        let path = await this.getFileUrl(track.Path);
+        else {
+            path = await this.getFileUrl(track.Path);
+        }
         path = this.webview.convertFileSrc(path);
         return path;
     }

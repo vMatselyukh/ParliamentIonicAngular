@@ -2,30 +2,6 @@ export const INITIAL_CONFIG = {
   "Persons": [
     {
       "Id": 82,
-      "Name": "ze",
-      "OrderNumber": 10,
-      "MainPicPath": {
-        "ImagePath": "assets/images/politicians/ze_main.jpg",
-        "Md5Hash": "fake"
-      },
-      "SmallButtonPicPath": {
-        "ImagePath": "assets/images/politicians/ze_small.jpg",
-        "Md5Hash": "fake"
-      },
-      "ListButtonPicPath": {
-        "ImagePath": "assets/images/politicians/ze_list.jpg",
-        "Md5Hash": "fake"
-      },
-      "Tracks": [
-        {
-          "Id": 607,
-          "Name": "Мне сорок второй год. Я ж не лох.",
-          "Path": "assets/tracks/ya_z_ne_loh.mp3",
-          "Rating": 0,
-          "Date": "2020-01-27T00:00:00",
-          "Md5Hash": "e950577e4d923e0bb13220c9cda94d61"
-        }
-      ],
       "Infos": [
         {
           "Id": 50,
@@ -38,6 +14,30 @@ export const INITIAL_CONFIG = {
           "Name": "Володимир Зеленський",
           "Post": "6-ий Президент України",
           "Language": 1
+        }
+      ],
+      "ListButtonPicPath": {
+        "ImagePath": "assets/images/politicians/ze_list.jpg",
+        "Md5Hash": "fake"
+      },
+      "MainPicPath": {
+        "ImagePath": "assets/images/politicians/ze_main.jpg",
+        "Md5Hash": "fake"
+      },
+      "Name": "ze",
+      "OrderNumber": 10,
+      "SmallButtonPicPath": {
+        "ImagePath": "assets/images/politicians/ze_small.jpg",
+        "Md5Hash": "fake"
+      },
+      "Tracks": [
+        {
+          "Id": 607,
+          "Name": "Мне сорок второй год. Я ж не лох.",
+          "Path": "assets/tracks/ya_z_ne_loh.mp3",
+          "Rating": 0,
+          "Date": "2020-01-27T00:00:00",
+          "Md5Hash": "e950577e4d923e0bb13220c9cda94d61"
         }
       ]
     },

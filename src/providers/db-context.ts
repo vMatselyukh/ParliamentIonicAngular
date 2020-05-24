@@ -224,42 +224,6 @@ export class DbContext {
         return await this.storage.set(this.androidSelectedStorageKey, value);
     }
 
-    //1 - is used. -1 - is not used
-    async getDefaultConfigIsUsed(): Promise<boolean> {
-        this.logger.log("get default config cached value: ", this.cachedDefaultConfig);
-
-        if (this.cachedDefaultConfig == 1) {
-            return true;
-        }
-        else if (this.cachedDefaultConfig == -1) {
-            return false;
-        }
-
-        let value = await this.storage.get(this.defaultConfigIsUsedKey);
-
-        this.logger.log("get default config db value: ", value);
-
-        if (value == 1) {
-            this.cachedDefaultConfig = 1;
-            return true;
-        }
-        else if (value == -1) {
-            this.cachedDefaultConfig = -1;
-            return false;
-        }
-
-        if (value == null) {
-            this.cachedDefaultConfig = 1;
-            await this.setDefaultConfigIsUsed(1);
-            return true;
-        }
-    }
-
-    async setDefaultConfigIsUsed(value: number): Promise<void> {
-        this.cachedDefaultConfig = value;
-        return await this.storage.set(this.defaultConfigIsUsedKey, value);
-    }
-
     async getFirstTimeLoad(): Promise<boolean> {
         let value = await this.storage.get(this.firstTimeLoadKey);
 

@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { DataService } from '../services/data.service';
 import { Platform, Events } from '@ionic/angular';
 import { INITIAL_CONFIG } from './initialConfig';
+import { LOCAL_CONFIG } from './config';
 import * as _ from 'lodash';
 
 @Component({
@@ -66,9 +67,7 @@ export class HomePage {
             this.logger.log("first time load: ", isFirstTimeLoad);
 
             if (isFirstTimeLoad) {
-                this.configManager.config = new Config();
-                let fakePersons = this.loadFakePersons();
-                this.configManager.config.Persons = fakePersons;
+                this.loadLocalConfig();
 
                 await this.dbContext.setFirstTimeLoad(false);
             }
@@ -159,10 +158,6 @@ export class HomePage {
         if (result.showMessage) {
             this.presentConfigStatusMessageAlert(result.message);
         }
-
-        if (result.configLoaded) {
-            await this.dbContext.setDefaultConfigIsUsed(-1);
-        }
     }
 
     assignUserId() {
@@ -219,57 +214,63 @@ export class HomePage {
         }, 1);
     }
 
-    loadFakePersons(): Person[] {
-        let fakePersons = [];
+    loadLocalConfig() {
+        this.configManager.config = new Config();
+        this.configManager.config.Persons = this.loadPersons(LOCAL_CONFIG);
+        this.configManager.config.Md5Hash = LOCAL_CONFIG.Md5Hash
+    }
 
-        for (let i = 0; i < INITIAL_CONFIG.Persons.length; i++) {
-            let fakePerson = new Person();
-            let personFromJson = INITIAL_CONFIG.Persons[i];
+    loadPersons(localConfig: any): Person[] {
+        let localPersons = [];
 
-            fakePerson.Id = personFromJson.Id;
-            fakePerson.Name = personFromJson.Name;
-            fakePerson.OrderNumber = personFromJson.OrderNumber;
+        for (let i = 0; i < localConfig.Persons.length; i++) {
+            let localPerson = new Person();
+            let personFromLocalJson = localConfig.Persons[i];
 
-            fakePerson.MainPicPath = new ImageInfo();
-            fakePerson.MainPicPath.ImagePath = personFromJson.MainPicPath.ImagePath;
+            localPerson.Id = personFromLocalJson.Id;
+            localPerson.Name = personFromLocalJson.Name;
+            localPerson.OrderNumber = personFromLocalJson.OrderNumber;
 
-            fakePerson.SmallButtonPicPath = new ImageInfo();
-            fakePerson.SmallButtonPicPath.ImagePath = personFromJson.SmallButtonPicPath.ImagePath;
+            localPerson.MainPicPath = new ImageInfo();
+            localPerson.MainPicPath.ImagePath = personFromLocalJson.MainPicPath.ImagePath;
 
-            fakePerson.ListButtonPicPath = new ImageInfo();
-            fakePerson.ListButtonPicPath.ImagePath = personFromJson.ListButtonPicPath.ImagePath;
+            localPerson.SmallButtonPicPath = new ImageInfo();
+            localPerson.SmallButtonPicPath.ImagePath = personFromLocalJson.SmallButtonPicPath.ImagePath;
 
-            fakePerson.ListButtonDevicePath = personFromJson.ListButtonPicPath.ImagePath;
-            fakePerson.ListButtonDevicePathIos = personFromJson.ListButtonPicPath.ImagePath;
+            localPerson.ListButtonPicPath = new ImageInfo();
+            localPerson.ListButtonPicPath.ImagePath = personFromLocalJson.ListButtonPicPath.ImagePath;
 
-            fakePerson.MainPicDevicePath = personFromJson.MainPicPath.ImagePath;
+            localPerson.ListButtonDevicePath = personFromLocalJson.ListButtonPicPath.ImagePath;
+            localPerson.ListButtonDevicePathIos = personFromLocalJson.ListButtonPicPath.ImagePath;
 
-            fakePerson.SmallButtonDevicePath = personFromJson.SmallButtonPicPath.ImagePath;
+            localPerson.MainPicDevicePath = personFromLocalJson.MainPicPath.ImagePath;
 
-            fakePerson.Infos = [];
+            localPerson.SmallButtonDevicePath = personFromLocalJson.SmallButtonPicPath.ImagePath;
 
-            for (let j = 0; j < personFromJson.Infos.length; j++) {
-                let fakeInfo = personFromJson.Infos[j];
+            localPerson.Infos = [];
 
-                fakePerson.Infos.push(fakeInfo);
+            for (let j = 0; j < personFromLocalJson.Infos.length; j++) {
+                let fakeInfo = personFromLocalJson.Infos[j];
+
+                localPerson.Infos.push(fakeInfo);
             }
 
-            fakePerson.Tracks = [];
+            localPerson.Tracks = [];
 
-            for (let t = 0; t < personFromJson.Tracks.length; t++) {
-                let fakeTrack = new Track();
-                fakeTrack.Path = personFromJson.Tracks[t].Path;
-                fakeTrack.Id = personFromJson.Tracks[t].Id;
-                fakeTrack.Name = personFromJson.Tracks[t].Name;
-                fakeTrack.Date = new Date(personFromJson.Tracks[t].Date);
-                fakeTrack.IsLocked = true;
+            for (let t = 0; t < personFromLocalJson.Tracks.length; t++) {
+                let localTrack = new Track();
+                localTrack.Path = personFromLocalJson.Tracks[t].Path;
+                localTrack.Id = personFromLocalJson.Tracks[t].Id;
+                localTrack.Name = personFromLocalJson.Tracks[t].Name;
+                localTrack.Date = new Date(personFromLocalJson.Tracks[t].Date);
+                localTrack.IsLocked = true;
 
-                fakePerson.Tracks.push(fakeTrack);
+                localPerson.Tracks.push(localTrack);
             }
 
-            fakePersons.push(fakePerson);
+            localPersons.push(localPerson);
         }
 
-        return fakePersons;
+        return localPersons.sort(this.configManager.comparer);
     }
 }

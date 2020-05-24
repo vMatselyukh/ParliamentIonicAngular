@@ -2,7 +2,7 @@
 import { Platform } from '@ionic/angular';
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
-import { Person, Config, Track } from '../models/models';
+import { Person, Config, Track, Resource } from '../models/models';
 import {
     DbContext, ParliamentApi, AlertManager,
     LoadingManager, FileManager, LanguageManager,
@@ -44,26 +44,26 @@ export class ConfigManager {
         return imagesToDelete.concat(tracksToDelete);
     }
 
-    getAllResources(dbConfig: Config): string[] {
+    getAllResources(dbConfig: Config): Resource[] {
         let resources = [];
 
         _.forEach(dbConfig.Persons, (dbPerson: Person) => {
             if (dbPerson.ListButtonPicPath.ImagePath) {
-                resources.push(dbPerson.ListButtonPicPath.ImagePath);
+                resources.push({ Path: dbPerson.ListButtonPicPath.ImagePath, Md5: dbPerson.ListButtonPicPath.Md5Hash });
             }
 
             if (dbPerson.SmallButtonPicPath.ImagePath) {
-                resources.push(dbPerson.SmallButtonPicPath.ImagePath);
+                resources.push({ Path: dbPerson.SmallButtonPicPath.ImagePath, Md5: dbPerson.SmallButtonPicPath.Md5Hash });
             }
 
             if (dbPerson.MainPicPath.ImagePath) {
-                resources.push(dbPerson.MainPicPath.ImagePath);
+                resources.push({ Path: dbPerson.MainPicPath.ImagePath, Md5: dbPerson.MainPicPath.Md5Hash });
             }
 
             resources = resources.concat(_.filter(dbPerson.Tracks, track => {
                 return track.Path;
             }).map(track => {
-                return track.Path;
+                return { Path: track.Path, Md5: track.Md5Hash };
             }));
         });
 
@@ -84,17 +84,20 @@ export class ConfigManager {
 
             this.dbContext.getConfig().then(async dbConfig => {
                 if (dbConfig == null) {
-                    await this.loadingManager.closeLoading();
-                    this.alertManager.showNoConfigAlert(
-                        async _ => {
-                            let loadResult = await this.loadConfigFromServerNoConfig();
-                            resolve(loadResult);
-                        },
-                        async () => {
-                            await this.dbContext.saveConfig(this.config);
-                            await this.dbContext.postponeUpdateTime(new Date());
-                            resolve({ "message": await this.languageManager.getTranslations("postponed"), "showMessage": true });
-                        });
+                    this.config.Persons = this.config.Persons.sort(this.comparer);
+                    await this.dbContext.saveConfig(this.config);
+                    resolve({ "message": "local config saved", "showMessage": false, "configLoaded": true })
+                    //await this.loadingManager.closeLoading();
+                    //this.alertManager.showNoConfigAlert(
+                    //    async _ => {
+                    //        let loadResult = await this.loadConfigFromServerNoConfig();
+                    //        resolve(loadResult);
+                    //    },
+                    //    async () => {
+                    //        await this.dbContext.saveConfig(this.config);
+                    //        await this.dbContext.postponeUpdateTime(new Date());
+                    //        resolve({ "message": await this.languageManager.getTranslations("postponed"), "showMessage": true });
+                    //    });
                 }
                 else {
                     this.logger.log("db config isn't null.");
@@ -106,7 +109,7 @@ export class ConfigManager {
 
                     //this.logger.log("config before manipulations:", this.config);
 
-                    let forceReloadImages = await this.forcePathReload(this.config);
+                    let forceReloadImages = await this.isForcePathReload(this.config);
                     await this.loadImagesDevicePath(forceReloadImages);
 
                     //console.log("config equals:", JSON.stringify(this.config));
@@ -273,8 +276,16 @@ export class ConfigManager {
         });
     }
 
-    async isDefaultConfigUsed(): Promise<boolean> {
-        return await this.dbContext.getDefaultConfigIsUsed();
+    isDefaultConfigUsed(): boolean {
+        return !_.some(this.config.Persons, person => {
+            return !this.isFileFromAssets(person.MainPicPath.ImagePath)
+                || !this.isFileFromAssets(person.SmallButtonPicPath.ImagePath)
+                || !this.isFileFromAssets(person.ListButtonPicPath.ImagePath);
+        });
+    }
+
+    isFileFromAssets(path: string) {
+        return path.indexOf("assets/images/") > -1;
     }
 
     updateProgress(oEvent, loadingElement: HTMLIonLoadingElement) {
@@ -302,10 +313,6 @@ export class ConfigManager {
 
         let localConfig = this.config;
 
-        if (await this.isDefaultConfigUsed()) {
-            localConfig = new Config();
-        }
-
         this.logger.log("download content. local config: ", localConfig);
 
         //get items that exist in serverConfig but don't exist in local config
@@ -327,9 +334,9 @@ export class ConfigManager {
         let allItemsInServerConfig = this.getAllResources(serverConfig);
 
         //items that are in both local and server configs
-        let allActualLocalItems = allItemsInServerConfig.filter(serverItem => {
-            let item = _.find(allItemsInLocalConfig, localItem => {
-                return localItem == serverItem;
+        let allActualLocalItems = allItemsInLocalConfig.filter(localItem => {
+            let item = _.find(allItemsInServerConfig, serverItem => {
+                return serverItem.md5 == localItem.Md5;
             });
 
             return item;
@@ -340,7 +347,9 @@ export class ConfigManager {
         // let's download items from local config that are not present on device
         // but are available on the server. User may delete file so, let's allow
         // the user to download that file.
-        let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems);
+        let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems
+            .filter(item => !this.isFileFromAssets(item.Path))
+                .map(item => item.Path));
 
         let allItemsToDownload = missingItems.concat(itemsToDownload);
 
@@ -355,8 +364,8 @@ export class ConfigManager {
                 .then(async () => {
                     console.log("updates downloaded and unpacked");
                     this.copyConfig(this.config, serverConfig);
-                    await this.dbContext.saveConfig(serverConfig);
-                    this.config = serverConfig;
+                    await this.dbContext.saveConfig(this.config);
+                    //this.config = serverConfig;
                     resolve();
                 })
                 .catch((error) => {
@@ -367,8 +376,8 @@ export class ConfigManager {
         });
     }
 
-    private async forcePathReload(config: Config) {
-        if (await this.dbContext.getDefaultConfigIsUsed()) {
+    private async isForcePathReload(config: Config) {
+        if (await this.isDefaultConfigUsed()) {
             return false;
         }
 
@@ -384,6 +393,7 @@ export class ConfigManager {
 
         return true;
     }
+
     //forceSystemCheck when download new content.
     private async loadImagesDevicePath(forceSystemCheck) {
         if (!this.config || await this.isDefaultConfigUsed() && !forceSystemCheck) {
@@ -401,20 +411,23 @@ export class ConfigManager {
             if (forceSystemCheck || !listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
                 this.logger.log('performing get image path for person: ', this.config.Persons[i].Name);
 
-                listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
-                smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
-                mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
+                if (!this.isFileFromAssets(this.config.Persons[i].ListButtonDevicePath)) {
+                    listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
+                    this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
+                }
 
-                this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
-                //console.log("list path:", listButtonImagePath);
-                this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
-                //console.log("main path:", mainPicImagePath);
-                this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
-                //console.log("small path:", smallButtonImagePath);
+                if (!this.isFileFromAssets(this.config.Persons[i].SmallButtonDevicePath)) {
+                    smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
+                    this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
+                }
+
+                if (!this.isFileFromAssets(this.config.Persons[i].MainPicDevicePath)) {
+                    mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
+                    this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
+                }
             }
 
             if (!listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
-                //this.config.Persons.splice(i, 1);
                 this.dbContext.postponeUpdateTime(new Date("01/01/2019"));
                 continue;
             }
@@ -448,7 +461,7 @@ export class ConfigManager {
         });
     }
 
-    private comparer(person1: Person, person2: Person) {
+    public comparer(person1: Person, person2: Person) {
         let comparison = 0;
         if (person1.OrderNumber > person2.OrderNumber) {
             comparison = 1;
@@ -554,6 +567,7 @@ export class ConfigManager {
             })
 
             if (dbPerson != null) {
+                this.logger.log("dbPerson != null: ", dbPerson.Name);
                 imagesList = imagesList.concat(this.getPersonImagesToUpdate(webServicePerson, dbPerson));
             }
             else {
@@ -628,12 +642,27 @@ export class ConfigManager {
         let imagesToUpdate = [];
 
         if (dbPerson.ListButtonPicPath == null || dbPerson.ListButtonPicPath.Md5Hash !== webServicePerson.ListButtonPicPath.Md5Hash) {
+            this.logger.log("listbuttonpic path should be updated");
+
+            this.logger.log("db listbuttonpic hash: ", dbPerson.ListButtonPicPath.Md5Hash);
+            this.logger.log("server listbuttonpic hash: ", webServicePerson.ListButtonPicPath.Md5Hash);
+
             imagesToUpdate.push(webServicePerson.ListButtonPicPath.ImagePath);
         }
         if (dbPerson.MainPicPath == null || dbPerson.MainPicPath.Md5Hash !== webServicePerson.MainPicPath.Md5Hash) {
+            this.logger.log("mainpic path should be updated");
+
+            this.logger.log("db mainpic hash: ", dbPerson.MainPicPath.Md5Hash);
+            this.logger.log("server mainpic hash: ", webServicePerson.MainPicPath.Md5Hash);
+
             imagesToUpdate.push(webServicePerson.MainPicPath.ImagePath);
         }
         if (dbPerson.SmallButtonPicPath == null || dbPerson.SmallButtonPicPath.Md5Hash !== webServicePerson.SmallButtonPicPath.Md5Hash) {
+            this.logger.log("smallbuttonpic path should be updated");
+
+            this.logger.log("db smallbuttonpic hash: ", dbPerson.SmallButtonPicPath.Md5Hash);
+            this.logger.log("server smallbuttonpic hash: ", webServicePerson.SmallButtonPicPath.Md5Hash);
+
             imagesToUpdate.push(webServicePerson.SmallButtonPicPath.ImagePath);
         }
 

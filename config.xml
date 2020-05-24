@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.eagerdev.parliament.ua" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>Парламент UA</name>
+<widget android-versionCode="2" id="com.IndiWolf.Parliament" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Симулятор Верховна Рада</name>
     <description>Збірник крилатих фраз українських політиків.</description>
     <author email="volodymyr.matselyukh@gmail.com" href="https://matseliukh/com">Volodymyr Matseliukh</author>
-    <content src="index.html" />
+    <content original-src="index.html" src="http://localhost:8100" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />

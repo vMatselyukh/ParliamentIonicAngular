@@ -1,9 +1,9 @@
 {
   "android": {
     "release": {
-      "keystore": "keys/parliament-key.keystore",
+      "keystore": "keys/correct.keystore",
       "storePassword": "vonk11",
-      "alias": "alias_name",
+      "alias": "makdark",
       "password": "vonk11",
       "keystoreType": "JKS"
     }
