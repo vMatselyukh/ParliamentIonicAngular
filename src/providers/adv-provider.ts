@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
 import { AdMobFree } from "@ionic-native/admob-free/ngx";
-import { DbContext, AlertManager } from '../providers/providers'
+import { DbContext, AlertManager, LoggingProvider } from '../providers/providers'
 import { Network } from '@ionic-native/network/ngx';
 import { Platform } from '@ionic/angular';
 
@@ -10,7 +10,7 @@ import { Platform } from '@ionic/angular';
 })
 export class AdvProvider {
 
-    isInTesting: boolean = false;
+    isInTesting: boolean = true;
 
     rewardedAndroid: string = "ca-app-pub-3291616985383560/7058759376";
     bannerAndroid: string = "ca-app-pub-3291616985383560/2201604199";
@@ -38,7 +38,8 @@ export class AdvProvider {
         private platform: Platform,
         private dbContext: DbContext,
         private alertManager: AlertManager,
-        private network: Network) {
+        private network: Network,
+        private logger: LoggingProvider) {
     }
 
     loadAdv(rewardCallback: any = null) {
@@ -146,7 +147,9 @@ export class AdvProvider {
 
     //requireAdvClicked means the user tapped require more coins.
     showAdvOrAlert() {
-        if (this.requireAdvClicked && this.advLoadingFailed && this.network.type == 'none') {
+        if (this.requireAdvClicked && (this.advLoadingFailed || this.network.type == 'none')) {
+            this.logger.log("no internet. adv couldn't be shown");
+            this.logger.log("adv loading failed: ", this.advLoadingFailed);
             this.alertManager.showAdNotAvailableAlert();
             this.resetValues();
         }
