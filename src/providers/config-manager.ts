@@ -109,10 +109,15 @@ export class ConfigManager {
                         this.config = dbConfig;
                     }
 
-                    //this.logger.log("config before manipulations:", this.config);
+                    this.logger.log("config before manipulations:", this.config);
 
                     let forceReloadImages = await this.isForcePathReload(this.config);
                     await this.loadImagesDevicePath(forceReloadImages);
+
+                    
+                    if (this.platform.is('ios') && await this.isDefaultConfigUsed()) {
+                        this.reloadPathIos();
+                    }
 
                     //console.log("config equals:", JSON.stringify(this.config));
 
@@ -194,7 +199,13 @@ export class ConfigManager {
                 for (var i = 0; i < this.config.Persons.length; i++) {
                     if (this.config.Persons[i].ListButtonDevicePathIos == null || forceReload) {
                         //console.log("reassigning safe urls");
-                        this.config.Persons[i].ListButtonDevicePathIos = this.domSanitizer.bypassSecurityTrustResourceUrl(this.config.Persons[i].ListButtonDevicePath);
+                        if(this.isFileFromAssets(this.config.Persons[i].ListButtonDevicePath)) {
+                            this.config.Persons[i].ListButtonDevicePathIos = this.config.Persons[i].ListButtonDevicePath;
+                        }
+                        else {
+                            this.config.Persons[i].ListButtonDevicePathIos = this.domSanitizer.bypassSecurityTrustResourceUrl(this.config.Persons[i].ListButtonDevicePath);
+                        }
+                        
                         //console.log("new path ios", this.config.Persons[i].ListButtonDevicePathIos);
                     }
                 }

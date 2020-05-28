@@ -10,7 +10,7 @@ import { Platform } from '@ionic/angular';
 })
 export class AdvProvider {
 
-    isInTesting: boolean = true;
+    isInTesting: boolean = false;
 
     rewardedAndroid: string = "ca-app-pub-3291616985383560/7058759376";
     bannerAndroid: string = "ca-app-pub-3291616985383560/2201604199";
@@ -78,8 +78,10 @@ export class AdvProvider {
                 }
             });
 
-            self.admob.rewardVideo.prepare().then(() => {
-                console.log("rewarded video prepared");
+            self.admob.rewardVideo.prepare().then((value) => {
+                this.logger.log("rewarded video prepared: ", value);
+            }).catch(error => {
+                this.logger.log("rewarded video preparation problem: ", error);
             });
 
             if (!self.rewardedVideoLoadedEventListenerAdded) {
@@ -88,7 +90,7 @@ export class AdvProvider {
                     self.advLoadingFailed = false;
 
                     self.showAdvOrAlert();
-                    console.log('admob.reward_video.events.LOAD', data);
+                    this.logger.log('admob.reward_video.events.LOAD', data);
                 });
 
                 self.rewardedVideoLoadedEventListenerAdded = true;
@@ -99,7 +101,7 @@ export class AdvProvider {
                     self.advLoadingFailed = true;
 
                     self.showAdvOrAlert();
-                    console.log('admob.reward_video.events.LOAD_FAIL', data);
+                    this.logger.log('admob.rewardvideo.events.LOAD_FAIL', data);
                 });
 
                 self.rewardedVideoLoadFailEventListenerAdded = true;
@@ -148,6 +150,7 @@ export class AdvProvider {
     //requireAdvClicked means the user tapped require more coins.
     showAdvOrAlert() {
         if (this.requireAdvClicked && (this.advLoadingFailed || this.network.type == 'none')) {
+            this.alertManager.closeAlerts();
             this.logger.log("no internet. adv couldn't be shown");
             this.logger.log("adv loading failed: ", this.advLoadingFailed);
             this.alertManager.showAdNotAvailableAlert();
