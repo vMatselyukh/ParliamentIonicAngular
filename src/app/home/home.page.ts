@@ -233,19 +233,21 @@ export class HomePage {
 
             localPerson.MainPicPath = new ImageInfo();
             localPerson.MainPicPath.ImagePath = personFromLocalJson.MainPicPath.ImagePath;
+            localPerson.MainPicPath.Md5Hash = personFromLocalJson.MainPicPath.Md5Hash;
 
             localPerson.SmallButtonPicPath = new ImageInfo();
             localPerson.SmallButtonPicPath.ImagePath = personFromLocalJson.SmallButtonPicPath.ImagePath;
+            localPerson.SmallButtonPicPath.Md5Hash = personFromLocalJson.SmallButtonPicPath.Md5Hash;
 
             localPerson.ListButtonPicPath = new ImageInfo();
             localPerson.ListButtonPicPath.ImagePath = personFromLocalJson.ListButtonPicPath.ImagePath;
+            localPerson.ListButtonPicPath.Md5Hash = personFromLocalJson.ListButtonPicPath.Md5Hash;
 
             localPerson.ListButtonDevicePath = personFromLocalJson.ListButtonPicPath.ImagePath;
-            localPerson.ListButtonDevicePathIos = personFromLocalJson.ListButtonPicPath.ImagePath;
-
             localPerson.MainPicDevicePath = personFromLocalJson.MainPicPath.ImagePath;
-
             localPerson.SmallButtonDevicePath = personFromLocalJson.SmallButtonPicPath.ImagePath;
+
+            localPerson.ListButtonDevicePathIos = personFromLocalJson.ListButtonPicPath.ImagePath;
 
             localPerson.Infos = [];
 
@@ -264,6 +266,8 @@ export class HomePage {
                 localTrack.Name = personFromLocalJson.Tracks[t].Name;
                 localTrack.Date = new Date(personFromLocalJson.Tracks[t].Date);
                 localTrack.IsLocked = true;
+
+                localTrack.Md5Hash = personFromLocalJson.Tracks[t].Md5Hash;
 
                 localPerson.Tracks.push(localTrack);
             }

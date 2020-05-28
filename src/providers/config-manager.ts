@@ -2,7 +2,7 @@
 import { Platform } from '@ionic/angular';
 import { Injectable } from '@angular/core';
 import * as _ from 'lodash';
-import { Person, Config, Track, Resource } from '../models/models';
+import { Person, Config, Track, Resource, ImageInfo } from '../models/models';
 import {
     DbContext, ParliamentApi, AlertManager,
     LoadingManager, FileManager, LanguageManager,
@@ -72,7 +72,9 @@ export class ConfigManager {
 
     copyConfig(localConfig: Config, serverConfig: Config) {
         this.copyOrder(localConfig, serverConfig);
-        this.copyUnlockedTracks(localConfig, serverConfig);
+        this.updateLocalConfigByServerConfig(localConfig, serverConfig);
+        //this.copyUnlockedTracks(localConfig, serverConfig);
+
     }
 
     async loadConfig(forceLoading: boolean = false) {
@@ -285,7 +287,7 @@ export class ConfigManager {
     }
 
     isFileFromAssets(path: string) {
-        return path.indexOf("assets/images/") > -1;
+        return path.indexOf("assets/images/") > -1 || path.indexOf("assets/tracks/") > -1;
     }
 
     updateProgress(oEvent, loadingElement: HTMLIonLoadingElement) {
@@ -336,20 +338,26 @@ export class ConfigManager {
         //items that are in both local and server configs
         let allActualLocalItems = allItemsInLocalConfig.filter(localItem => {
             let item = _.find(allItemsInServerConfig, serverItem => {
-                return serverItem.md5 == localItem.Md5;
+                return serverItem.Md5 == localItem.Md5;
             });
 
             return item;
         });
+
+        this.logger.log("all actual local items: ", allActualLocalItems);
 
         console.log("all items", allItemsInLocalConfig);
 
         // let's download items from local config that are not present on device
         // but are available on the server. User may delete file so, let's allow
         // the user to download that file.
-        let missingItems = await this.fileManager.getMissingFiles(allActualLocalItems
+        let filesToCheck = allActualLocalItems
             .filter(item => !this.isFileFromAssets(item.Path))
-                .map(item => item.Path));
+            .map(item => item.Path);
+
+        let missingItems = await this.fileManager.getMissingFiles(filesToCheck);
+
+        this.logger.log("missing items: ", missingItems);
 
         let allItemsToDownload = missingItems.concat(itemsToDownload);
 
@@ -382,8 +390,14 @@ export class ConfigManager {
         }
 
         if (config.Persons.length > 0) {
-            let testPath = await this.fileManager.getListButtonImagePath(config.Persons[0]);
-            let dbPath = config.Persons[0].ListButtonDevicePath;
+            let personWithListIconFromStorage = config.Persons.find(person => !this.isFileFromAssets(person.ListButtonPicPath.ImagePath));
+
+            if (personWithListIconFromStorage == null) {
+                return false;
+            }
+
+            let testPath = await this.fileManager.getListButtonImagePath(personWithListIconFromStorage);
+            let dbPath = personWithListIconFromStorage.ListButtonDevicePath;
 
             this.logger.log("check system path reload. test path: ", testPath);
             this.logger.log("check system path reload. db path: ", dbPath);
@@ -411,17 +425,17 @@ export class ConfigManager {
             if (forceSystemCheck || !listButtonImagePath || !smallButtonImagePath || !mainPicImagePath) {
                 this.logger.log('performing get image path for person: ', this.config.Persons[i].Name);
 
-                if (!this.isFileFromAssets(this.config.Persons[i].ListButtonDevicePath)) {
+                if (!this.isFileFromAssets(this.config.Persons[i].ListButtonPicPath.ImagePath)) {
                     listButtonImagePath = await this.fileManager.getListButtonImagePath(this.config.Persons[i]);
                     this.config.Persons[i].ListButtonDevicePath = listButtonImagePath;
                 }
 
-                if (!this.isFileFromAssets(this.config.Persons[i].SmallButtonDevicePath)) {
+                if (!this.isFileFromAssets(this.config.Persons[i].SmallButtonPicPath.ImagePath)) {
                     smallButtonImagePath = await this.fileManager.getSmallButtonImagePath(this.config.Persons[i]);
                     this.config.Persons[i].SmallButtonDevicePath = smallButtonImagePath;
                 }
 
-                if (!this.isFileFromAssets(this.config.Persons[i].MainPicDevicePath)) {
+                if (!this.isFileFromAssets(this.config.Persons[i].MainPicPath.ImagePath)) {
                     mainPicImagePath = await this.fileManager.getMainPicImagePath(this.config.Persons[i]);
                     this.config.Persons[i].MainPicDevicePath = mainPicImagePath;
                 }
@@ -520,6 +534,112 @@ export class ConfigManager {
                 }
             });
         });
+    }
+
+    private updateLocalConfigByServerConfig(localConfig: Config, serverConfig: Config) {
+        for (let i = 0; i < serverConfig.Persons.length; i++) {
+            let serverPerson = serverConfig.Persons[i];
+            let localPerson = localConfig.Persons.find(person => person.Id === serverPerson.Id);
+
+            if (localPerson == null) {
+                localConfig.Persons.push(serverPerson);
+                continue;
+            }
+
+            localPerson.Name = serverPerson.Name;
+            localPerson.OrderNumber = serverPerson.OrderNumber;
+
+            localPerson.Infos = [];
+
+            for (let j = 0; j < serverPerson.Infos.length; j++) {
+                let newLocalInfo = serverPerson.Infos[j];
+
+                localPerson.Infos.push(newLocalInfo);
+            }
+
+            if (localPerson.ListButtonPicPath.Md5Hash !== serverPerson.ListButtonPicPath.Md5Hash) {
+                localPerson.ListButtonPicPath = new ImageInfo();
+                localPerson.ListButtonPicPath.ImagePath = serverPerson.ListButtonPicPath.ImagePath;
+                localPerson.ListButtonPicPath.Md5Hash = serverPerson.ListButtonPicPath.Md5Hash;
+            }
+
+            if (localPerson.MainPicPath.Md5Hash !== serverPerson.MainPicPath.Md5Hash) {
+                localPerson.MainPicPath = new ImageInfo();
+                localPerson.MainPicPath.ImagePath = serverPerson.MainPicPath.ImagePath;
+                localPerson.MainPicPath.Md5Hash = serverPerson.MainPicPath.Md5Hash;
+            }
+
+            if (localPerson.SmallButtonPicPath.Md5Hash !== serverPerson.SmallButtonPicPath.Md5Hash) {
+                localPerson.SmallButtonPicPath = new ImageInfo();
+                localPerson.SmallButtonPicPath.ImagePath = serverPerson.SmallButtonPicPath.ImagePath;
+                localPerson.SmallButtonPicPath.Md5Hash = serverPerson.SmallButtonPicPath.Md5Hash;
+            }
+
+            let newLocalPersonTracks = [];
+
+            for (let j = 0; j < serverPerson.Tracks.length; j++) {
+                let serverPersonTrack = serverPerson.Tracks[j];
+
+                let localTrack = localPerson.Tracks.find(track => track.Id === serverPersonTrack.Id);
+
+                if (localTrack == null) {
+                    serverPersonTrack.IsLocked = true;
+                    newLocalPersonTracks.push(serverPersonTrack);
+                    continue;
+                }
+
+                if (localTrack.Md5Hash !== serverPersonTrack.Md5Hash) {
+                    localTrack.Path = serverPersonTrack.Path;
+                }
+                    
+                localTrack.Name = serverPersonTrack.Name;
+                localTrack.Date = new Date(serverPersonTrack.Date);
+
+                let localTrackIndex = localPerson.Tracks.indexOf(localTrack);
+                localPerson.Tracks[localTrackIndex] = localTrack;
+            }
+
+            localPerson.Tracks = localPerson.Tracks.concat(newLocalPersonTracks);
+
+            //delete tracks that are not in server config but is in local
+            let localPersonTracksToDelete = [];
+            for (let i = 0; i < localPerson.Tracks.length; i++) {
+                let localPersonTrack = localPerson.Tracks[i];
+                let serverPersonTrack = serverPerson.Tracks.find(track => track.Id === localPersonTrack.Id);
+
+                if (serverPersonTrack == null) {
+                    localPersonTracksToDelete.push(localPersonTrack.Id);
+                }
+            }
+
+            for (let i = 0; i < localPersonTracksToDelete.length; i++) {
+                let localPersonTrack = localPerson.Tracks.find(track => track.Id === localPersonTracksToDelete[i]);
+                let localPersonTrackIndex = localPerson.Tracks.indexOf(localPersonTrack);
+                localPerson.Tracks.splice(localPersonTrackIndex, 1);
+            }
+
+            let localPersonIndex = localConfig.Persons.indexOf(localPerson);
+            localConfig.Persons[localPersonIndex] = localPerson;
+        }
+
+        //delete persons who is not in server config but is in local
+        let localPersonsToDelete = [];
+        for (let i = 0; i < localConfig.Persons.length; i++) {
+            let localPerson = localConfig.Persons[i];
+            let serverPerson = serverConfig.Persons.find(person => person.Id === localPerson.Id);
+
+            if (serverPerson == null) {
+                localPersonsToDelete.push(localPerson.Id);
+            }
+        }
+
+        for (let i = 0; i < localPersonsToDelete.length; i++) {
+            let localPerson = localConfig.Persons.find(person => person.Id === localPersonsToDelete[i]);
+            let localPersonIndex = localConfig.Persons.indexOf(localPerson);
+            localConfig.Persons.splice(localPersonIndex, 1);
+        }
+
+        localConfig.Md5Hash = serverConfig.Md5Hash;
     }
 
     private copyOrder(localConfig: Config, serverConfig: Config) {

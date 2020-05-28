@@ -1,5 +1,5 @@
 ﻿export const LOCAL_CONFIG = {
-    "Md5Hash": "101e36a283c32b036a4bc543372dc7ca",
+    "Md5Hash": "e1f42f234a5e15190a3540c14b37fc59",
     "Persons": [
         {
             "Id": 82,

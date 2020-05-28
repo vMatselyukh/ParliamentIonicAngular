@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 
 @Injectable()
 export class LoggingProvider {
-    enableLogging: boolean = true;
+    enableLogging: boolean = false;
 
     constructor(private platform: Platform) {
         if (this.enableLogging) {

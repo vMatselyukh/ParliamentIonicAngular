@@ -10,7 +10,7 @@ import { Platform } from '@ionic/angular';
 })
 export class AdvProvider {
 
-    isInTesting: boolean = true;
+    isInTesting: boolean = false;
 
     rewardedAndroid: string = "ca-app-pub-3291616985383560/7058759376";
     bannerAndroid: string = "ca-app-pub-3291616985383560/2201604199";

@@ -92,13 +92,24 @@ export class FileManager {
         _.forEach(filesToDelete, fileToDelete => {
             deleteFilesPromises.push(this.getFile(fileToDelete).then((fileEntry: FileEntry) => {
                 fileEntry.getParent((parentDirectory: DirectoryEntry) => {
-                    parentDirectory.removeRecursively(
+                    parentDirectory.getMetadata((metadata) => {
+                        this.logger.log("folder metadata: ", metadata);
+                    });
+
+                    fileEntry.remove(
                         () => {
                             console.log("file deleted");
                         },
                         (error) => {
                             console.log("file was not deleted", error);
                         });
+                    //parentDirectory.removeRecursively(
+                    //    () => {
+                    //        console.log("file deleted");
+                    //    },
+                    //    (error) => {
+                    //        console.log("file was not deleted", error);
+                    //    });
                 },
                     (error) => {
                         console.log("file error", error);
