@@ -59,7 +59,7 @@
     "gulp-sass": "^4.0.2",
     "howler": "^2.1.2",
     "ionic-admob": "^0.19.7",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "rxjs-compat": "^6.5.3",
     "tslib": "^1.9.0",
     "zone.js": "~0.9.1"
